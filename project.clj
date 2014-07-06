@@ -1,4 +1,4 @@
-(defproject clj-refactor-middleware "0.13.0-SNAPSHOT"
+(defproject refactor-nrepl "0.1.0-SNAPSHOT"
   :description "nREPL middleware to support refactorings in an editor agnostic way"
   :url "http://github.com/clojure-emacs/refactor-nrepl"
   :dependencies [[org.clojure/clojure "1.5.1"]
