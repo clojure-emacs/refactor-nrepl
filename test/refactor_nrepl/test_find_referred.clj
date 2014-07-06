@@ -1,6 +1,6 @@
-(ns refactor-middleware.test-find-referred
-  (:require [refactor-middleware.test-util :as u]
-            [refactor-middleware.refactor :refer :all]
+(ns refactor-nrepl.test-find-referred
+  (:require [refactor-nrepl.test-util :as u]
+            [refactor-nrepl.refactor :refer :all]
             [clojure.test :refer :all]))
 
 (def test-ns-string
@@ -19,7 +19,7 @@
         (pair-up participants)
         pairs)))")
 
-(def find-referred #'refactor-middleware.refactor/find-referred)
+(def find-referred #'refactor-nrepl.refactor/find-referred)
 
 (def test-ast (u/test-ast test-ns-string))
 

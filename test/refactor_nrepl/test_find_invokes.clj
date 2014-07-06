@@ -1,6 +1,6 @@
-(ns refactor-middleware.test-find-invokes
-  (:require [refactor-middleware.test-util :as u]
-            [refactor-middleware.refactor :refer :all]
+(ns refactor-nrepl.test-find-invokes
+  (:require [refactor-nrepl.test-util :as u]
+            [refactor-nrepl.refactor :refer :all]
             [clojure.test :refer :all]))
 
 (def ss-util
@@ -107,7 +107,7 @@
                   (pair-up participants)
                   pairs)))")
 
-(def find-invokes #'refactor-middleware.refactor/find-invokes)
+(def find-invokes #'refactor-nrepl.refactor/find-invokes)
 
 (deftest finds-debug-fns-no-ns
   (let [test-ast-debug-fns-no-ns (u/test-ast test-ns-string-no-ns-decl)

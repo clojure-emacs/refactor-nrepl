@@ -1,5 +1,5 @@
-(ns refactor-middleware.refactor
-  (:require [refactor-middleware.analyzer :refer [string-ast]]
+(ns refactor-nrepl.refactor
+  (:require [refactor-nrepl.analyzer :refer [string-ast]]
             [clojure.string :refer [split join]]
             [clojure.tools.analyzer.ast :refer :all]
             [clojure.tools.nrepl.middleware :refer [set-descriptor!]]

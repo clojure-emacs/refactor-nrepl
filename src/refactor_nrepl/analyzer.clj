@@ -1,4 +1,4 @@
-(ns refactor-middleware.analyzer
+(ns refactor-nrepl.analyzer
   (:refer-clojure :exclude [macroexpand-1 read read-string])
   (:require [clojure.tools.analyzer :as ana]
             [clojure.tools.analyzer.passes.source-info :as ana.si]
