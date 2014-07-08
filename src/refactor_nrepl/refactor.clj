@@ -49,7 +49,6 @@
   "Ensures that refactor only triggered with the right operation and forks to the appropriate refactor function"
   [handler]
   (fn [{:keys [op refactor-fn ns-string] :as msg}]
-    (println "refactor, op: " op " refactor-fn: " refactor-fn)
     (if (= "refactor" op)
       (cond (= "find-referred" refactor-fn) (find-referred-reply msg)
             (= "find-debug-fns" refactor-fn) (find-debug-fns-reply msg)
@@ -65,7 +64,7 @@
           Currently available:
           - find-referred: searches for referred class in the AST returns the referred if found, nil otherwise
           - find-debug-fns: finds debug functions returns tuples containing
-            [line-number end-line-number column-number fn-name]"
+            [line-number end-line-number column-number end-column-number fn-name]"
     :requires {"ns-string" "the body of the namespace to build the AST with"
                "refactor-fn" "The refactor function to invoke"}
     :returns {"status" "done"
