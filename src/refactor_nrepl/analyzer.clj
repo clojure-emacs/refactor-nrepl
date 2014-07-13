@@ -25,19 +25,19 @@
    in the same format as ns-aliases"
   (let [ns-decl (read-ns-decl (PushbackReader. (java.io.StringReader. body)))
         aliases (->> ns-decl
-         (filter list?)
-         (filter #(contains? #{:require} (first %)))
-         first
-         rest
-         (filter #(contains? (into #{} %) :as))
-         (#(zipmap (map (partial get-alias nil) %)
-                   (map first %))))]
+                     (filter list?)
+                     (some #(when (#{:require} (first %)) %))
+                     rest
+                     (filter #(contains? (into #{} %) :as))
+                     (#(zipmap (map (partial get-alias nil) %)
+                               (map first %))))]
     [(second ns-decl) aliases]))
 
 (defn create-env [ns-info]
-  (atom {:namespaces {(first ns-info) {:mappings {}
-                                    :aliases (last ns-info)
-                                    :ns (first ns-info)}}}))
+  (let [ns (first ns-info)]
+    (atom {:namespaces {ns {:mappings {}
+                          :aliases (last ns-info)
+                          :ns ns}}})))
 
 (defn enrich-with-aliasinfo [ast ns]
   (assoc ast
