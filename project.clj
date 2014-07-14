@@ -11,4 +11,5 @@
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0-master-SNAPSHOT"]]}
-             :dev {:repositories [["snapshots" "http://oss.sonatype.org/content/repositories/snapshots"]]}})
+             :dev {:plugins [[jonase/eastwood "0.1.4"]]
+                   :repositories [["snapshots" "http://oss.sonatype.org/content/repositories/snapshots"]]}})

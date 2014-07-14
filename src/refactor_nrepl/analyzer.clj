@@ -19,10 +19,11 @@
         (= (first v) :as) (get-alias true (rest v))
         :else (get-alias nil (rest v))))
 
-(defn parse-ns [body]
+(defn parse-ns
   "For now returns tuples with the ns as the first element and
    a map of the aliases for the namespace as the second element
    in the same format as ns-aliases"
+  [body]
   (let [ns-decl (read-ns-decl (PushbackReader. (java.io.StringReader. body)))
         aliases (->> ns-decl
                      (filter list?)

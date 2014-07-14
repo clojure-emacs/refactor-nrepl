@@ -25,9 +25,10 @@
   (and (= :invoke (:op ast))
        (fns (field-or-class alias-info ast))))
 
-(defn- find-invokes [ast fn-names]
+(defn- find-invokes
   "Finds fn invokes in the AST.
    Returns a list of line, end-line, column, end-column and fn name tuples"
+  [ast fn-names]
   (let [alias-info (:alias-info ast)
         fns (into #{} (split fn-names #","))]
     (->> ast
