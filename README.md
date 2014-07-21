@@ -77,6 +77,7 @@ In case your client want to find core clojure functions (for example `println`) 
 Example call from the repl using the clojure client:
 
 ```clojure
+(require 'refactor-nrepl.client)
 (def tr (refactor-nrepl.client/connect))
 (refactor-nrepl.client/remove-debug-invocations :transport tr :file "src/secret_santa/core.clj")
 ```
