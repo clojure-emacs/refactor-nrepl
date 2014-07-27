@@ -40,10 +40,13 @@
                           :aliases (last ns-info)
                           :ns ns}}})))
 
-(defn enrich-with-aliasinfo [ast ns]
-  (assoc ast
-    :alias-info
-    (get-in (deref-env) [:namespaces ns :aliases])))
+(defn read-all-forms [reader]
+  (let [eof (reify)]
+    (loop [forms []]
+      (let [form (r/read reader nil eof)]
+        (if (identical? form eof)
+          forms
+          (recur (conj forms form)))))))
 
 (defn string-ast [string]
      (binding [ana/macroexpand-1 ana.jvm/macroexpand-1
@@ -51,15 +54,14 @@
                ana/parse         ana.jvm/parse
                ana/var?          var?]
        (try
-         (let [ns-info (parse-ns string)]
-           (with-env (create-env ns-info) ;;(atom (ana.jvm/build-ns-map))
-             (-> (format "(%s)" string)
+         (let [[_ aliases] (parse-ns string)]
+           (with-env (ana.jvm/global-env)
+             (-> string
                  rts/indexing-push-back-reader
-                 (r/read nil (reify))
+                 read-all-forms
                  (ana/analyze e)
                  (prewalk ana.si/source-info)
-                 (enrich-with-aliasinfo (first ns-info)))))
+                 (assoc :alias-info aliases))))
          (catch Exception e
-           (println "Exception caught " e)
            (.printStackTrace e)
            {}))))

@@ -51,7 +51,7 @@
 (def test-ns-string-required-fns-prefix
   "(ns secret-santa.core
   (:require [clojure.set :refer [difference]]
-            [print.foo :as pf]
+            [print.foo]
             [clojure.pprint]
             [clojure.string :refer [trim]]))
 
@@ -62,7 +62,7 @@
 
 (defn pair-up [participants]
   (trim \" fooobar \")
-  (pf/print-let [pairs (rnd-pair-up participants)]
+  (print.foo/print-let [pairs (rnd-pair-up participants)]
                 (if (some (fn [p] (= (first p) (second p))) pairs)
                   (pair-up participants)
                   pairs)))")
@@ -107,7 +107,35 @@
                   (pair-up participants)
                   pairs)))")
 
+(def test-ns-string-self-reference
+  "(ns secret-santa.core
+  (:require [clojure.set :refer [difference]]
+            [clojure.string :refer [trim]])
+  (:use [print.foo]))
+
+(defn- rnd-pair-up [participants]
+  (println \"baz\")
+  (let [receivers (shuffle participants)]
+    (partition 2 (interleave participants receivers))))
+
+(def fns {:rnd-pair-up #'rnd-pair-up})
+
+(defn pair-up [participants]
+  (trim \" foobar \")
+  (print-let [pairs ((:rnd-pair-up fns) participants)]
+             (if (some (fn [p] (= (first p) (second p))) pairs)
+               (pair-up participants)
+               pairs)))")
+
 (def find-invokes #'refactor-nrepl.refactor/find-invokes)
+
+(deftest finds-debug-fns-self-ref
+  (let [test-ast-debug-fns-self-ref (u/test-ast test-ns-string-self-reference)
+        result (find-invokes test-ast-debug-fns-self-ref "println")]
+    (println result)
+
+    (is (= 1 (count result)) (format "1 required debug fn was expected but %d found" (count result)))
+    ))
 
 (deftest finds-debug-fns-no-ns
   (let [test-ast-debug-fns-no-ns (u/test-ast test-ns-string-no-ns-decl)

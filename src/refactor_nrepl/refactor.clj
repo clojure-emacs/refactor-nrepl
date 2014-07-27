@@ -1,13 +1,14 @@
 (ns refactor-nrepl.refactor
   (:require [refactor-nrepl.analyzer :refer [string-ast]]
-            [clojure.string :refer [split join]]
+            [clojure.string :refer [split join] :as str]
             [clojure.tools.analyzer.ast :refer :all]
             [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
             [clojure.tools.nrepl.misc :refer [response-for]]
             [clojure.tools.nrepl.transport :as transport]))
 
 (defn- find-referred [ast referred]
-  (some #(= (symbol referred) (:class %)) (nodes (if (= 'ns (-> ast :fn :fn :class)) (dissoc ast :fn) ast))))
+  (let [ast (if (= 'ns (-> ast :items first :fn :class)) (update-in ast [:items] rest) ast)]
+    (some #(= (symbol referred) (:class %)) (flatten (map nodes (:items ast))))))
 
 (defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
   (let [ast (string-ast ns-string)
@@ -17,7 +18,7 @@
 
 (defn- field-or-class [alias-info ast]
   (let [fn-node (:fn ast)
-        class (:class fn-node)
+        class (or (:class fn-node) (-> fn-node :var str (str/replace "#'clojure.core/" "")))
         full-class (get alias-info class class)]
     (join "/" (remove nil? [full-class (:field fn-node)]))))
 

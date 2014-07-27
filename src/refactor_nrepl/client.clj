@@ -67,9 +67,10 @@
                                   :debug-fns debug-fns})
         invocations (-> result first :value)]
     (println "found invocations: " invocations)
-    (->> ns-string
-         str/split-lines
-         (remove-invocations invocations)
-         (remove (partial = "$remove$"))
-         (str/join "\n")
-         (spit file))))
+    (when-not (empty? invocations)
+      (->> ns-string
+           str/split-lines
+           (remove-invocations invocations)
+           (remove (partial = "$remove$"))
+           (str/join "\n")
+           (spit file)))))
