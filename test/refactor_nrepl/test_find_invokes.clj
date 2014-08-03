@@ -107,6 +107,29 @@
                   (pair-up participants)
                   pairs)))")
 
+(def test-ns-string-var-reference
+  "(ns secret-santa.core
+  (:require [clojure.set :refer [difference]]
+            [secret-santa.util :as u]
+            [secret-santa.util2 :as u2]
+            [clojure.string :refer [trim]]))
+
+(def foofns {:foobar2 #'u2/foobar
+           :foobar1 #'u/foobar})
+
+(defn- rnd-pair-up [participants]
+  (println \"baz\")
+  ((:foobar2 foofns) \"foobar\")
+  (let [receivers (shuffle participants)]
+    (partition 2 (interleave participants receivers))))
+
+(defn pair-up [participants]
+  ((:foobar1 foofns) \"foobar\")
+  (let [pairs (rnd-pair-up participants)]
+        (if (some (fn [p] (= (first p) (second p))) pairs)
+           (pair-up participants)
+           pairs)))")
+
 (def test-ns-string-self-reference
   "(ns secret-santa.core
   (:require [clojure.set :refer [difference]]
@@ -135,7 +158,26 @@
     (println result)
 
     (is (= 1 (count result)) (format "1 required debug fn was expected but %d found" (count result)))
-    ))
+
+    (is (= [7] (map first result)) "line numbers don't match")
+    (is (= ["println"] (map last result)) "found fn names don't match")
+    (is (= [3] (map #(nth % 2) result)) "column numbers don't match")
+    (is (= [7] (map second result)) "end line numbers don't match")))
+
+(deftest finds-debug-fns-var-ref
+  (load-string ss-util)
+  (load-string ss-util2)
+  (load-string test-ns-string-var-reference)
+  (let [test-ast-debug-fns-var-ref (u/test-ast test-ns-string-var-reference)
+        result (find-invokes test-ast-debug-fns-var-ref "println")]
+    (println result)
+
+    (is (= 1 (count result)) (format "1 required debug fn was expected but %d found" (count result)))
+
+    (is (= [11] (map first result)) "line numbers don't match")
+    (is (= ["println"] (map last result)) "found fn names don't match")
+    (is (= [3] (map #(nth % 2) result)) "column numbers don't match")
+    (is (= [11] (map second result)) "end line numbers don't match")))
 
 (deftest finds-debug-fns-no-ns
   (let [test-ast-debug-fns-no-ns (u/test-ast test-ns-string-no-ns-decl)

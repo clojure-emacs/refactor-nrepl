@@ -41,7 +41,7 @@
         :else (get-alias nil (rest v))))
 
 (defn parse-ns
-  "For now returns tuples with the ns as the first element and
+  "Returns tuples with the ns as the first element and
    a map of the aliases for the namespace as the second element
    in the same format as ns-aliases"
   [body]
@@ -138,18 +138,15 @@
       clear-locals))
 
 (defn string-ast [string]
-  (binding [ana/macroexpand-1 ana.jvm/macroexpand-1
-            ana/create-var    ana.jvm/create-var
-            ana/parse         ana.jvm/parse
-            ana/var?          var?]
+  (binding [ana.jvm/run-passes run-passes]
     (try
-      (let [[_ aliases] (parse-ns string)]
+      (let [[ns aliases] (parse-ns string)
+            env (if (and ns (find-ns ns)) (assoc e :ns ns) e)]
         (with-env (ana.jvm/global-env)
           (-> string
               rts/indexing-push-back-reader
               read-all-forms
-              (ana/analyze e)
-              run-passes
+              (ana.jvm/analyze env)
               (assoc :alias-info aliases))))
       (catch Exception e
         (.printStackTrace e)
