@@ -8,7 +8,7 @@
 
 (defn- find-referred [ast referred]
   (let [ast (if (= 'ns (-> ast :items first :fn :class)) (update-in ast [:items] rest) ast)]
-    (some #(= (symbol referred) (:class %)) (flatten (map nodes (:items ast))))))
+    (some #(= (symbol referred) (:class %)) (flatten (map nodes ast)))))
 
 (defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
   (let [ast (string-ast ns-string)
@@ -30,10 +30,11 @@
   "Finds fn invokes in the AST.
    Returns a list of line, end-line, column, end-column and fn name tuples"
   [ast fn-names]
-  (let [alias-info (:alias-info ast)
+  (let [alias-info (-> ast first :alias-info)
         fns (into #{} (split fn-names #","))]
     (->> ast
-         nodes
+         (map nodes)
+         flatten
          (filter (partial fns-invoked? fns alias-info))
          (map (juxt (comp :line :env)
                     (comp :end-line :env)

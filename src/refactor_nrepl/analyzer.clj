@@ -55,14 +55,6 @@
                                (map first %))))]
     [(second ns-decl) aliases]))
 
-(defn read-all-forms [reader]
-  (let [eof (reify)]
-    (loop [forms []]
-      (let [form (r/read reader nil eof)]
-        (if (identical? form eof)
-          forms
-          (recur (conj forms form)))))))
-
 (defn ^:dynamic run-passes
   "Passes were copied from tools.analyzer.jvm and tweaked for the needs of
    refactor-nrepl
@@ -137,17 +129,29 @@
       ;; needs to be run after collect-closed-overs
       clear-locals))
 
+(defn read+analyze [env reader]
+  (let [eof (reify)]
+    (loop [forms []
+           asts []]
+      (let [form (r/read reader nil eof)
+            ast (ana.jvm/analyze form env)]
+        (if (identical? form eof)
+          [asts forms]
+          (recur (conj forms form)
+                 (conj asts ast)))))))
+
 (defn string-ast [string]
   (binding [ana.jvm/run-passes run-passes]
     (try
       (let [[ns aliases] (parse-ns string)
-            env (if (and ns (find-ns ns)) (assoc e :ns ns) e)]
+            env (if (and ns (find-ns ns)) (assoc e :ns ns) e)
+            r+a (partial read+analyze env)]
         (with-env (ana.jvm/global-env)
           (-> string
               rts/indexing-push-back-reader
-              read-all-forms
-              (ana.jvm/analyze env)
-              (assoc :alias-info aliases))))
+              r+a
+              first
+              (assoc-in [0 :alias-info] aliases))))
       (catch Exception e
         (.printStackTrace e)
-        {}))))
+        []))))
