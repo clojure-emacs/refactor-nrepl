@@ -101,7 +101,7 @@
     :optional {"force" "which, if present, indicates whether we should force an update of the list of artifacts, rather than use the cache."}
     :returns {"status" "done"
               "value" "string containing artifacts, separated by spaces."}}
-   "artifact-version"
+   "artifact-versions"
    {:doc "Get all the available versions for an artifact."
     :requires {"artifact" "the artifact whose versions we're interested in"}
     :optional {}
