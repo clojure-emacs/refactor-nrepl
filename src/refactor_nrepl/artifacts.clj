@@ -62,15 +62,15 @@
       (add-artifacts)))
 
 (defn- update-artifact-cache! []
-  (let [clojars-future (future (get-artifacts-from-clojars!))
-        mvn-central-futures (get-artifacts-from-mvn-central!)]
-    (map deref mvn-central-futures)
+  (let [mvn-central-futures (get-artifacts-from-mvn-central!)
+        clojars-future (future (get-artifacts-from-clojars!))]
+    (-> (map deref mvn-central-futures) dorun)
     @clojars-future)
   (alter-meta! artifacts update-in [:last-modified]
                (constantly (java.util.Date.))))
 
 (defn- artifacts-list [{:keys [transport force] :as msg}]
-  (when (or force (stale-cache?))
+  (when (or (= force "true") (stale-cache?))
     (update-artifact-cache!))
   (let [names (->> @artifacts
                    keys
