@@ -15,6 +15,39 @@
 (defn foobar [x]
   (println \"foobar2\" x))")
 
+(def proto
+  "(ns secret-santa.proto)
+
+(defprotocol Foobar
+
+  (noodles [this]))")
+
+(def protorecord
+  "(ns secret-santa.protorecord
+  (:require [secret-santa.proto :as proto]))
+
+(defrecord Record []
+
+    proto/Foobar
+    (noodles [this]
+      {:foo :noodles}))")
+
+(def test-ns-string-using-record
+  "(ns secret-santa.core
+  (:require [secret-santa.proto :as proto]
+            [secret-santa.protorecord :as rec]))
+
+(defn- rnd-pair-up [participants]
+  (let [receivers (shuffle participants)]
+    (partition 2 (interleave participants receivers))))
+
+(defn pair-up [participants]
+  (println (proto/noodles (rec/->Record)))
+  (let [pairs (rnd-pair-up participants)]
+    (if (some (fn [p] (= (first p) (second p))) pairs)
+      (pair-up participants)
+      pairs)))")
+
 (def test-ns-string-no-ns-decl
  "(defn foobar [x]
     (println \"foobar: \" x)
@@ -151,6 +184,15 @@
                pairs)))")
 
 (def find-invokes #'refactor-nrepl.refactor/find-invokes)
+
+(deftest finds-debug-fns-ns-using-record
+  (load-string proto)
+  (load-string protorecord)
+  (let [test-ast-debug-fns-protorecord (u/test-ast test-ns-string-using-record)
+        result (find-invokes test-ast-debug-fns-protorecord "println")]
+    (println result)
+
+    (is (= 1 (count result)) (format "1 required debug fn was expected but %d found" (count result)))))
 
 (deftest finds-debug-fns-self-ref
   (let [test-ast-debug-fns-self-ref (u/test-ast test-ns-string-self-reference)

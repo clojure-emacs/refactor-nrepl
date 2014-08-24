@@ -24,7 +24,6 @@
              [cleanup :refer [cleanup]]
              [elide-meta :refer [elide-meta]]
              [warn-earmuff :refer [warn-earmuff]]
-             [collect :refer [collect collect-closed-overs]]
              [add-binding-atom :refer [add-binding-atom]]
              [uniquify :refer [uniquify-locals]]]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
@@ -66,7 +65,6 @@
    * source-info
    * elide-meta
    * warn-earmuff
-   * collect
    * jvm.box
    * jvm.constant-lifter
    * jvm.annotate-branch
@@ -114,17 +112,6 @@
                      annotate-loops ;; needed for clear-locals to safely clear locals in a loop
                      annotate-branch ;; needed for clear-locals
                      ensure-tag)))
-
-      ((collect {:what       #{:constants
-                               :callsites}
-                 :where      #{:deftype :reify :fn}
-                 :top-level? false}))
-
-      ;; needs to be run in a separate pass to avoid collecting
-      ;; constants/callsites in :loop
-      (collect-closed-overs {:what  #{:closed-overs}
-                             :where #{:deftype :reify :fn :loop :try}
-                             :top-level? false})
 
       ;; needs to be run after collect-closed-overs
       clear-locals))
