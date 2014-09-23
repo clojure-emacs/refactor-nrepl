@@ -128,17 +128,20 @@
                  (conj asts ast)))))))
 
 (defn string-ast [string]
-  (binding [ana.jvm/run-passes run-passes]
-    (try
-      (let [[ns aliases] (parse-ns string)
-            env (if (and ns (find-ns ns)) (assoc e :ns ns) e)
-            r+a (partial read+analyze env)]
-        (with-env (ana.jvm/global-env)
-          (-> string
-              rts/indexing-push-back-reader
-              r+a
-              first
-              (assoc-in [0 :alias-info] aliases))))
-      (catch Exception e
-        (.printStackTrace e)
-        []))))
+  (try
+    (let [[ns aliases] (parse-ns string)
+          env (if (and ns (find-ns ns)) (assoc e :ns ns) e)
+          r+a (partial read+analyze env)]
+      (if (.contains string "defrecord")
+        (assoc-in (ana.jvm/analyze-ns ns) [0 :alias-info] aliases)
+        (binding [ana.jvm/run-passes run-passes]
+          (with-env (ana.jvm/global-env)
+            (-> string
+                rts/indexing-push-back-reader
+                r+a
+                first
+                (assoc-in [0 :alias-info] aliases))))))
+    (catch Exception e
+      (println "error when building AST for" (first (parse-ns string)))
+      (.printStackTrace e)
+      [])))
