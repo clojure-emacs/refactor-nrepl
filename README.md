@@ -13,7 +13,7 @@ The role of this nREPL middlewere is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "0.1.0-SNAPSHOT"]]
+:plugins [[refactor-nrepl "0.1.0"]]
 ```
 
 ### Clojure client
