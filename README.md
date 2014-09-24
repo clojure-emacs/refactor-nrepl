@@ -4,44 +4,30 @@
 
 nREPL middleware to support refactorings in an editor agnostic way.
 
+The role of this nREPL middlewere is to provide refactoring support for clients such as [clj-refactor.el](https://github.com/clojure-emacs/clj-refactor.el).  As such, this middlewere doesn't perform any refactorings, but returns the information about what needs doing to the client.
+
 ## Usage
-
-This middleware is planned to support certain refactorings with doing the heavy lifting with the help of an AST built by the [analyzer](https://github.com/clojure/tools.analyzer). However, the middleware itself does not do the refactoring as changing files or buffers. It rather returns the information which a client -- most likely some integration layer with an editor -- can use to perform the refactoring in a few simple steps.
-
-The above integration layer will be implemented by [clj-refactor.el](https://github.com/clojure-emacs/clj-refactor.el) for Emacs in emacs-lisp. A client written in clojure is also available as part of this project for demonstrative reasons and also the enable users to carry out refactorings directly from a REPL if they prefer.
 
 ### Adding the middleware via Leiningen
 
-Use the convenient plugin for defaults, either in your project's
-`project.clj` file or in the `:user` profile in
-`~/.lein/profiles.clj`.
+Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
 :plugins [[refactor-nrepl "0.1.0-SNAPSHOT"]]
 ```
 
-A minimal `profiles.clj` for refactoring features would be:
+### Clojure client
 
-```clojure
-{:user {:plugins [[refactor-nrepl "0.1.0-SNAPSHOT"]]}}
-```
+A clojure client is provided for demonstrative purposes, and to make some refactorings available from the REPL.
 
-Or (if you know what you're doing) add `refactor-nrepl` to your `:dev :dependencies` vector plus specific
-middleware to `:nrepl-middleware` under `:repl-options`.
+The refactoring functions are provided as public functions of the `refactor-nrepl.client` namespace. To work with these functions, you need to connect to a nREPL server which has the `refactor-nrepl` middleware enalbed.
 
-```clojure
-:dependencies [[refactor-nrepl "0.1.0-SNAPSHOT"]]
-:repl-options {:nrepl-middleware
-                 [refactor-nrepl.refactor/wrap-refactor]}
-```
+To connect you have two options:
 
-## Clojure client
+1. Call `connect`, store the returned `transport` and pass this to all the refactor functions.
+2. Call the refactor functions without a transport, in which case the client will create and store its own transport.
 
-As stated above this is done for demostrative reasons and also to make the refactorings available directly from the REPL.
-
-The refactoring functions are provided as public functions of the `refactor-nrepl.client` namespace. To be able to work with these functions you need to connect to a nREPL server which has the `refactor-nrepl` middleware added. To connect you have two options: you either call the `connect` function and store, manage the returned transport which you can pass in to the refactor functions. Or you can just call the refactor functions without a transport. This latter case the client will create and store its own transport therefore it will not be stateless anymore.
-
-You also need to pass in the path to the file you want to refactor, pass in a path as you would provide it for `slurp`. You might also need to pass in more optional or obligatory parameters depending on the the refactor function -- see the documenation of the refactor functions in the `refactor-nrepl.client` namespace.
+You also need to pass in the path to the file you want to refactor. Pass in a path as you would provide it for `slurp`. You might also need to pass in more optional or required arguments depending on the the refactor function -- see the documenation of the refactor functions in the `refactor-nrepl.client` namespace.
 
 ## Available features
 
@@ -85,6 +71,22 @@ Example call from the repl using the clojure client:
 ### Find Referred
 
 This is only available as a temporary performance tweak for [clj-refactor.el/remove-requires](https://github.com/clojure-emacs/clj-refactor.el#usage). Remove unusued requires is planned to be migrated as a whole (and hopefully improved too) in the near feature to be supported by the middleware. This feature might not be supported anymore by then.
+
+### Artifact lookup
+
+This middlewere provides operations for obtaining information about artifacts from clojars, or mvn central.
+
+Two ops are available:
+
+#### artifact-list
+
+Takes no arguments and returns a space-separated list of all available artifacts.
+
+#### artifact-versions
+
+Takes one required argument, `artifact` which is the full name of the artifact e.g. `core.clojure/clojure`, and one optional argument `force` which indicates whether we should force an update of the cached artifacts.
+
+The return value is a space-separated list of all the available versions for the artifact.
 
 ## License
 
