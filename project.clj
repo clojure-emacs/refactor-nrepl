@@ -13,7 +13,8 @@
                  [org.clojure/tools.nrepl "0.2.3"]]
   :plugins [[thomasa/mranderson "0.2.1"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
-  :profiles {:test {:dependencies [[print-foo "0.5.3"]]}
+  :profiles {:test {:dependencies [[print-foo "0.5.3"]]
+                    :resource-paths ["test/resource"]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0-master-SNAPSHOT"]]}
