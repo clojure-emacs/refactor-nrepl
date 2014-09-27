@@ -10,12 +10,17 @@
 (def millis-per-day (* 24 60 60 1000))
 
 (defn get-artifacts-from-clojars! []
-  (let [rdr (io/reader (java.net.URL. "https://clojars.org/repo/all-jars.clj"))
-        add-lib (fn [line]
-                  ;; each line looks like [some/lib "0.1"]
-                  (let [lib (edn/read-string line)]
-                    (swap! artifacts update-in [(str (first lib))] conj (second lib))))]
-    (dorun (map add-lib (line-seq rdr)))))
+  "Returns a vector of [[some/lib \"0.1\"]...]."
+  (->> "https://clojars.org/repo/all-jars.clj"
+       java.net.URL.
+       io/reader
+       line-seq
+       (map edn/read-string)))
+
+(defn add-artifacts-from-clojars! []
+  (->> (get-artifacts-from-clojars!)
+       (map #(swap! artifacts update-in [(str (first %))] conj (second %)))
+       dorun))
 
 (defn- stale-cache? []
   (or (empty? @artifacts)
@@ -30,6 +35,7 @@
     (map :a (-> search-result :body :response :docs))))
 
 (defn- get-versions! [artifact]
+  "Gets all the versions from an artifact belonging to the org.clojure."
   (->> (http/get (str "http://search.maven.org/solrsearch/select?"
                       "q=g:%22org.clojure%22+AND+a:%22"
                       artifact
@@ -53,9 +59,9 @@
   (->> artifacts
        (partition-all 2)
        (map #(future (->> %
-                         (map collate-artifact-and-versions)
-                         (map add-artifact)
-                         dorun)))))
+                          (map collate-artifact-and-versions)
+                          (map add-artifact)
+                          dorun)))))
 
 (defn- get-artifacts-from-mvn-central! []
   (-> (get-all-clj-artifacts!)
@@ -63,7 +69,7 @@
 
 (defn- update-artifact-cache! []
   (let [mvn-central-futures (get-artifacts-from-mvn-central!)
-        clojars-future (future (get-artifacts-from-clojars!))]
+        clojars-future (future (add-artifacts-from-clojars!))]
     (-> (map deref mvn-central-futures) dorun)
     @clojars-future)
   (alter-meta! artifacts update-in [:last-modified]
