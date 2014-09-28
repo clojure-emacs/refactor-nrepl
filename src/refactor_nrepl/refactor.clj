@@ -18,7 +18,7 @@
 
 (defn- field-or-class [alias-info ast]
   (let [fn-node (:fn ast)
-        class (or (:class fn-node) (-> fn-node :var str (str/replace "#'clojure.core/" "")))
+        class (or (:class fn-node) (-> fn-node :var str (str/replace "#'" "") (str/replace "clojure.core/" "")))
         full-class (get alias-info class class)]
     (join "/" (remove nil? [full-class (:field fn-node)]))))
 
