@@ -29,8 +29,9 @@
                (- (-> artifacts meta :last-modified .getTime)
                   (-> (java.util.Date.) .getTime))))))
 
-(defn- get-all-clj-artifacts! []
+(defn- get-all-clj-artifacts!
   "All the artifacts under org.clojure in mvn central"
+   []
   (let [search-url "http://search.maven.org/solrsearch/select?q=g:%22org.clojure%22+AND+p:%22jar%22&rows=2000&wt=json"
         {:keys [_ _ body _]} @(http/get search-url {:as :text})
         search-result (json/read-str body :key-fn keyword)]
