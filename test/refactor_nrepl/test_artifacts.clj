@@ -4,9 +4,13 @@
             [clojure.test :refer :all]
             [refactor-nrepl.artifacts :as artifacts]))
 
-(def clojure-versions (edn/read-string (slurp "test/resources/clojure-versions.edn")))
+(def clojure-versions (-> (io/resource "resources/clojure-versions.edn")
+                          slurp
+                          edn/read-string))
 (def clojure-artifacts ["clojure"])
-(def clojars-artifacts (edn/read-string (slurp "test/resources/clojars-artifacts.edn")))
+(def clojars-artifacts (-> (io/resource "resources/clojars-artifacts.edn")
+                           slurp
+                           edn/read-string))
 
 (deftest creates-a-map-of-artifacts
   (with-redefs
