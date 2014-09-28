@@ -1,10 +1,11 @@
 (ns refactor-nrepl.artifacts
-  (:require [clj-http.client :as http]
+  (:require [clojure.data.json :as json]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
             [clojure.tools.nrepl.misc :refer [response-for]]
-            [clojure.tools.nrepl.transport :as transport]))
+            [clojure.tools.nrepl.transport :as transport]
+            [org.httpkit.client :as http]))
 
 (def artifacts (atom {} :meta {:last-modified nil}))
 (def millis-per-day (* 24 60 60 1000))
@@ -31,21 +32,22 @@
 (defn- get-all-clj-artifacts! []
   "All the artifacts under org.clojure in mvn central"
   (let [search-url "http://search.maven.org/solrsearch/select?q=g:%22org.clojure%22+AND+p:%22jar%22&rows=2000&wt=json"
-        search-result (http/get search-url {:as :json})]
-    (map :a (-> search-result :body :response :docs))))
+        {:keys [_ _ body _]} @(http/get search-url {:as :text})
+        search-result (json/read-str body :key-fn keyword)]
+    (map :a (-> search-result :response :docs))))
 
 (defn- get-versions! [artifact]
   "Gets all the versions from an artifact belonging to the org.clojure."
-  (->> (http/get (str "http://search.maven.org/solrsearch/select?"
-                      "q=g:%22org.clojure%22+AND+a:%22"
-                      artifact
-                      "%22&core=gav&rows=200&wt=json")
-                 {:as :json})
-       :body
-       :response
-       :docs
-       (map :v)
-       doall))
+  (let [{:keys [_ _ body _]} @(http/get (str "http://search.maven.org/solrsearch/select?"
+                                             "q=g:%22org.clojure%22+AND+a:%22"
+                                             artifact
+                                             "%22&core=gav&rows=200&wt=json")
+                                        {:as :text})]
+    (->> (json/read-str body :key-fn keyword)
+         :response
+         :docs
+         (map :v)
+         doall)))
 
 (defn- collate-artifact-and-versions [artifact]
   (->> artifact
