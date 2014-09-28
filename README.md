@@ -88,6 +88,14 @@ Takes one required argument, `artifact` which is the full name of the artifact e
 
 The return value is a space-separated list of all the available versions for the artifact.
 
+## Changelog
+
+### 0.1.0
+
+* find (debug) invocations
+* find referred
+* artifact lookup
+
 ## License
 
 Copyright © 2013-2014 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen
