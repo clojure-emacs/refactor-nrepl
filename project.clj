@@ -8,7 +8,7 @@
   :dependencies [[http-kit "2.1.18"]
                  [org.clojure/clojure "1.5.1"]
                  [org.clojure/data.json "0.2.5"]
-                 [org.clojure/tools.nrepl "0.2.3"]
+                 [org.clojure/tools.nrepl "0.2.6"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.5.4"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.5"]
                  ^:source-dep [org.clojure/tools.reader "0.8.5"]]
