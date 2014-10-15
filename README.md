@@ -4,7 +4,7 @@
 
 nREPL middleware to support refactorings in an editor agnostic way.
 
-The role of this nREPL middlewere is to provide refactoring support for clients such as [clj-refactor.el](https://github.com/clojure-emacs/clj-refactor.el).  As such, this middlewere doesn't perform any refactorings, but returns the information about what needs doing to the client.
+The role of this nREPL middleware is to provide refactoring support for clients such as [clj-refactor.el](https://github.com/clojure-emacs/clj-refactor.el).  As such, this middleware doesn't perform any refactorings, but returns the information about what needs doing to the client.
 
 ## Usage
 
@@ -74,7 +74,7 @@ This is only available as a temporary performance tweak for [clj-refactor.el/rem
 
 ### Artifact lookup
 
-This middlewere provides operations for obtaining information about artifacts from clojars, or mvn central.
+This middleware provides operations for obtaining information about artifacts from clojars, or mvn central.
 
 Two ops are available:
 
