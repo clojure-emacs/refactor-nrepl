@@ -7,8 +7,8 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/tools.nrepl "0.2.6"]
-                 ^:source-dep [http-kit "2.1.18"]
-                 ^:source-dep [org.clojure/data.json "0.2.5"]
+                 [http-kit "2.1.18"]
+                 [org.clojure/data.json "0.2.5"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.5.4"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.5"]
                  ^:source-dep [org.clojure/tools.reader "0.8.5"]]
