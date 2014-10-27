@@ -20,7 +20,7 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
 
 A clojure client is provided for demonstrative purposes, and to make some refactorings available from the REPL.
 
-The refactoring functions are provided as public functions of the `refactor-nrepl.client` namespace. To work with these functions, you need to connect to a nREPL server which has the `refactor-nrepl` middleware enalbed.
+The refactoring functions are provided as public functions of the `refactor-nrepl.client` namespace. To work with these functions, you need to connect to a nREPL server which has the `refactor-nrepl` middleware enabled.
 
 To connect you have two options:
 
@@ -42,7 +42,7 @@ Expected input:
 
 Returns tuples containing [line-number end-line-number column-number end-column-number fn-name].
 
-The functions to look for should be listed in a coma separated string either fully quailified or just the function name. If the fully qualified name is provided the middleware will find the invocations of the function if it is required plainly or with an alias. For example:
+The functions to look for should be listed in a comma separated string, either fully qualified or just the function name. If the fully qualified name is provided the middleware will find the invocations of the function if it is required plainly or with an alias. For example:
 
 ```clojure
 (:require [clojure.set]
@@ -56,9 +56,7 @@ However, if only the function name is provided the middleware will find invocati
           [secret-santa.util :refer :all])
 ```
 
-In case your client want to find core clojure functions (for example `println`) list them only with the function name. A list of functions names to find: `"println,pr,prn,secret-santa.util2/foobar,print-let,print.foo/print-let"`.
-
- It is the responsibility of the client what to do with the returned information: remove these functions, highlight them etc.
+In case your client wants to find core clojure functions (for example `println`) list them only with the function name. A list of functions names to find: `"println,pr,prn,secret-santa.util2/foobar,print-let,print.foo/print-let"`.
 
 Example call from the repl using the clojure client:
 
@@ -70,7 +68,7 @@ Example call from the repl using the clojure client:
 
 ### Find Referred
 
-This is only available as a temporary performance tweak for [clj-refactor.el/remove-requires](https://github.com/clojure-emacs/clj-refactor.el#usage). Remove unusued requires is planned to be migrated as a whole (and hopefully improved too) in the near feature to be supported by the middleware. This feature might not be supported anymore by then.
+This is only available as a temporary performance tweak for [clj-refactor.el/remove-requires](https://github.com/clojure-emacs/clj-refactor.el#usage). Remove unusued requires is planned to be migrated as a whole (and hopefully improved too) in the near future to be supported by the middleware. This feature might not be supported anymore by then.
 
 ### Artifact lookup
 
@@ -103,7 +101,7 @@ Example call from the repl:
 
 #### rename symbols (application of find symbols)
 
-Finds and renames occurrences of symbols like defs and defns both where they are defined -- if makes sense -- and where they are used. Uses the same backend function: find symbols; replacing the occurrences is implemented in the client.
+Finds and renames occurrences of symbols like defs and defns both where they are defined -- if it makes sense -- and where they are used. Uses the same backend function: find symbols. Replacing the occurrences is implemented in the client.
 
 ```clojure
 (refactor-nrepl.client/rename-symbol :ns 'leiningen.gargamel :name "gargamel-changelog" :new-name "garg-cl")
@@ -113,8 +111,32 @@ Finds and renames occurrences of symbols like defs and defns both where they are
 
 Provides information about a var. Currently this info is namespace and name. Similar to cider's info middleware but the namespace does not need to be loaded into the repl to be successful.
 
+### clean-ns
+
+The `clean-ns` op will perform the following cleanups on an ns form:
+
+* Eliminate :use clauses
+* Sort required libraries, imports and vectors of referred symbols
+* Rewrite to favor prefix form, e.g. [clojure [string test]] instead
+  of two separate libspecs
+* Raise errors if any inconsistencies are found (e.g. a libspec with more than
+  one alias.
+* Remove any unused namespaces, referred symbols or imported classes.
+* Remove any duplication in the :require and :import form.
+
+The `clean-ns` requires a `path` which is the absolute path to the file containing the `ns` to be operated upon.
+
+The return value, `ns` is the entire `(ns ..)` form in prestine condition, or `nil` if nothing was done (so the client doesn't update the timestamp on files when nothing actually needs doing).
+
+Pretty-printing the `(ns ..)` form is surprisingly difficult.  The current implementation just puts stuff on the right line and delegates the actual indentation to the consumer.
+
+In the event of an error `clean-ns` will return `error` which is an error message intended for display to the user.
+
+**Warning**: The `clean -ns` op dependes on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
+
 ## Changelog
 
+* Add `clean-ns` which performs various cleanups on the ns form.
 * var-info: returns basic var info (ns and name) based on the AST
 
 ### 0.2.2
