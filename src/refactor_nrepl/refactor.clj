@@ -63,21 +63,27 @@
     (transport/send transport (response-for msg :status :done))))
 
 (defn- find-symbol-in-file [fully-qualified-name file]
-  (let [locs (->> file
-                  slurp
+  (let [file-content (slurp file)
+        locs (->> file-content
                   string-ast
                   (find-symbol fully-qualified-name))]
     (when-not (empty? locs)
-      (map #(conj % (.getCanonicalPath file)) locs))))
+      (map #(conj % (.getCanonicalPath file) (->> file-content
+                                                  str/split-lines
+                                                  (drop (dec (first %)))
+                                                  first))
+           locs))))
 
 (defn- find-symbol-reply [{:keys [transport ns-string ns name clj-dir] :as msg}]
   (let [dir (or clj-dir ".")
         namespace (or ns (ns-from-string ns-string))
         fully-qualified-name (str/join "/" [namespace name])
-        syms (map identity (mapcat (partial find-symbol-in-file fully-qualified-name) (list-project-clj-files dir)))]
+        syms (map identity (mapcat (partial find-symbol-in-file fully-qualified-name) (list-project-clj-files dir)))
+        syms-counter (atom 0)]
     (doseq [found-sym syms]
-      (transport/send transport (response-for msg :value found-sym)))
-    (transport/send transport (response-for msg :status :done))))
+      (transport/send transport (response-for msg :value found-sym))
+      (swap! syms-counter inc))
+    (transport/send transport (response-for msg :syms-count @syms-counter :status :done))))
 
 (defn wrap-refactor
   "Ensures that refactor only triggered with the right operation and forks to the appropriate refactor function"
@@ -101,7 +107,8 @@
           - find-debug-fns: finds debug functions returns tuples containing
             [line-number end-line-number column-number end-column-number fn-name]
           - find-symbol: finds symbol in the project returns tuples containing
-            [line-number end-line-number column-number end-column-number fn-name absolute-path]"
+            [line-number end-line-number column-number end-column-number fn-name absolute-path the-matched-line]
+            when done returns done status message a found symbols count"
     :requires {"ns-string" "the body of the namespace to build the AST with"
                "refactor-fn" "The refactor function to invoke"}
     :returns {"status" "done"

@@ -97,9 +97,17 @@
                             :clj-dir (or clj-dir ".")
                             :name name}
                            (nrepl-message 60000 tr)
-                           (map :value)
-                           (remove nil?))]
-    (map prettify-found-symbol-result found-symbols)))
+                           (map (juxt :value :syms-count)))]
+    (println (format "found %d occurrences of %s/%s"
+                     (->> found-symbols
+                          (map second)
+                          (remove nil?)
+                          first)
+                     ns name))
+    (->> found-symbols
+         (map first)
+         (remove nil?)
+         (map prettify-found-symbol-result))))
 
 (defn find-symbol [& {:keys [transport ns name clj-dir]}]
   (map println (find-symbol* :transport transport :ns ns :name name :clj-dir clj-dir)))
