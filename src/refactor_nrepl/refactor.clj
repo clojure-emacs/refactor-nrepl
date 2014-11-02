@@ -75,7 +75,9 @@
 (defn- find-symbol-reply [{:keys [transport ns-string ns name clj-dir] :as msg}]
   (let [dir (or clj-dir ".")
         namespace (or ns (ns-from-string ns-string))
-        fully-qualified-name (str/join "/" [namespace name])
+        fully-qualified-name (if (= namespace "clojure.core")
+                               name
+                               (str/join "/" [namespace name]))
         syms (map identity (mapcat (partial find-symbol-in-file fully-qualified-name) (list-project-clj-files dir)))]
     (doseq [found-sym syms]
       (transport/send transport (response-for msg :occurrence found-sym)))
