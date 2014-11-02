@@ -14,8 +14,7 @@
 (defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
   (let [ast (string-ast ns-string)
         result (find-referred ast referred)]
-    (transport/send transport (response-for msg :value (when result (str result))))
-    (transport/send transport (response-for msg :status :done))))
+    (transport/send transport (response-for msg :value (when result (str result))  :status :done))))
 
 (defn- node->var [alias-info node]
   (let [class (or (:class node) (-> node
@@ -59,8 +58,7 @@
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (let [ast (string-ast ns-string)
         result (find-invokes ast debug-fns)]
-    (transport/send transport (response-for msg :value (when (not-empty result) result)))
-    (transport/send transport (response-for msg :status :done))))
+    (transport/send transport (response-for msg :value (when (not-empty result) result) :status :done))))
 
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
@@ -78,12 +76,10 @@
   (let [dir (or clj-dir ".")
         namespace (or ns (ns-from-string ns-string))
         fully-qualified-name (str/join "/" [namespace name])
-        syms (map identity (mapcat (partial find-symbol-in-file fully-qualified-name) (list-project-clj-files dir)))
-        syms-counter (atom 0)]
+        syms (map identity (mapcat (partial find-symbol-in-file fully-qualified-name) (list-project-clj-files dir)))]
     (doseq [found-sym syms]
-      (transport/send transport (response-for msg :value found-sym))
-      (swap! syms-counter inc))
-    (transport/send transport (response-for msg :syms-count @syms-counter :status :done))))
+      (transport/send transport (response-for msg :occurrence found-sym)))
+    (transport/send transport (response-for msg :syms-count (count syms) :status :done))))
 
 (defn wrap-refactor
   "Ensures that refactor only triggered with the right operation and forks to the appropriate refactor function"

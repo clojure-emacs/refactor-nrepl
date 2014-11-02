@@ -97,7 +97,7 @@
                             :clj-dir (or clj-dir ".")
                             :name name}
                            (nrepl-message 60000 tr)
-                           (map (juxt :value :syms-count)))]
+                           (map (juxt :occurrence :syms-count)))]
     (println (format "found %d occurrences of %s/%s"
                      (->> found-symbols
                           (map second)
