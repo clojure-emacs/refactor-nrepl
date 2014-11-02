@@ -64,7 +64,8 @@
   (let [file-content (slurp file)
         locs (->> file-content
                   string-ast
-                  (find-symbol fully-qualified-name))]
+                  (find-symbol fully-qualified-name)
+                  (filter #(first %)))]
     (when-not (empty? locs)
       (map #(conj % (.getCanonicalPath file) (->> file-content
                                                   str/split-lines

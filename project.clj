@@ -9,7 +9,7 @@
                  [org.clojure/tools.nrepl "0.2.6"]
                  [http-kit "2.1.18"]
                  [org.clojure/data.json "0.2.5"]
-                 ^:source-dep [org.clojure/tools.analyzer.jvm "0.5.4"]
+                 ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.3"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.5"]
                  ^:source-dep [org.clojure/tools.reader "0.8.5"]]
   :plugins [[thomasa/mranderson "0.2.1"]]
