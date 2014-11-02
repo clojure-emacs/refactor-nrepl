@@ -10,8 +10,9 @@
 (def artifacts (atom {} :meta {:last-modified nil}))
 (def millis-per-day (* 24 60 60 1000))
 
-(defn get-artifacts-from-clojars! []
+(defn get-artifacts-from-clojars!
   "Returns a vector of [[some/lib \"0.1\"]...]."
+  []
   (->> "https://clojars.org/repo/all-jars.clj"
        java.net.URL.
        io/reader
@@ -37,8 +38,9 @@
         search-result (json/read-str body :key-fn keyword)]
     (map :a (-> search-result :response :docs))))
 
-(defn- get-versions! [artifact]
+(defn- get-versions!
   "Gets all the versions from an artifact belonging to the org.clojure."
+  [artifact]
   (let [{:keys [_ _ body _]} @(http/get (str "http://search.maven.org/solrsearch/select?"
                                              "q=g:%22org.clojure%22+AND+a:%22"
                                              artifact

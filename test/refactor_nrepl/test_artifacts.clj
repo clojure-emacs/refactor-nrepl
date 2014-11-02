@@ -26,8 +26,8 @@
 
     (testing "Contains clojure with correct versions"
       (is (contains? @artifacts/artifacts "org.clojure/clojure"))
-      (is (count (@artifacts/artifacts "org.clojure/clojure"))
-          (count clojure-versions)))
+      (is (= (count (@artifacts/artifacts "org.clojure/clojure"))
+             (count clojure-versions))))
 
     (testing "Contains artifacts from clojars"
       (is (contains? @artifacts/artifacts "alembic"))
