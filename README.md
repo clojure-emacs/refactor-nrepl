@@ -88,13 +88,26 @@ Takes one required argument, `artifact` which is the full name of the artifact e
 
 The return value is a space-separated list of all the available versions for the artifact.
 
-#### find usages
+#### find symbols
 
 Finds occurrences of symbols like defs and defns both where they are defined (if available) and where they are used.
 
-#### rename symbols
+##### find usages (application of find symbols)
+
+Finds occurrences of symbols like defs and defns both where they are defined (if available) and where they are used and prints them.
+
+Example call from the repl:
+```clojure
+(refactor-nrepl.client/find-symbol :ns 'leiningen.gargamel :name "gargamel-changelog")
+```
+
+##### rename symbols (application of find symbols)
 
 Finds and renames occurrences of symbols like defs and defns both where they are defined -- if makes sense -- and where they are used. Uses the same backend function: find symbols; replacing the occurrences is implemented in the client.
+
+```clojure
+(refactor-nrepl.client/rename-symbol :ns 'leiningen.gargamel :name "gargamel-changelog" :new-name "garg-cl")
+```
 
 ## Changelog
 
