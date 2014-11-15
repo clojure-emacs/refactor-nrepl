@@ -1,5 +1,5 @@
 (ns refactor-nrepl.test-find-symbol
-  (:require [refactor-nrepl.client :refer [find-symbol* connect]]
+  (:require [refactor-nrepl.client :refer [find-symbol* connect rename-symbol]]
             [refactor-nrepl.refactor]
             [refactor-nrepl.util :refer [list-project-clj-files]]
             [clojure.tools.nrepl.server :as nrserver]
@@ -62,4 +62,26 @@
     (is (re-matches #"(?s).*\[3\].*" (second result)) "def of foo not found in ns com.example.two")
 
     ;; clean-up
+    (.delete tmp-dir)))
+
+(deftest test-rename-foo
+  (let [tmp-dir (create-test-project)
+        transport (connect :port 7777)
+        new-one "(ns com.example.one
+  (:require [com.example.two :as two]))
+
+(defn bar []
+  (str \"bar\" (two/baz)))
+"
+        new-two "(ns com.example.two)
+
+(defn baz []
+  \"foo\")
+"]
+    (rename-symbol :transport transport :ns 'com.example.two :name "foo" :clj-dir (str tmp-dir) :new-name "baz")
+
+    (is (= new-one (slurp (str tmp-dir "/src/com/example/one.clj"))) "rename failed in com.example.one")
+
+    (is (= new-two (slurp (str tmp-dir "/src/com/example/two.clj"))) "rename failed in com.example.two")
+        ;; clean-up
     (.delete tmp-dir)))

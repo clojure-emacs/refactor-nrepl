@@ -54,7 +54,7 @@
         replacement (str esc red no-ns-sym esc reset)]
     (str/replace full-hit (re-pattern no-ns-sym) replacement)))
 
-(defn- prettify-found-symbol-result [[line end-line col end-col sym path]]
+(defn- prettify-found-symbol-result [[line end-line col end-col sym path _]]
   (let [line-index (dec line)
         eline (if (number? end-line) end-line line)]
     (->> path
@@ -65,6 +65,28 @@
          (str/join "\n")
          (colorise-found sym)
          (str esc yellow path esc reset "[" line "]" ": "))))
+
+(defn- replace-in-line [name new-name occ-line-index col indexed-line]
+  (let [line (val indexed-line)]
+    (if (= (key indexed-line) occ-line-index)
+      (let [col (or col 0)
+            [line-first line-rest] (->> line
+                                        (split-at col)
+                                        (map #(apply str %)))]
+        (str line-first (str/replace-first line-rest name new-name)))
+      line)))
+
+(defn- rename-symbol-occurrence! [name new-name [line end-line col end-col sym path _]]
+  (let [occ-line-index (dec line)]
+    (->> path
+         slurp
+         str/split-lines
+         (interleave (range))
+         (#(apply sorted-map %))
+         (map (partial replace-in-line name new-name occ-line-index col))
+         (str/join "\n")
+         (#(str % "\n"))
+         (spit path))))
 
 (defn connect
   "Connects to an nrepl server. The client won't be functional if the nrepl server does not have refactor-nrepl middleware added to it.
@@ -77,19 +99,7 @@
                              host "localhost"}}]
   (nrepl/connect :port port :host host))
 
-(defn find-symbol*
-  "Finds and lists symbols in the project.
-
-  Expected input:
-  - ns namespace of the symbol to find
-  - name of the symbol to find as string
-  - clj-dir director to search clj files in, defaults to `.`
-  - transport optional, however if you don't provide your own repl
-    transport the client will create and store its own. therefore it is
-    preferred that you create, store and manage your own transport by calling
-    the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name clj-dir]}]
-  {:pre [ns name]}
+(defn- act-on-occurrences [action & {:keys [transport ns name clj-dir]}]
   (let [tr (or transport @transp (reset! transp (connect)))
         found-symbols (->> {:op :refactor
                             :refactor-fn "find-symbol"
@@ -107,10 +117,43 @@
     (->> found-symbols
          (map first)
          (remove nil?)
-         (map prettify-found-symbol-result))))
+         (map action)
+         doall)))
+
+
+(defn find-symbol*
+  "Finds and lists symbols (defs, defns) in the project: both where they are defined and their occurrences.
+
+  Expected input:
+  - ns namespace of the symbol to find
+  - name of the symbol to find as string
+  - clj-dir director to search clj files in, defaults to `.`
+  - transport optional, however if you don't provide your own repl
+    transport the client will create and store its own. therefore it is
+    preferred that you create, store and manage your own transport by calling
+    the connect function in this namespace so the client does not get stateful"
+  [& {:keys [transport ns name clj-dir]}]
+  {:pre [ns name]}
+  (act-on-occurrences prettify-found-symbol-result :transport transport :ns ns :name name :clj-dir clj-dir))
 
 (defn find-symbol [& {:keys [transport ns name clj-dir]}]
   (map println (find-symbol* :transport transport :ns ns :name name :clj-dir clj-dir)))
+
+(defn rename-symbol
+  "Renames symbols (defs and defns) in the project's given dir.
+
+  Expected input:
+  - ns namespace of the symbol to find
+  - name of the symbol to find as string
+  - new-name to rename to
+  - clj-dir director to search clj files in, defaults to `.`
+  - transport optional, however if you don't provide your own repl
+    transport the client will create and store its own. therefore it is
+    preferred that you create, store and manage your own transport by calling
+    the connect function in this namespace so the client does not get stateful"
+  [& {:keys [transport ns name new-name clj-dir]}]
+  {:pre [ns name new-name]}
+  (act-on-occurrences (partial rename-symbol-occurrence! name new-name) :transport transport :ns ns :name name :clj-dir clj-dir))
 
 (defn remove-debug-invocations
   "Removes debug function invocations. In reality it could remove any function invocations.
