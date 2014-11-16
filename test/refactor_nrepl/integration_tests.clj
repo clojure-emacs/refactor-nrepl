@@ -1,4 +1,4 @@
-(ns refactor-nrepl.test-find-symbol
+(ns refactor-nrepl.integration-tests
   (:require [refactor-nrepl.client :refer [find-symbol* connect rename-symbol]]
             [refactor-nrepl.refactor]
             [refactor-nrepl.util :refer [list-project-clj-files]]
