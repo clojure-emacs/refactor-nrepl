@@ -111,7 +111,7 @@ Finds and renames occurrences of symbols like defs and defns both where they are
 
 ## Changelog
 
-* find occurrences
+* find usages
 * rename symbols
 
 ### 0.1.0
