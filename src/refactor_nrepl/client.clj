@@ -69,7 +69,7 @@
 (defn- replace-in-line [name new-name occ-line-index col indexed-line]
   (let [line (val indexed-line)]
     (if (= (key indexed-line) occ-line-index)
-      (let [col (or col 0)
+      (let [col (if col (dec col) 0)
             [line-first line-rest] (->> line
                                         (split-at col)
                                         (map #(apply str %)))]
@@ -121,7 +121,7 @@
          doall)))
 
 
-(defn find-symbol*
+(defn find-usages*
   "Finds and lists symbols (defs, defns) in the project: both where they are defined and their occurrences.
 
   Expected input:
@@ -136,8 +136,8 @@
   {:pre [ns name]}
   (act-on-occurrences prettify-found-symbol-result :transport transport :ns ns :name name :clj-dir clj-dir))
 
-(defn find-symbol [& {:keys [transport ns name clj-dir]}]
-  (map println (find-symbol* :transport transport :ns ns :name name :clj-dir clj-dir)))
+(defn find-usages [& {:keys [transport ns name clj-dir]}]
+  (map println (find-usages* :transport transport :ns ns :name name :clj-dir clj-dir)))
 
 (defn rename-symbol
   "Renames symbols (defs and defns) in the project's given dir.

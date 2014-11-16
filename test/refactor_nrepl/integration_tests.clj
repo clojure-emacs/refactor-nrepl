@@ -1,5 +1,5 @@
 (ns refactor-nrepl.integration-tests
-  (:require [refactor-nrepl.client :refer [find-symbol* connect rename-symbol]]
+  (:require [refactor-nrepl.client :refer [find-usages* connect rename-symbol]]
             [refactor-nrepl.refactor]
             [refactor-nrepl.util :refer [list-project-clj-files]]
             [clojure.tools.nrepl.server :as nrserver]
@@ -49,7 +49,7 @@
 (deftest test-find-two-foo
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
-        result (find-symbol* :transport transport :ns 'com.example.two :name "foo" :clj-dir (str tmp-dir))]
+        result (find-usages* :transport transport :ns 'com.example.two :name "foo" :clj-dir (str tmp-dir))]
 
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
