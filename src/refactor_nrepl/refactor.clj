@@ -52,8 +52,17 @@
   [ast fn-names]
   (find-nodes ast (partial fns-invoked? (into #{} (split fn-names #",")) (alias-info ast))))
 
+(defn- contains-var-or-const? [var-name alias-info node]
+  (let [[ns name] (str/split var-name #"/")]
+    (or (contains-var? #{var-name} alias-info node)
+        (and (= :const (:op node))
+             (.contains (-> node :val str) ns)
+             (or (not name)
+                 (.contains (-> node :val str) name))
+             var-name))))
+
 (defn- find-symbol [name ast]
-  (find-nodes ast (partial contains-var? #{name} (alias-info ast))))
+  (find-nodes ast (partial contains-var-or-const? name (alias-info ast))))
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (let [ast (string-ast ns-string)

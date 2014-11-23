@@ -54,12 +54,14 @@
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
 
-    (is (= 2 (count result)) (format "expected 2 results but got only %d" (count result)))
+    (is (= 3 (count result)) (format "expected 2 results but got only %d" (count result)))
     (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
-    (is (re-matches #"(?s).*\[5\].*" (first result)) "call of foo not found in ns com.example.one")
+    (is (re-matches #"(?s).*\[2\].*" (first result)) "call of foo not found in ns com.example.one")
 
-    (is (re-matches #"(?s).*\[3\].*" (second result)) "def of foo not found in ns com.example.two")
+    (is (re-matches #"(?s).*\[5\].*" (second result)) "call of foo not found in ns com.example.one")
+
+    (is (re-matches #"(?s).*\[3\].*" (last result)) "def of foo not found in ns com.example.two")
 
     ;; clean-up
     (.delete tmp-dir)))
@@ -68,7 +70,7 @@
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
         new-one "(ns com.example.one
-  (:require [com.example.two :as two]))
+  (:require [com.example.two :as two :refer [baz]]))
 
 (defn bar []
   (str \"bar\" (two/baz)))
