@@ -121,7 +121,7 @@
          doall)))
 
 
-(defn find-usages*
+(defn find-usages
   "Finds and lists symbols (defs, defns) in the project: both where they are defined and their occurrences.
 
   Expected input:
@@ -135,9 +135,6 @@
   [& {:keys [transport ns name clj-dir]}]
   {:pre [ns name]}
   (act-on-occurrences prettify-found-symbol-result :transport transport :ns ns :name name :clj-dir clj-dir))
-
-(defn find-usages [& {:keys [transport ns name clj-dir]}]
-  (map println (find-usages* :transport transport :ns ns :name name :clj-dir clj-dir)))
 
 (defn rename-symbol
   "Renames symbols (defs and defns) in the project's given dir.
