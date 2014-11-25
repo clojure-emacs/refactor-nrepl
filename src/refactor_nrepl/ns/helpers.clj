@@ -1,4 +1,5 @@
-(ns refactor-nrepl.ns.helpers)
+(ns refactor-nrepl.ns.helpers
+  (:require [clojure.string :as str]))
 
 (defn- libspec?
   [thing]
@@ -18,17 +19,18 @@
        first))
 
 (defn get-ns-component
-  [ns type]
   "Extracts a sub-component from the ns declaration.
 
 type is either :require, :use or :import"
+  [ns type]
   (some->> (index-of-component ns type) (nth ns)))
 
-(defn get-ns-components
-  "Returns a map of with keys :require, :use and :import"
-  [ns]
-  (let [components [:require :use :import]]
-    (->> components
-         (map (partial get-ns-component ns))
-         (zipmap components)
-         merge)))
+(defn prefix
+  "java.util.Date -> java.util"
+  [fully-qualified-name]
+  (str/join "." (-> fully-qualified-name str (.split "\\.") butlast)))
+
+(defn suffix
+  "java.util.Date -> Date"
+  [fully-qulified-name]
+  (-> fully-qulified-name str (.split "\\.") last))
