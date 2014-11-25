@@ -1,4 +1,4 @@
-(def VERSION "0.2.2")
+(def VERSION "0.3.0-SNAPSHOT")
 
 (defproject refactor-nrepl VERSION
   :description "nREPL middleware to support editor agnostic refactoring"
