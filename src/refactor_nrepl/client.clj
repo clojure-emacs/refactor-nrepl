@@ -152,6 +152,26 @@
   {:pre [ns name new-name]}
   (act-on-occurrences (partial rename-symbol-occurrence! name new-name) :transport transport :ns ns :name name :clj-dir clj-dir))
 
+(defn find-referred
+  "Finds referred symbol in namespace.
+
+  Temporary as only needed for temporary performance tweak for remove requires in clj-refactor.el. Will be removed when refactor-nrepl based clean-ns is implemented"
+  [& {:keys [transport file referred]}]
+  {:pre [file referred]}
+  (let [tr (or transport @transp (reset! transp (connect)))
+        ns-string (slurp file)
+        result (->> {:op :refactor
+                     :ns-string ns-string
+                     :referred referred
+                     :refactor-fn "find-referred"}
+                    (nrepl-message tr)
+                    first
+                    :value
+                    (#(if (coll? %) (not-empty %) %)))]
+    (println "result: " result)
+    (println (format "Referred %s is %s in %s" referred (if result "found" "not found") file))
+    result))
+
 (defn remove-debug-invocations
   "Removes debug function invocations. In reality it could remove any function invocations.
 
@@ -179,4 +199,5 @@
            (remove-invocations invocations)
            (remove (partial = "$remove$"))
            (str/join "\n")
+           (#(str % "\n"))
            (spit file)))))

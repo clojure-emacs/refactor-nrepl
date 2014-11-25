@@ -7,15 +7,6 @@
             [clojure.tools.nrepl.misc :refer [response-for]]
             [clojure.tools.nrepl.transport :as transport]))
 
-(defn- find-referred [ast referred]
-  (let [ast (if (= 'ns (-> ast :items first :fn :class)) (update-in ast [:items] rest) ast)]
-    (some #(= (symbol referred) (:class %)) (flatten (map nodes ast)))))
-
-(defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
-  (let [ast (string-ast ns-string)
-        result (find-referred ast referred)]
-    (transport/send transport (response-for msg :value (when result (str result))  :status :done))))
-
 (defn- node->var [alias-info node]
   (let [class (or (:class node) (-> node
                                     :var
@@ -52,17 +43,24 @@
   [ast fn-names]
   (find-nodes ast (partial fns-invoked? (into #{} (split fn-names #",")) (alias-info ast))))
 
-(defn- contains-var-or-const? [var-name alias-info node]
+(defn- contains-var [var-name alias-info node]
+  (contains-var? #{var-name} alias-info node))
+
+(defn- contains-const? [var-name alias-info node]
   (let [[ns name] (str/split var-name #"/")]
-    (or (contains-var? #{var-name} alias-info node)
-        (and (= :const (:op node))
-             (.contains (-> node :val str) ns)
-             (or (not name)
-                 (.contains (-> node :val str) name))
-             var-name))))
+    (and (= :const (:op node))
+         (.contains (-> node :val str) ns)
+         (or (not name)
+             (.contains (-> node :val str) name))
+         var-name)))
+
+(defn- contains-var-or-const? [var-name alias-info node]
+  (or (contains-var var-name alias-info node)
+      (contains-const? var-name alias-info node)))
 
 (defn- find-symbol [name ast]
-  (find-nodes ast (partial contains-var-or-const? name (alias-info ast))))
+  (when ast
+    (find-nodes ast (partial contains-var-or-const? name (alias-info ast)))))
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (let [ast (string-ast ns-string)
@@ -92,6 +90,12 @@
     (doseq [found-sym syms]
       (transport/send transport (response-for msg :occurrence found-sym)))
     (transport/send transport (response-for msg :syms-count (count syms) :status :done))))
+
+(defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
+  (let [ast (string-ast ns-string)
+        matches (find-nodes ast (partial contains-var referred (alias-info ast)))
+        result (< 0 (count matches))]
+    (transport/send transport (response-for msg :value (when result (str result)) :status :done))))
 
 (defn wrap-refactor
   "Ensures that refactor only triggered with the right operation and forks to the appropriate refactor function"

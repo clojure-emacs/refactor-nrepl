@@ -111,6 +111,10 @@ Finds and renames occurrences of symbols like defs and defns both where they are
 
 ## Changelog
 
+### 0.2.2
+
+* AST creation: analyze-ns instead of plain analyze which also evals the code
+
 ### 0.2.1
 
 * find usages

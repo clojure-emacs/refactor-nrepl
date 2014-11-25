@@ -1,12 +1,13 @@
 (ns refactor-nrepl.integration-tests
-  (:require [refactor-nrepl.client :refer [find-usages connect rename-symbol]]
+  (:require [refactor-nrepl.client :refer [find-usages connect rename-symbol remove-debug-invocations find-referred]]
             [refactor-nrepl.refactor]
             [refactor-nrepl.util :refer [list-project-clj-files]]
             [clojure.tools.nrepl.server :as nrserver]
             [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [clojure.test :refer :all]
             [clojure.java.io :as io]
-            [me.raynes.fs :as fs])
+            [me.raynes.fs :as fs]
+            [clojure.string :as str])
   (:import (java.io File)))
 
 (defn- create-temp-dir
@@ -22,9 +23,6 @@
         orig-src (io/file "resources/testproject/src")]
 
     (fs/copy-dir orig-src temp-dir)
-
-    (load "/com/example/two")
-    (load "/com/example/one")
 
     temp-dir))
 
@@ -87,3 +85,29 @@
     (is (= new-two (slurp (str tmp-dir "/src/com/example/two.clj"))) "rename failed in com.example.two")
         ;; clean-up
     (.delete tmp-dir)))
+
+(deftest test-remove-println
+  (let [tmp-dir (create-test-project)
+        three-file (str tmp-dir "/src/com/example/three.clj")
+        transport (connect :port 7777)
+        new-three "(ns com.example.three)
+
+(defn fn-with-println [a]
+  (if a
+    (str a)
+    a))
+"]
+    (remove-debug-invocations :transport transport :file three-file)
+
+    (is (= new-three (slurp three-file)) "remove println failed")))
+
+(deftest test-find-referred
+  (let [tmp-dir (create-test-project)
+        four-file (str tmp-dir "/src/com/example/four.clj")
+        transport (connect :port 7777)]
+
+    (is (find-referred :transport transport :file four-file :referred "clojure.string/split") "referred not found")
+
+    (is (not (find-referred :transport transport :file four-file :referred "clojure.string/join")) "referred found when was not used in namespace")
+
+))
