@@ -13,7 +13,7 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "0.2.1"]]
+:plugins [[refactor-nrepl "0.2.2"]]
 ```
 
 ### Clojure client
@@ -109,7 +109,13 @@ Finds and renames occurrences of symbols like defs and defns both where they are
 (refactor-nrepl.client/rename-symbol :ns 'leiningen.gargamel :name "gargamel-changelog" :new-name "garg-cl")
 ```
 
+### var info
+
+Provides information about a var. Currently this info is namespace and name. Similar to cider's info middleware but the namespace does not need to be loaded into the repl to be successful.
+
 ## Changelog
+
+* var-info: returns basic var info (ns and name) based on the AST
 
 ### 0.2.2
 

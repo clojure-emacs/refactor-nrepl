@@ -1,4 +1,4 @@
 (ns com.example.two)
 
-(defn foo []
+(defn ^{:doc "some text"} foo []
   "foo")

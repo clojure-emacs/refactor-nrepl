@@ -91,6 +91,27 @@
       (transport/send transport (response-for msg :occurrence found-sym)))
     (transport/send transport (response-for msg :syms-count (count syms) :status :done))))
 
+(defn- form-contains-var [var-name node]
+  (let [form (:form node)]
+    (or (= var-name (str form)) ;; invoke
+        (and (coll? form) (= "def" (-> form first str)) (= var-name (-> form second str))) ;; def/defn definition
+        (and (coll? form) (= "var" (-> form first str)) (= (str/replace var-name "#'" "") (-> form second str)))))) ;;#'varname style reference
+
+(defn- var-info-reply [{:keys [transport ns-string name] :as msg}]
+  (transport/send transport
+                  (response-for msg
+                                :var-info
+                                (-> (->> ns-string
+                                         string-ast
+                                         (map nodes)
+                                         flatten
+                                         (filter (partial form-contains-var name))
+                                         first)
+                                    :var
+                                    (str/replace "#'" "")
+                                    (str/split #"/"))
+                                :status :done)))
+
 (defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
   (let [ast (string-ast ns-string)
         matches (find-nodes ast (partial contains-var referred (alias-info ast)))
@@ -105,6 +126,7 @@
       (cond (= "find-referred" refactor-fn) (find-referred-reply msg)
             (= "find-debug-fns" refactor-fn) (find-debug-fns-reply msg)
             (= "find-symbol" refactor-fn) (find-symbol-reply msg)
+            (= "var-info" refactor-fn) (var-info-reply msg)
             :else
             (handler msg))
       (handler msg))))
@@ -120,7 +142,8 @@
             [line-number end-line-number column-number end-column-number fn-name]
           - find-symbol: finds symbol in the project returns tuples containing
             [line-number end-line-number column-number end-column-number fn-name absolute-path the-matched-line]
-            when done returns done status message a found symbols count"
+            when done returns done status message a found symbols count                 - var-info: returns var's info tuples containing
+            [ns name]"
     :requires {"ns-string" "the body of the namespace to build the AST with"
                "refactor-fn" "The refactor function to invoke"}
     :returns {"status" "done"

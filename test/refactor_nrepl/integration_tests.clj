@@ -1,5 +1,5 @@
 (ns refactor-nrepl.integration-tests
-  (:require [refactor-nrepl.client :refer [find-usages connect rename-symbol remove-debug-invocations find-referred]]
+  (:require [refactor-nrepl.client :refer [find-usages connect rename-symbol remove-debug-invocations find-referred var-info]]
             [refactor-nrepl.refactor]
             [refactor-nrepl.util :refer [list-project-clj-files]]
             [clojure.tools.nrepl.server :as nrserver]
@@ -57,7 +57,7 @@
 
     (is (re-matches #"(?s).*\[2\].*" (first result)) "call of foo not found in ns com.example.one")
 
-    (is (re-matches #"(?s).*\[5\].*" (second result)) "call of foo not found in ns com.example.one")
+    (is (re-matches #"(?s).*\[6\].*" (second result)) "call of foo not found in ns com.example.one")
 
     (is (re-matches #"(?s).*\[3\].*" (last result)) "def of foo not found in ns com.example.two")
 
@@ -68,14 +68,18 @@
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
         new-one "(ns com.example.one
-  (:require [com.example.two :as two :refer [baz]]))
+  (:require [com.example.two :as two :refer [baz]]
+            [com.example.four :as four]))
 
 (defn bar []
   (str \"bar\" (two/baz)))
+
+(defn from-registry [k]
+  (k four/registry))
 "
         new-two "(ns com.example.two)
 
-(defn baz []
+(defn ^{:doc \"some text\"} baz []
   \"foo\")
 "]
     (rename-symbol :transport transport :ns 'com.example.two :name "foo" :clj-dir (str tmp-dir) :new-name "baz")
@@ -111,3 +115,38 @@
     (is (not (find-referred :transport transport :file four-file :referred "clojure.string/join")) "referred found when was not used in namespace")
 
 ))
+
+(deftest test-var-info
+  (let [tmp-dir (create-test-project)
+        transport (connect :port 7777)
+        one-file (str tmp-dir "/src/com/example/one.clj")
+        two-file (str tmp-dir "/src/com/example/two.clj")
+        four-file (str tmp-dir "/src/com/example/four.clj")
+        result-two-foo (var-info :transport transport :file one-file :name "two/foo")
+        result-core-clj (var-info :transport transport :file one-file :name "str")
+        result-3rd-party (var-info :transport transport :file four-file :name "split")
+        result-var-defined (var-info :transport transport :file two-file :name "foo")
+        result-var-referenced (var-info :transport transport :file four-file :name "#'fn-with-println")
+        result-var-def (var-info :transport transport :file four-file :name "registry")
+        result-var-def-used (var-info :transport transport :file one-file :name "four/registry")]
+
+    (is (= "com.example.two" (first result-two-foo)) "ns of var not resolved")
+    (is (= "foo" (second result-two-foo)) "name of var not resolved")
+
+    (is (= "clojure.core" (first result-core-clj)) "ns of var not resolved")
+    (is (= "str" (second result-core-clj)) "name of var not resolved")
+
+    (is (= "clojure.string" (first result-3rd-party)) "ns of var not resolved")
+    (is (= "split" (second result-3rd-party)) "name of var not resolved")
+
+    (is (= "com.example.two" (first result-var-defined)) "ns of var not resolved")
+    (is (= "foo" (second result-var-defined)) "name of var not resolved")
+
+    (is (= "com.example.three" (first result-var-referenced)) "ns of var not resolved")
+    (is (= "fn-with-println" (second result-var-referenced)) "name of var not resolved")
+
+    (is (= "com.example.four" (first result-var-def)) "ns of var not result-var-def")
+    (is (= "registry" (second result-var-def)) "name of var not resolved")
+
+    (is (= "com.example.four" (first result-var-def-used)) "ns of var not result-var-def")
+    (is (= "registry" (second result-var-def-used)) "name of var not resolved")))

@@ -168,9 +168,19 @@
                     first
                     :value
                     (#(if (coll? %) (not-empty %) %)))]
-    (println "result: " result)
     (println (format "Referred %s is %s in %s" referred (if result "found" "not found") file))
     result))
+
+(defn var-info [& {:keys [transport file name]}]
+  {:pre [file name]}
+  (let [tr (or transport @transp (reset! transp (connect)))
+        ns-string (slurp file)]
+    (-> (nrepl-message tr {:op :refactor
+                           :ns-string ns-string
+                           :refactor-fn "var-info"
+                           :name name})
+        first
+        :var-info)))
 
 (defn remove-debug-invocations
   "Removes debug function invocations. In reality it could remove any function invocations.
