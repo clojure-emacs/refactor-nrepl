@@ -19,4 +19,5 @@
       (update-in [:repl-options :nrepl-middleware]
                  (fnil into [])
                  '[refactor-nrepl.refactor/wrap-refactor
+                   refactor-nrepl.ns.clean-ns/wrap-clean-ns
                    refactor-nrepl.artifacts/wrap-artifacts])))
