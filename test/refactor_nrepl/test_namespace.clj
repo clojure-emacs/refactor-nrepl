@@ -7,57 +7,49 @@
   (:import java.io.File))
 
 (def ns1 (.getAbsolutePath (File. "test/resources/ns1.clj")))
-(def ns1-sorted (read-ns-form (.getAbsolutePath (File. "test/resources/ns1_sorted.clj"))))
+(def ns1-cleaned (read-ns-form (.getAbsolutePath (File. "test/resources/ns1_cleaned.clj"))))
 (def ns2 (.getAbsolutePath (File. "test/resources/ns2.clj")))
-(def ns2-collapsed (read-ns-form
-                    (.getAbsolutePath (File. "test/resources/ns2_collapsed.clj"))))
+(def ns2-cleaned (read-ns-form
+                  (.getAbsolutePath (File. "test/resources/ns2_cleaned.clj"))))
 (def ns-with-exclude (read-ns-form
                       (.getAbsolutePath (File. "test/resources/ns_with_exclude.clj"))))
 (def ns-with-unused-deps (.getAbsolutePath (File. "test/resources/unused_deps.clj")))
 (def ns-without-unused-deps (read-ns-form
                              (.getAbsolutePath (File. "test/resources/unused_removed.clj"))))
-((deftest collapses-requires
-   (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                 (fn [_ libspec] libspec)]
-     (let [requires (get-ns-component (clean-ns ns2) :require)
-           collapsed-requires (get-ns-component ns2-collapsed :require)]
-       (is (= collapsed-requires requires))))))
+(deftest combines-requires
+  (let [requires (get-ns-component (clean-ns ns2) :require)
+        combined-requires (get-ns-component ns2-cleaned :require)]
+    (is (= combined-requires requires))))
 
 (deftest preserves-removed-use
-  (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                (fn [_ libspec] libspec)]
-    (let [requires (get-ns-component (clean-ns ns2) :use)
-          collapsed-requires (get-ns-component ns2-collapsed :require)]
-      (is (reduce
-           #(or %1 (= %2 '[clojure [edn :refer :all :rename {read-string rs
-                                                             read rd}]
-                           [string :refer :all :rename {replace foo reverse bar}]
-                           [test :refer :all]]))
-           false
-           (tree-seq sequential? identity collapsed-requires))))))
+  (let [requires (get-ns-component (clean-ns ns2) :use)
+        combined-requires (get-ns-component ns2-cleaned :require)]
+    (is (reduce
+         #(or %1 (= %2 '[clojure
+                         [edn :refer :all :rename {read-string rs read rd}]
+                         [instant :refer :all]
+                         [pprint :refer [cl-format fresh-line get-pretty-writer]]
+                         [string :refer :all :rename {replace foo reverse bar}]
+                         [test :refer :all]]))
+         false
+         (tree-seq sequential? identity combined-requires)))))
 
 (deftest removes-use-with-rename-clause
-  (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                (fn [_ libspec] libspec)]
-    (let [requires (get-ns-component (clean-ns ns2) :use)
-          collapsed-requires (get-ns-component ns2-collapsed :require)]
-      (is (reduce
-           #(or %1 (= %2 '[edn :refer :all :rename {read-string rs
-                                                    read rd}]))
-           false
-           (tree-seq sequential? identity collapsed-requires))))))
+  (let [requires (get-ns-component (clean-ns ns2) :use)
+        combined-requires (get-ns-component ns2-cleaned :require)]
+    (is (reduce
+         #(or %1 (= %2 '[edn :refer :all :rename {read-string rs
+                                                  read rd}]))
+         false
+         (tree-seq sequential? identity combined-requires)))))
 
 (deftest test-sort-and-prefix-favoring
-  (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                (fn [_ libspec] libspec)
-                refactor-nrepl.ns.dependencies/remove-unused-imports
-                (fn [_ imports] imports)]
-    (let [requires (get-ns-component (clean-ns ns1) :require)
-          imports (get-ns-component (clean-ns ns1) :import)
-          sorted-requires (get-ns-component ns1-sorted :require)
-          sorted-imports (get-ns-component ns1-sorted :import)]
-      (is (= sorted-requires requires))
-      (is (= sorted-imports imports)))))
+  (let [requires (get-ns-component (clean-ns ns1) :require)
+        imports (get-ns-component (clean-ns ns1) :import)
+        sorted-requires (get-ns-component ns1-cleaned :require)
+        sorted-imports (get-ns-component ns1-cleaned :import)]
+    (is (= sorted-requires requires))
+    (is (= sorted-imports imports))))
 
 (deftest throws-exceptions-for-unexpected-elements
   (is (thrown? IllegalArgumentException
@@ -69,38 +61,35 @@
                               (File. "test/resources/clojars-artifacts.edn"))))))
 
 (deftest preserves-other-elements
-  (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                (fn [_ libspec] libspec)
-                refactor-nrepl.ns.dependencies/remove-unused-imports
-                (fn [_ imports] imports)]
-    (let [actual (clean-ns ns1)]
-      (is (= ns1-sorted actual)))))
+  (let [actual (clean-ns ns1)
+        docstring (nthrest actual 2)
+        author (nthrest actual 3)
+        refer-clojure (nthrest actual 4)
+        gen-class (nthrest actual 5)]
+    (is (= (nthrest ns1-cleaned 2) docstring))
+    (is (= (nthrest ns1-cleaned 3) author))
+    (is (= (nthrest ns1-cleaned 4) refer-clojure))
+    (is (= (nthrest ns1-cleaned 5) gen-class))))
 
 (deftest removes-use
-  (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                (fn [_ libspec] libspec)]
-    (let [use-clause (get-ns-component ns1-sorted :use)]
-      (is (= use-clause nil)))))
+  (let [use-clause (get-ns-component ns1-cleaned :use)]
+    (is (= use-clause nil))))
 
 (deftest combines-multiple-refers
-  (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                (fn [_ libspec] libspec)]
-    (let [requires (clean-ns ns2)
-          refers '[deref-env with-env]]
-      (is (reduce
-           #(or %1 (= %2 refers))
-           false
-           (tree-seq sequential? identity requires))))))
+  (let [requires (clean-ns ns2)
+        refers '[cl-format fresh-line get-pretty-writer]]
+    (is (reduce
+         #(or %1 (= %2 refers))
+         false
+         (tree-seq sequential? identity requires)))))
 
 (deftest combines-multiple-refers-to-all
-  (with-redefs [refactor-nrepl.ns.dependencies/remove-unused-requires
-                (fn [_ libspec] libspec)]
-    (let [requires (clean-ns ns2)
-          ast '[ast :refer :all]]
-      (is (reduce
-           #(or %1 (= %2 ast))
-           false
-           (tree-seq sequential? identity requires))))))
+  (let [requires (clean-ns ns2)
+        instant '[instant :refer :all]]
+    (is (reduce
+         #(or %1 (= %2 instant))
+         false
+         (tree-seq sequential? identity requires)))))
 
 (deftest removes-unused-dependencies
   (let [new-ns (clean-ns ns-with-unused-deps)
