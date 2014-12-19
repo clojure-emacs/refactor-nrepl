@@ -176,6 +176,7 @@ to clojars:
 * Add `resolve-missing` which resolves a missing symbol by scanning the classpath
 * Add `clean-ns` which performs various cleanups on the ns form.
 * var-info: returns basic var info (ns and name) based on the AST
+* Add caching of ASTs (by ns and hash of file content)
 
 ### 0.2.2
 
