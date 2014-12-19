@@ -1,7 +1,8 @@
 (ns refactor-nrepl.ns.constructor
   (:require [clojure.string :as str]
-            [refactor-nrepl.ns.helpers :refer [get-ns-component prefix-form?
-                                               index-of-component]]))
+            [refactor-nrepl.ns.helpers
+             :refer [get-ns-component prefix-form? prefix suffix
+                     index-of-component]]))
 
 (defn- assert-single-alias
   [libspecs alias]
@@ -89,13 +90,6 @@
 
 (defn- sort-referred-symbols [referred]
   (sort dependency-comparator referred))
-
-(defn- prefix
-  [fully-qualified-name]
-  (str/join "." (-> fully-qualified-name str (.split "\\.") butlast)))
-
-(defn- suffix [fully-qulified-name]
-  (-> fully-qulified-name str (.split "\\.") last))
 
 (defn- ns-prefix
   "Extracts the prefix from a libspec."

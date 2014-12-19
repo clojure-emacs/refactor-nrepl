@@ -1,6 +1,9 @@
 (ns refactor-nrepl.integration-tests
-  (:require [refactor-nrepl.client :refer [find-usages connect rename-symbol remove-debug-invocations find-referred var-info]]
+  (:require [refactor-nrepl.client
+             :refer [find-usages connect rename-symbol remove-debug-invocations
+                     find-referred var-info resolve-missing]]
             [refactor-nrepl.refactor]
+            [refactor-nrepl.ns.resolve-missing]
             [refactor-nrepl.util :refer [list-project-clj-files]]
             [clojure.tools.nrepl.server :as nrserver]
             [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
@@ -27,7 +30,12 @@
     temp-dir))
 
 (defn start-up-repl-server []
-  (let [server (nrserver/start-server :port 7777 :handler (nrserver/default-handler #'refactor-nrepl.refactor/wrap-refactor))]
+  (let [server
+        (nrserver/start-server
+         :port 7777
+         :handler (nrserver/default-handler
+                    #'refactor-nrepl.refactor/wrap-refactor
+                    #'refactor-nrepl.ns.resolve-missing/wrap-resolve-missing))]
     (println "server [" server "]" " started...")
     server))
 
@@ -47,7 +55,8 @@
 (deftest test-find-two-foo
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
-        result (find-usages :transport transport :ns 'com.example.two :name "foo" :clj-dir (str tmp-dir))]
+        result (find-usages :transport transport :ns 'com.example.two
+                            :name "foo" :clj-dir (str tmp-dir))]
 
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
@@ -82,12 +91,15 @@
 (defn ^{:doc \"some text\"} baz []
   \"foo\")
 "]
-    (rename-symbol :transport transport :ns 'com.example.two :name "foo" :clj-dir (str tmp-dir) :new-name "baz")
+    (rename-symbol :transport transport :ns 'com.example.two :name "foo"
+                   :clj-dir (str tmp-dir) :new-name "baz")
 
-    (is (= new-one (slurp (str tmp-dir "/src/com/example/one.clj"))) "rename failed in com.example.one")
+    (is (= new-one (slurp (str tmp-dir "/src/com/example/one.clj")))
+        "rename failed in com.example.one")
 
-    (is (= new-two (slurp (str tmp-dir "/src/com/example/two.clj"))) "rename failed in com.example.two")
-        ;; clean-up
+    (is (= new-two (slurp (str tmp-dir "/src/com/example/two.clj")))
+        "rename failed in com.example.two")
+    ;; clean-up
     (.delete tmp-dir)))
 
 (deftest test-remove-println
@@ -110,11 +122,11 @@
         four-file (str tmp-dir "/src/com/example/four.clj")
         transport (connect :port 7777)]
 
-    (is (find-referred :transport transport :file four-file :referred "clojure.string/split") "referred not found")
+    (is (find-referred :transport transport :file four-file
+                       :referred "clojure.string/split") "referred not found")
 
-    (is (not (find-referred :transport transport :file four-file :referred "clojure.string/join")) "referred found when was not used in namespace")
-
-))
+    (is (not (find-referred :transport transport :file four-file
+                            :referred "clojure.string/join")) "referred found when was not used in namespace")))
 
 (deftest test-var-info
   (let [tmp-dir (create-test-project)
@@ -150,3 +162,10 @@
 
     (is (= "com.example.four" (first result-var-def-used)) "ns of var not result-var-def")
     (is (= "registry" (second result-var-def-used)) "name of var not resolved")))
+
+(deftest test-resolve-missing
+  (let [transport (connect :port 7777)
+        split-candidates (resolve-missing :transport transport :symbol "split")
+        date-candidates (resolve-missing :transport transport :symbol "Date")]
+    (is ((into #{} split-candidates) 'clojure.string))
+    (is ((into #{} date-candidates) 'java.util.Date))))

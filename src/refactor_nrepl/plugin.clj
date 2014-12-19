@@ -20,4 +20,5 @@
                  (fnil into [])
                  '[refactor-nrepl.refactor/wrap-refactor
                    refactor-nrepl.ns.clean-ns/wrap-clean-ns
+                   refactor-nrepl.ns.resolve-missing/wrap-resolve-missing
                    refactor-nrepl.artifacts/wrap-artifacts])))

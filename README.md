@@ -134,8 +134,17 @@ In the event of an error `clean-ns` will return `error` which is an error messag
 
 **Warning**: The `clean -ns` op dependes on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
 
+### resolve-missing
+
+The goal of the op is to provide intelligent suggestions when the user wants to import or require the unresolvable symbol at point.
+
+The op requires `symbol` which represents a name to look up on the classpath.
+
+The return value `candidates` is a space separated string of candidates to import or require into the current ns.
+
 ## Changelog
 
+* Add `resolve-missing` which resolves a missing symbol by scanning the classpath
 * Add `clean-ns` which performs various cleanups on the ns form.
 * var-info: returns basic var info (ns and name) based on the AST
 

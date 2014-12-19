@@ -6,8 +6,9 @@
             [refactor-nrepl.analyzer :refer [string-ast]]
             [refactor-nrepl.ns.helpers :refer [get-ns-component]]))
 
-(defn- parse-form [form]
+(defn parse-form
   "Form is either (:import..) (:use ..) or (:require ..)"
+  [form]
   (let [ns-parser (parser
                    (io/resource "refactor_nrepl/ns/require-or-use-or-import.bnf")
                    :auto-whitespace :comma)]
@@ -121,12 +122,12 @@
 (defn- get-class-name [{:keys [op class type val children] :as node}]
   (when-not children
     (try (cond
-         (and (class-op? op)
-              (:type :class)) (.getName val)
+          (and (class-op? op)
+               (:type :class)) (.getName val)
 
-         (and class (not (= op :import)
-                         ))
-         (str (.getName class)))
+               (and class (not (= op :import)
+                               ))
+               (str (.getName class)))
          (catch Exception e
            (println e)))))
 
@@ -154,7 +155,6 @@
 
 (defn- prune-refer
   [refer-clause prefix used-syms]
-  refer-clause
   (map #(-> (str/split % #"/") second symbol)
        (filter (into #{} used-syms)
                (map #(str prefix "/" %) refer-clause))))
@@ -162,7 +162,7 @@
 (defn- remove-unused
   [used-syms {:keys [ns refer as] :as libspec}]
   (when (ns-in-use? ns used-syms)
-    (if (or (= refer :all))
+    (if (= refer :all)
       libspec
       (update-in libspec [:refer] prune-refer ns used-syms))))
 
@@ -180,7 +180,6 @@
 
 (defn remove-unused-imports
   [symbols-in-use imports]
-  symbols-in-use
   (filter (into #{} symbols-in-use) imports))
 
 (defn- remove-unused-requires [symbols-in-use libspecs]
