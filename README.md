@@ -142,6 +142,29 @@ The op requires `symbol` which represents a name to look up on the classpath.
 
 The return value `candidates` is a space separated string of candidates to import or require into the current ns.
 
+## Development with `mranderson`
+
+[mranderson](https://github.com/benedekfazekas/mranderson) is used to avoid classpath collisions.
+
+To work with `mranderson` the first thing to do is:
+`lein do clean, source-deps`
+this creates the munged local dependencies in target/srcdeps directory
+
+after that you can run your tests or your repl with:
+`lein with-profile +plugin.mranderson/config repl`
+`lein with-profile +plugin.mranderson/config test`
+
+note the plus sign before the leiningen profile.
+
+If you want to use `mranderson` while developing locally with the repl the source has to be modified in the `target/srcdeps` directory.
+
+When you want to release
+locally:
+`lein with-profile plugin.mranderson/config install`
+
+to clojars:
+`lein with-profile +plugin.mranderson/config deploy clojars`
+
 ## Changelog
 
 * Add `resolve-missing` which resolves a missing symbol by scanning the classpath
