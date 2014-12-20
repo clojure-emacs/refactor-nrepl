@@ -142,6 +142,14 @@ The op requires `symbol` which represents a name to look up on the classpath.
 
 The return value `candidates` is a space separated string of candidates to import or require into the current ns.
 
+### hotload-dependency
+
+Loads a new project dependency into the currently active repl.
+
+The op requires `coordinates` which is a leiningen style dependency.
+
+The return value is a `status` of `done` and `dependency` which is the coordinate vector that was hotloaded, or `error` when something went wrong.
+
 ## Development with `mranderson`
 
 [mranderson](https://github.com/benedekfazekas/mranderson) is used to avoid classpath collisions.
@@ -173,10 +181,11 @@ to clojars:
 
 ## Changelog
 
+* Add `hotload-dependency` which loads a new project dependency into the repl
+* Add caching of ASTs (by ns and hash of file content)
 * Add `resolve-missing` which resolves a missing symbol by scanning the classpath
 * Add `clean-ns` which performs various cleanups on the ns form.
 * var-info: returns basic var info (ns and name) based on the AST
-* Add caching of ASTs (by ns and hash of file content)
 
 ### 0.2.2
 
