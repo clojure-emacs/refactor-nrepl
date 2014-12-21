@@ -28,8 +28,7 @@
     (update-in libspec [:refer] (constantly :all))
     libspec))
 
-(defmulti parse-libspec
-  (fn [libspec] (first libspec)))
+(defmulti parse-libspec first)
 
 (defn- extract-referred [libspec]
   (let [refer (some->> libspec (drop-while #(not= % ":refer")) second)]
@@ -72,7 +71,7 @@
      (for [libspec parse-tree]
        (parse-libspec libspec)))))
 
-(defmulti parse-import (fn [import] (first import)))
+(defmulti parse-import first)
 
 (defmethod parse-import :class
   [import]
