@@ -25,7 +25,8 @@
                      (filter list?)
                      (some #(when (#{:require} (first %)) %))
                      rest
-                     (filter #(contains? (into #{} %) :as))
+                     (remove symbol?)
+                     (filter #(contains? (set %) :as))
                      (#(zipmap (map (partial get-alias nil) %)
                                (map first %))))]
     [(second ns-decl) aliases]))
@@ -35,7 +36,8 @@
 
 (defn- get-ast-from-cache
   [ns file-content]
-  (-> (get @ast-cache ns)
+  (-> @ast-cache
+      (get ns)
       (get (hash file-content))))
 
 (defn- update-ast-cache
