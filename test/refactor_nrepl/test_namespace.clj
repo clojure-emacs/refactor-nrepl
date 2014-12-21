@@ -9,10 +9,8 @@
 (def ns1 (.getAbsolutePath (File. "test/resources/ns1.clj")))
 (def ns1-cleaned (read-ns-form (.getAbsolutePath (File. "test/resources/ns1_cleaned.clj"))))
 (def ns2 (.getAbsolutePath (File. "test/resources/ns2.clj")))
-(def ns2-cleaned (read-ns-form
-                  (.getAbsolutePath (File. "test/resources/ns2_cleaned.clj"))))
-(def ns-with-exclude (read-ns-form
-                      (.getAbsolutePath (File. "test/resources/ns_with_exclude.clj"))))
+(def ns2-cleaned (read-ns-form (.getAbsolutePath (File. "test/resources/ns2_cleaned.clj"))))
+(def ns-with-exclude (read-ns-form (.getAbsolutePath (File. "test/resources/ns_with_exclude.clj"))))
 (def ns-with-unused-deps (.getAbsolutePath (File. "test/resources/unused_deps.clj")))
 (def ns-without-unused-deps (read-ns-form
                              (.getAbsolutePath (File. "test/resources/unused_removed.clj"))))

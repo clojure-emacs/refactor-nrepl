@@ -21,7 +21,7 @@
   ([timeout tr payload]
    (nrepl/message (nrepl/client tr timeout) payload))
   ([tr payload]
-   (nrepl-message 2000 tr payload)))
+   (nrepl-message 5000 tr payload)))
 
 (defn- remove-invocation [invocation lines]
   (for [line lines

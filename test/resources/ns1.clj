@@ -9,19 +9,22 @@
   (:require
    [clojure.instant :as inst]
    [clojure data edn]
-   [clojure.pprint :refer [get-pretty-writer fresh-line cl-format]])
+   [clojure.pprint :refer [get-pretty-writer formatter cl-format]]
+   clojure.test.junit)
   (:use clojure.test
         clojure.test
-        clojure.string)
+        [clojure.string :rename {replace foo
+                                 reverse bar}])
   (:import java.util.Random
            java.io.PushbackReader
            [java.util Date Calendar]))
 
 (defn use-everything []
   (get-pretty-writer)
-  (fresh-line)
   (cl-format)
+  (formatter nil)
   (compose-fixtures)
+  (clojure.test.junit/with-junit-output "")
   (escape)
   (inst/read-instant-date)
   (clojure.data/diff)

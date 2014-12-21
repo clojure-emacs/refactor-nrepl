@@ -1,10 +1,12 @@
 (ns refactor-nrepl.ns.dependencies
-  (:require [clojure.java.io :as io]
+  (:require [cider.nrepl.middleware.info :refer [info-clj]]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [instaparse.core :refer [parse parser]]
             [refactor-nrepl.analyzer :refer [string-ast]]
-            [refactor-nrepl.ns.helpers :refer [get-ns-component]]))
+            [refactor-nrepl.ns.helpers :refer [get-ns-component]])
+  (:import java.util.regex.Pattern))
 
 (defn parse-form
   "Form is either (:import..) (:use ..) or (:require ..)"
@@ -175,18 +177,65 @@
            (remove-unused used-syms)
            remove-empty-refer))
 
-(defn remove-unused-imports
+(defn- remove-unused-imports
   [symbols-in-use imports]
   (filter (set symbols-in-use) imports))
+
+(defn- macro? [ns sym]
+  (:macro (info-clj ns sym)))
+
+(defn- add-prefix
+  [prefix var]
+  (symbol (str prefix "/" var)))
+
+(defn- get-referred-macros-from-refer
+  [libspec]
+  (when-not (or (symbol? libspec)
+                (= (:refer libspec) :all))
+    (filter (partial macro? (:ns libspec)) (:refer libspec))))
+
+(defn- find-fully-qualified-macros [file-content]
+  (->> file-content
+       (re-matches #"[A-Za-z0-9_.?$%!-]+/[A-Za-z0-9_?$%!*-]+")
+       (map symbol)
+       (filter macro?)))
+
+(defn- macro-in-use? [file-content macro]
+  (when (-> macro
+            str
+            Pattern/quote
+            Pattern/compile
+            (re-find file-content)
+            empty?
+            not)
+    macro))
+
+(defn- get-referred-macros [file-content libspecs]
+  (remove nil? (flatten
+                (for [libspec libspecs]
+                  (some->> libspec
+                           get-referred-macros-from-refer
+                           (map (partial macro-in-use? file-content))
+                           (map (partial add-prefix (:ns libspec))))))))
+
+(defn- used-macros [file-content libspecs]
+  (let [referred-macros-in-use  (get-referred-macros file-content libspecs)]
+    (->> file-content
+         find-fully-qualified-macros
+         (filter (partial macro-in-use? file-content))
+         (concat referred-macros-in-use)
+         (map str))))
 
 (defn- remove-unused-requires [symbols-in-use libspecs]
   (map (partial remove-unused-syms-and-specs symbols-in-use) libspecs))
 
 (defn extract-dependencies [path ns-form]
-  (let [symbols-in-use (-> path slurp string-ast used-vars)]
-    {:require (->> ns-form
-                   get-libspecs
-                   (remove-unused-requires symbols-in-use)
+  (let [libspecs (get-libspecs ns-form)
+        file-content (slurp path)
+        symbols-in-use (-> file-content string-ast used-vars)
+        macros-in-use (used-macros file-content libspecs)]
+    {:require (->> libspecs
+                   (remove-unused-requires (concat macros-in-use symbols-in-use))
                    (filter (complement nil?)))
      :import (->> ns-form
                   get-imports

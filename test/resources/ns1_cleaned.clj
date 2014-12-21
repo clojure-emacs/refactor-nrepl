@@ -8,8 +8,9 @@
    :methods [#^{:static true} [binomial [int int] double]])
   (:require [clojure data edn
              [instant :as inst]
-             [pprint :refer [cl-format fresh-line get-pretty-writer]]
-             [string :refer :all]
-             [test :refer :all]])
+             [pprint :refer [cl-format formatter get-pretty-writer]]
+             [string :refer :all :rename {replace foo reverse bar}]
+             [test :refer :all]]
+            clojure.test.junit)
   (:import java.io.PushbackReader
            [java.util Calendar Date Random]))
