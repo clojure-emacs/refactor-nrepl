@@ -121,15 +121,12 @@
 
 (defn- get-class-name [{:keys [op class type val children] :as node}]
   (when-not children
-    (try (cond
-          (and (class-op? op)
-               (:type :class)) (.getName val)
-
-               (and class (not (= op :import)
-                               ))
-               (str (.getName class)))
-         (catch Exception e
-           (println e)))))
+    (try
+      (cond
+        (and (class-op? op) (:type :class)) (.getName val)
+        (and class (not= op :import)) (str (.getName class)))
+      (catch Exception e
+        (println e)))))
 
 (defn- get-var-name [node]
   (some-> node
@@ -142,6 +139,7 @@
       (get-var-name node)))
 
 (defn- used-vars
+  "Finds used functions and classes"
   [ast]
   (->> ast
        (map nodes)
@@ -156,7 +154,7 @@
 (defn- prune-refer
   [refer-clause prefix used-syms]
   (map #(-> (str/split % #"/") second symbol)
-       (filter (into #{} used-syms)
+       (filter (set used-syms)
                (map #(str prefix "/" %) refer-clause))))
 
 (defn- remove-unused
@@ -180,7 +178,7 @@
 
 (defn remove-unused-imports
   [symbols-in-use imports]
-  (filter (into #{} symbols-in-use) imports))
+  (filter (set symbols-in-use) imports))
 
 (defn- remove-unused-requires [symbols-in-use libspecs]
   (map (partial remove-unused-syms-and-specs symbols-in-use) libspecs))
