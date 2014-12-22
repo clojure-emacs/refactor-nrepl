@@ -71,7 +71,7 @@
 
 (deftest removes-use
   (let [use-clause (get-ns-component ns1-cleaned :use)]
-    (is (= use-clause nil))))
+    (is (nil? use-clause))))
 
 (deftest combines-multiple-refers
   (let [requires (clean-ns ns2)
