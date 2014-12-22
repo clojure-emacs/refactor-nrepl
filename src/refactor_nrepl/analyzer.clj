@@ -57,7 +57,7 @@
         cached-ast
         (update-ast-cache file-content ns (build-ast ns aliases))))))
 
-(defn string-ast
+(defn get-ast
   [file-content]
   (try
     (cachable-ast file-content)

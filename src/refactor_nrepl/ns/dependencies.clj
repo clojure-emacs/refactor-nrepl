@@ -4,7 +4,7 @@
             [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [instaparse.core :refer [parse parser]]
-            [refactor-nrepl.analyzer :refer [string-ast]]
+            [refactor-nrepl.analyzer :refer [get-ast]]
             [refactor-nrepl.ns.helpers :refer [get-ns-component]])
   (:import java.util.regex.Pattern))
 
@@ -220,7 +220,7 @@
 (defn extract-dependencies [path ns-form]
   (let [libspecs (get-libspecs ns-form)
         file-content (slurp path)
-        symbols-in-use (-> file-content string-ast used-vars)
+        symbols-in-use (-> file-content get-ast used-vars)
         macros-in-use (used-macros file-content libspecs)]
     {:require (->> libspecs
                    (remove-unused-requires (concat macros-in-use symbols-in-use))
