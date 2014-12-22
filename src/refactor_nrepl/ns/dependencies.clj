@@ -113,21 +113,10 @@
   (some-> (get-ns-component ns-form :import) extract-imports
           flatten))
 
-(defn- class-op?
-  [op]
-  (or (= op :static-call)
-      (= op :const)
-      (= op :static-field)
-      (= op :new)))
-
-(defn- get-class-name [{:keys [op class type val children] :as node}]
-  (when-not children
-    (try
-      (cond
-        (and (class-op? op) (:type :class)) (.getName val)
-        (and class (not= op :import)) (str (.getName class)))
-      (catch Exception e
-        (println e)))))
+(defn- get-class-name [{:keys [op class children] :as node}]
+  (when (and (and class (not= op :import))
+             (not children))
+    (str (.getName class))))
 
 (defn- get-var-name [node]
   (some-> node
