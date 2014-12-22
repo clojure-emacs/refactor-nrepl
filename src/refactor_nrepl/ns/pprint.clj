@@ -64,15 +64,14 @@
   [[_ name & more :as ns-form]]
   (let [docstring? (when (string? (first more)) (first more))
         attrs? (when (map? (second more)) (second more))
-        forms (cond (and docstring? attrs?) (nthrest more 3)
+        forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
                     :else (rest more))]
     (-> (with-out-str
-          (printf "(ns %s" name)
-          (when docstring? (printf "\n\"%s\"\n" docstring? ))
-          (when attrs? (println) (pprint attrs?))
-          (if forms
-            (println)
+          (printf "(ns %s\n" name)
+          (when docstring? (printf "\"%s\"\n" docstring? ))
+          (when attrs? (pprint attrs?))
+          (when-not forms
             (print ")"))
           (dorun
            (map-indexed
