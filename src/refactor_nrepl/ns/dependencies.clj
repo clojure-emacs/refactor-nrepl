@@ -202,7 +202,7 @@
 
 (defn- macro-in-use? [file-content macro]
   (when (-> macro
-            (str "(\\b|\\B)")
+            (str "\\b")
             re-pattern
             (re-find file-content)
             empty?
