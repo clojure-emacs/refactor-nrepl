@@ -202,9 +202,8 @@
 
 (defn- macro-in-use? [file-content macro]
   (when (-> macro
-            str
-            Pattern/quote
-            Pattern/compile
+            (str "(\\b|\\B)")
+            re-pattern
             (re-find file-content)
             empty?
             not)
