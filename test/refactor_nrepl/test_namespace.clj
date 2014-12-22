@@ -97,3 +97,8 @@
         clean-imports (get-ns-component ns-without-unused-deps :import)]
     (is (= clean-requires requires))
     (is (= clean-imports imports))))
+
+(deftest test-pprint
+  (let [ns-str (pprint-ns (clean-ns ns1))
+        ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
+    (is (= ns1-str ns-str))))

@@ -5,7 +5,7 @@
   (:gen-class
    :name com.domain.tiny
    :extends java.lang.Exception
-   :methods [#^{:static true} [binomial [int int] double]])
+   :methods [[binomial [int int] double]])
   (:require
    [clojure.instant :as inst]
    [clojure data edn]

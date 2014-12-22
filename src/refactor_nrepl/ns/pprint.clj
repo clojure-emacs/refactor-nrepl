@@ -17,7 +17,9 @@
                       (println libspec)
                       (if (= idx 0)
                         (printf " %s " libspec)
-                        (printf "%s " libspec)))))
+                        (if (sequential? (nth libspecs (inc idx)))
+                          (printf "%s" libspec)
+                          (printf "%s " libspec))))))
                 libspecs)))
 
 (defn pprint-require-form
