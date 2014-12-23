@@ -115,8 +115,18 @@
 
 (defn- get-class-name [{:keys [op class children] :as node}]
   (when (and (and class (not= op :import))
-             (not children))
-    (str (.getName class))))
+             (not children)
+             (symbol? class))
+    (.getName (:val node))))
+
+(defn- get-class-name [{:keys [op class type val] :as node}]
+  (when-let [c (if (and (= :const op)
+                        (= :class type))
+                 val
+                 ;; catches static-invoke/static-field
+                 (when (class? class)
+                   class))]
+    (.getName ^Class c)))
 
 (defn- get-var-name [node]
   (some-> node

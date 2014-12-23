@@ -9,7 +9,6 @@
 ;;; The structure here is {ns {content-hash ast}}
 (def ^:private ast-cache (atom {}))
 
-;; these two fns could go to clojure.tools.namespace.parse: would worth a pull request
 (defn get-alias [as v]
   (cond as (first v)
         (= (first v) :as) (get-alias true (rest v))
