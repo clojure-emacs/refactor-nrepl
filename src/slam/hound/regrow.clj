@@ -97,7 +97,7 @@
                 :when (set/subset? syms-with-alias (ns->syms ns))]
             (ns-name ns)))))))
 
-(defn- candidates
+(defn candidates
   "Return a set of class or ns symbols that match the given constraints."
   [type missing body old-ns-map]
   (case type
