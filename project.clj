@@ -10,7 +10,7 @@
                  [http-kit "2.1.19"]
                  [org.clojure/data.json "0.2.5"]
                  [instaparse "1.3.4"]
-                 ^:source-dep [com.cemerick/pomegranate "0.3.0" :exclusions [org.apache.httpcomponents/httpclient]]
+                 ^:source-dep [com.cemerick/pomegranate "0.3.0" :exclusions [org.apache.maven.wagon/wagon-http]]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.5"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.7"]
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]]
