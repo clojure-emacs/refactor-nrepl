@@ -112,6 +112,10 @@
   (if a
     (str a)
     a))
+
+(defn fn-with-let [left]
+  (let [right (+ left 10)]
+    (+ right left)))
 "]
     (remove-debug-invocations :transport transport :file three-file)
 
@@ -169,3 +173,23 @@
         date-candidates (resolve-missing :transport transport :symbol "Date")]
     (is ((into #{} split-candidates) 'clojure.string))
     (is ((into #{} date-candidates) 'java.util.Date))))
+
+(deftest find-local-arg
+  (let [tmp-dir (create-test-project)
+        three-file (str tmp-dir "/src/com/example/three.clj")
+        transport (connect :port 7777)
+        result (find-usages :transport transport :name "a" :form-index-for-local 1 :file three-file)]
+    (println "tmp-dir: " tmp-dir)
+    (println "result: " (map println result))
+
+    (is (= 5 (count result)) (format "expected 5 results but got %d" (count result)))))
+
+(deftest find-local-let
+  (let [tmp-dir (create-test-project)
+        three-file (str tmp-dir "/src/com/example/three.clj")
+        transport (connect :port 7777)
+        result (find-usages :transport transport :name "right" :form-index-for-local 2 :file three-file)]
+    (println "tmp-dir: " tmp-dir)
+    (println "result: " (map println result))
+
+    (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))

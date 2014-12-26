@@ -134,10 +134,23 @@
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name clj-dir]}]
-  {:pre [ns name]}
-  (act-on-occurrences prettify-found-symbol-result :transport transport
-                      :ns ns :name name :clj-dir clj-dir))
+  [& {:keys [transport ns name clj-dir file form-index-for-local]}]
+  {:pre [(or (and ns name) (and file form-index-for-local))]}
+  (if form-index-for-local
+    (let [tr (or transport @transp (reset! transp (connect)))
+          syms (-> (nrepl-message 60000 tr {:op :refactor
+                                            :refactor-fn "find-local-symbol"
+                                            :form-index form-index-for-local
+                                            :ns-string (slurp file)
+                                            :var-name name})
+                   first)]
+      (println (format "found %d local occurrences of %s" (:syms-count syms) name))
+      (->> (:occurrence syms)
+           (map #(conj (vec (take 4 %)) name file (last %)))
+           (map prettify-found-symbol-result)
+           doall))
+    (act-on-occurrences prettify-found-symbol-result :transport transport
+                        :ns ns :name name :clj-dir clj-dir :form-index form-index-for-local :file file)))
 
 (defn rename-symbol
   "Renames symbols (defs and defns) in the project's given dir.

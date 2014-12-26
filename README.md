@@ -111,6 +111,10 @@ Finds and renames occurrences of symbols like defs and defns both where they are
 
 Provides information about a var. Currently this info is namespace and name. Similar to cider's info middleware but the namespace does not need to be loaded into the repl to be successful.
 
+### find local symbols
+
+Finds occurrences of local symbol (arguments, bound names in let, loops etc) both where they are defined and where they are used.
+
 ### clean-ns
 
 The `clean-ns` op will perform the following cleanups on an ns form:
@@ -185,7 +189,8 @@ to clojars:
 * Add caching of ASTs (by ns and hash of file content)
 * Add `resolve-missing` which resolves a missing symbol by scanning the classpath
 * Add `clean-ns` which performs various cleanups on the ns form.
-* var-info: returns basic var info (ns and name) based on the AST
+* Add `var-info` returns basic var info (ns and name) based on the AST
+* Add `find-local-symbols` finds locally bound symbols
 
 ### 0.2.2
 

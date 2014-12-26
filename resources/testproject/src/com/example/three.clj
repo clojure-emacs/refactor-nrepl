@@ -5,3 +5,7 @@
   (if a
     (str a)
     a))
+
+(defn fn-with-let [left]
+  (let [right (+ left 10)]
+    (+ right left)))

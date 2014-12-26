@@ -97,6 +97,11 @@
         (and (coll? form) (= "def" (-> form first str)) (= var-name (-> form second str))) ;; def/defn definition
         (and (coll? form) (= "var" (-> form first str)) (= (str/replace var-name "#'" "") (-> form second str)))))) ;;#'varname style reference
 
+(defn- find-local-symbol-reply [{:keys [transport ns-string var-name form-index] :as msg}]
+  (let [top-level-form-ast (-> ns-string ns-ast (nth form-index))
+        local-occurrences (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))]
+    (transport/send transport (response-for msg :occurrence local-occurrences :syms-count (count local-occurrences) :status :done))))
+
 (defn- var-info-reply [{:keys [transport ns-string name] :as msg}]
   (transport/send transport
                   (response-for msg
@@ -127,6 +132,7 @@
             (= "find-debug-fns" refactor-fn) (find-debug-fns-reply msg)
             (= "find-symbol" refactor-fn) (find-symbol-reply msg)
             (= "var-info" refactor-fn) (var-info-reply msg)
+            (= "find-local-symbol" refactor-fn) (find-local-symbol-reply msg)
             :else
             (handler msg))
       (handler msg))))
@@ -142,8 +148,11 @@
             [line-number end-line-number column-number end-column-number fn-name]
           - find-symbol: finds symbol in the project returns tuples containing
             [line-number end-line-number column-number end-column-number fn-name absolute-path the-matched-line]
-            when done returns done status message a found symbols count                 - var-info: returns var's info tuples containing
-            [ns name]"
+            when done returns done status message a found symbols count                           - var-info: returns var's info tuples containing
+            [ns name]
+           - find-local-symbol: returns local var's info tuples containing
+            [line-number end-line-number column-number end-column-number local-type]
+            local type can be one of arg, catch, fn, let, letfn or loop"
     :requires {"ns-string" "the body of the namespace to build the AST with"
                "refactor-fn" "The refactor function to invoke"}
     :returns {"status" "done"
