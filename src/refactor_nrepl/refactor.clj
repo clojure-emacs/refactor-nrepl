@@ -1,5 +1,5 @@
 (ns refactor-nrepl.refactor
-  (:require [refactor-nrepl.analyzer :refer [get-ast]]
+  (:require [refactor-nrepl.analyzer :refer [ns-ast]]
             [refactor-nrepl.util :refer :all]
             [clojure.string :refer [split join] :as str]
             [clojure.tools.analyzer.ast :refer :all]
@@ -63,14 +63,14 @@
     (find-nodes ast (partial contains-var-or-const? name (alias-info ast)))))
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
-  (let [ast (get-ast ns-string)
+  (let [ast (ns-ast ns-string)
         result (find-invokes ast debug-fns)]
     (transport/send transport (response-for msg :value (when (not-empty result) result) :status :done))))
 
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
         locs (->> file-content
-                  get-ast
+                  ns-ast
                   (find-symbol fully-qualified-name)
                   (filter #(first %)))]
     (when-not (empty? locs)
@@ -102,7 +102,7 @@
                   (response-for msg
                                 :var-info
                                 (-> (->> ns-string
-                                         get-ast
+                                         ns-ast
                                          (map nodes)
                                          flatten
                                          (filter (partial form-contains-var name))
@@ -113,7 +113,7 @@
                                 :status :done)))
 
 (defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
-  (let [ast (get-ast ns-string)
+  (let [ast (ns-ast ns-string)
         matches (find-nodes ast (partial contains-var referred (alias-info ast)))
         result (< 0 (count matches))]
     (transport/send transport (response-for msg :value (when result (str result)) :status :done))))

@@ -56,7 +56,8 @@
         cached-ast
         (update-ast-cache file-content ns (build-ast ns aliases))))))
 
-(defn get-ast
+(defn ns-ast
+  "builds AST for a namespace"
   [file-content]
   (try
     (cachable-ast file-content)
