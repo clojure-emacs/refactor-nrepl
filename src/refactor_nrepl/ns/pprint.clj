@@ -14,7 +14,7 @@
                   (if (= idx (dec (count libspecs)))
                     (printf "%s]\n" libspec)
                     (if (sequential? libspec)
-                      (println libspec)
+                      (pprint libspec)
                       (if (= idx 0)
                         (printf " %s " libspec)
                         (if (sequential? (nth libspecs (inc idx)))
