@@ -10,8 +10,7 @@
   * Remove any duplication in the :require and :import form.
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
-  (:require [clojure.string :as str]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]]
+  (:require [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]

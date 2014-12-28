@@ -1,8 +1,9 @@
 (ns refactor-nrepl.analyzer
   (:refer-clojure :exclude [macroexpand-1])
-  (:require [clojure.tools.analyzer.ast :refer :all]
-            [clojure.tools.analyzer :as ana]
-            [clojure.tools.analyzer.jvm :as ana.jvm]
+  (:require [clojure.tools.analyzer :as ana]
+            [clojure.tools.analyzer.jvm :as aj]
+            [clojure.tools.analyzer.passes :refer [schedule]]
+            [clojure.tools.analyzer.passes.jvm.validate :refer [validate]]
             [clojure.tools.namespace.parse :refer [read-ns-decl]])
   (:import java.io.PushbackReader))
 
@@ -47,7 +48,7 @@
 (defn- build-ast
   [ns aliases]
   (binding [ana/macroexpand-1 noop-macroexpand-1]
-    (assoc-in (ana.jvm/analyze-ns ns) [0 :alias-info] aliases)))
+    (assoc-in (aj/analyze-ns ns) [0 :alias-info] aliases)))
 
 (defn- cachable-ast [file-content]
   (let [[ns aliases] (parse-ns file-content)]
@@ -65,3 +66,13 @@
       (println "error when building AST for" (first (parse-ns file-content)))
       (.printStackTrace ex)
       [])))
+
+(defn find-unbound-vars [form]
+  (let [unbound (atom #{})]
+    (binding [aj/run-passes (schedule #{#'validate})
+              ana/macroexpand-1 noop-macroexpand-1]
+      (aj/analyze form (aj/empty-env)
+                  {:passes-opts
+                   {:validate/unresolvable-symbol-handler
+                    (fn [_ var-name _]  (swap! unbound conj var-name) {})}}))
+    @unbound))
