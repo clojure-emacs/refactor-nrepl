@@ -1,7 +1,9 @@
 (ns refactor-nrepl.client
-  (:require [clojure.tools.nrepl :as nrepl]
-            [clojure.string :as str])
-  (:import [java.io File]))
+  (:require [clojure
+             [edn :as edn]
+             [string :as str]]
+            [clojure.tools.nrepl :as nrepl])
+  (:import java.io.File))
 
 (def ^:private nrepl-port
   (when (.exists (java.io.File. ".nrepl-port"))
@@ -245,3 +247,22 @@
     (when-not (str/blank? candidates)
       (->> (str/split candidates #" ")
            (map symbol)))))
+
+(defn find-unbound
+  "Finds unbound vars in the input form
+
+  Expected input:
+  - form which is the form to be analyzed for unbound vars
+  - [transport] an optional transport used to communicate with the client"
+  [& {:keys [transport form]}]
+  (let [tr (or transport @transp (reset! transp (connect)))
+        unbound (-> (nrepl-message tr {:op :find-unbound
+                                       :form (str form)})
+                    first
+                    :unbound)]
+
+    (if-not (str/blank? unbound)
+      (->> (str/split unbound #" ")
+           (map symbol)
+           set)
+      #{})))

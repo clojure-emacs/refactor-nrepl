@@ -1,17 +1,22 @@
 (ns refactor-nrepl.integration-tests
-  (:require [refactor-nrepl.client
-             :refer [find-usages connect rename-symbol remove-debug-invocations
-                     find-referred var-info resolve-missing]]
-            [refactor-nrepl.refactor]
-            [refactor-nrepl.ns.resolve-missing]
-            [refactor-nrepl.util :refer [list-project-clj-files]]
-            [clojure.tools.nrepl.server :as nrserver]
-            [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
+  (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
-            [clojure.java.io :as io]
+            [clojure.tools.nrepl.server :as nrserver]
             [me.raynes.fs :as fs]
-            [clojure.string :as str])
-  (:import (java.io File)))
+            [refactor-nrepl
+             [client
+              :refer
+              [connect
+               find-referred
+               find-unbound
+               find-usages
+               remove-debug-invocations
+               rename-symbol
+               resolve-missing
+               var-info]]
+             find-unbound refactor]
+            refactor-nrepl.ns.resolve-missing)
+  (:import java.io.File))
 
 (defn- create-temp-dir
   "Creates and returns a new temporary directory java.io.File."
@@ -35,6 +40,7 @@
          :port 7777
          :handler (nrserver/default-handler
                     #'refactor-nrepl.refactor/wrap-refactor
+                    #'refactor-nrepl.find-unbound/wrap-find-unbound
                     #'refactor-nrepl.ns.resolve-missing/wrap-resolve-missing))]
     (println "server [" server "]" " started...")
     server))
@@ -171,8 +177,8 @@
   (let [transport (connect :port 7777)
         split-candidates (resolve-missing :transport transport :symbol "split")
         date-candidates (resolve-missing :transport transport :symbol "Date")]
-    (is ((into #{} split-candidates) 'clojure.string))
-    (is ((into #{} date-candidates) 'java.util.Date))))
+    (is ((set split-candidates) 'clojure.string))
+    (is ((set date-candidates) 'java.util.Date))))
 
 (deftest find-local-arg
   (let [tmp-dir (create-test-project)
@@ -193,3 +199,8 @@
     (println "result: " (map println result))
 
     (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))
+
+(deftest test-find-unbound-vars
+  (let [transport (connect :port 7777)]
+    (is (= (find-unbound :transport transport :form '(+ a b c)) '#{a b c}))
+    (is (empty? (find-unbound :transport transport :form '(+ 1 2))))))

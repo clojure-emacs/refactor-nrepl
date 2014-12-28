@@ -1,11 +1,15 @@
 (ns refactor-nrepl.refactor
-  (:require [refactor-nrepl.analyzer :refer [ns-ast]]
-            [refactor-nrepl.util :refer :all]
-            [clojure.string :refer [split join] :as str]
+  (:require [clojure
+             [edn :as edn]
+             [string :as str :refer [join split]]]
             [clojure.tools.analyzer.ast :refer :all]
-            [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
-            [clojure.tools.nrepl.misc :refer [response-for]]
-            [clojure.tools.nrepl.transport :as transport]))
+            [clojure.tools.nrepl
+             [middleware :refer [set-descriptor!]]
+             [misc :refer [response-for]]
+             [transport :as transport]]
+            [refactor-nrepl
+             [analyzer :refer [find-unbound-vars ns-ast]]
+             [util :refer :all]]))
 
 (defn- node->var [alias-info node]
   (let [class (or (:class node) (-> node
@@ -39,7 +43,7 @@
 
 (defn- find-invokes
   "Finds fn invokes in the AST.
-   Returns a list of line, end-line, column, end-column and fn name tuples"
+  Returns a list of line, end-line, column, end-column and fn name tuples"
   [ast fn-names]
   (find-nodes ast (partial fns-invoked? (into #{} (split fn-names #",")) (alias-info ast))))
 
@@ -65,7 +69,9 @@
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (let [ast (ns-ast ns-string)
         result (find-invokes ast debug-fns)]
-    (transport/send transport (response-for msg :value (when (not-empty result) result) :status :done))))
+    (transport/send transport
+                    (response-for msg :value (when (not-empty result) result)
+                                  :status :done))))
 
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
@@ -86,16 +92,24 @@
         fully-qualified-name (if (= namespace "clojure.core")
                                name
                                (str/join "/" [namespace name]))
-        syms (map identity (mapcat (partial find-symbol-in-file fully-qualified-name) (list-project-clj-files dir)))]
+        syms (->> dir
+                  list-project-clj-files
+                  (mapcat (partial find-symbol-in-file fully-qualified-name))
+                  (map identity))]
     (doseq [found-sym syms]
       (transport/send transport (response-for msg :occurrence found-sym)))
-    (transport/send transport (response-for msg :syms-count (count syms) :status :done))))
+    (transport/send transport (response-for msg :syms-count (count syms)
+                                            :status :done))))
 
 (defn- form-contains-var [var-name node]
   (let [form (:form node)]
     (or (= var-name (str form)) ;; invoke
-        (and (coll? form) (= "def" (-> form first str)) (= var-name (-> form second str))) ;; def/defn definition
-        (and (coll? form) (= "var" (-> form first str)) (= (str/replace var-name "#'" "") (-> form second str)))))) ;;#'varname style reference
+        (and (coll? form) (= "def" (-> form first str))
+             (= var-name (-> form second str))) ; def/defn definition
+        (and (coll? form) (= "var" (-> form first str))
+             ;; #'varname style reference
+             (= (str/replace var-name "#'" "")
+                (-> form second str))))))
 
 (defn- find-local-symbol-reply [{:keys [transport ns-string var-name form-index] :as msg}]
   (let [top-level-form-ast (-> ns-string ns-ast (nth form-index))
@@ -121,10 +135,12 @@
   (let [ast (ns-ast ns-string)
         matches (find-nodes ast (partial contains-var referred (alias-info ast)))
         result (< 0 (count matches))]
-    (transport/send transport (response-for msg :value (when result (str result)) :status :done))))
+    (transport/send transport (response-for msg :value (when result (str result))
+                                            :status :done))))
 
 (defn wrap-refactor
-  "Ensures that refactor only triggered with the right operation and forks to the appropriate refactor function"
+  "Ensures that refactor only triggered with the right operation and
+  forks to the appropriate refactor function"
   [handler]
   (fn [{:keys [op refactor-fn ns-string] :as msg}]
     (if (= "refactor" op)
