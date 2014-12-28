@@ -145,7 +145,8 @@
        (map nodes)
        flatten
        (map node->var)
-       (remove str/blank?)))
+       (remove str/blank?)
+       set))
 
 (defn- ns-in-use?
   [ns used-syms]
