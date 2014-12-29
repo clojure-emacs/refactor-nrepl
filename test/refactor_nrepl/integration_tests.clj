@@ -120,8 +120,16 @@
     a))
 
 (defn fn-with-let [left]
-  (let [right (+ left 10)]
-    (+ right left)))
+  (let [right 100]
+    (+ left right)
+    (let [right (+ left 10)]
+      (+ right left))))
+
+(defn other-fn-with-let [left]
+  (let [right 100]
+    (+ left right)
+    (let [right (+ left 10)]
+      (+ right left))))
 "]
     (remove-debug-invocations :transport transport :file three-file)
 
@@ -184,7 +192,7 @@
   (let [tmp-dir (create-test-project)
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
-        result (find-usages :transport transport :name "a" :form-index-for-local 1 :file three-file)]
+        result (find-usages :transport transport :name "a" :form-index-for-local 1 :file three-file :loc-line 3 :loc-column 24)]
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
 
@@ -194,7 +202,7 @@
   (let [tmp-dir (create-test-project)
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
-        result (find-usages :transport transport :name "right" :form-index-for-local 2 :file three-file)]
+        result (find-usages :transport transport :name "right" :form-index-for-local 2 :file three-file :loc-line 12 :loc-column 12)]
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
 

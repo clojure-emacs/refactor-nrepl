@@ -111,9 +111,15 @@
              (= (str/replace var-name "#'" "")
                 (-> form second str))))))
 
-(defn- find-local-symbol-reply [{:keys [transport ns-string var-name form-index] :as msg}]
+(defn- find-local-symbol-reply [{:keys [transport ns-string var-name form-index loc-line loc-column] :as msg}]
   (let [top-level-form-ast (-> ns-string ns-ast (nth form-index))
-        local-occurrences (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))]
+        local-var-name (->> top-level-form-ast
+                            nodes
+                            (filter #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))
+                            (filter #(and (= loc-line (:line (:env %))) (>= loc-column (:column (:env %))) (<= loc-column (:end-column (:env %)))))
+                            first
+                            :name)
+        local-occurrences (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))]
     (transport/send transport (response-for msg :occurrence local-occurrences :syms-count (count local-occurrences) :status :done))))
 
 (defn- var-info-reply [{:keys [transport ns-string name] :as msg}]

@@ -136,13 +136,15 @@
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name clj-dir file form-index-for-local]}]
+  [& {:keys [transport ns name clj-dir file form-index-for-local loc-line loc-column]}]
   {:pre [(or (and ns name) (and file form-index-for-local))]}
   (if form-index-for-local
     (let [tr (or transport @transp (reset! transp (connect)))
           syms (-> (nrepl-message 60000 tr {:op :refactor
                                             :refactor-fn "find-local-symbol"
                                             :form-index form-index-for-local
+                                            :loc-line loc-line
+                                            :loc-column loc-column
                                             :ns-string (slurp file)
                                             :var-name name})
                    first)]

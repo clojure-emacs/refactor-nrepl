@@ -7,5 +7,13 @@
     a))
 
 (defn fn-with-let [left]
-  (let [right (+ left 10)]
-    (+ right left)))
+  (let [right 100]
+    (+ left right)
+    (let [right (+ left 10)]
+      (+ right left))))
+
+(defn other-fn-with-let [left]
+  (let [right 100]
+    (+ left right)
+    (let [right (+ left 10)]
+      (+ right left))))
