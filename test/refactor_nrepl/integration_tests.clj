@@ -62,6 +62,8 @@
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
         result (find-usages :transport transport :ns 'com.example.two
+                            :file (str tmp-dir "/src/com/example/one.clj")
+                            :loc-line 6 :loc-column 19
                             :name "foo" :clj-dir (str tmp-dir))]
 
     (println "tmp-dir: " tmp-dir)
@@ -192,7 +194,7 @@
   (let [tmp-dir (create-test-project)
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
-        result (find-usages :transport transport :name "a" :form-index-for-local 1 :file three-file :loc-line 3 :loc-column 24)]
+        result (find-usages :transport transport :name "a" :file three-file :loc-line 3 :loc-column 24)]
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
 
@@ -202,7 +204,7 @@
   (let [tmp-dir (create-test-project)
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
-        result (find-usages :transport transport :name "right" :form-index-for-local 2 :file three-file :loc-line 12 :loc-column 12)]
+        result (find-usages :transport transport :name "right" :file three-file :loc-line 12 :loc-column 12)]
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
 

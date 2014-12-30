@@ -73,6 +73,15 @@
                     (response-for msg :value (when (not-empty result) result)
                                   :status :done))))
 
+(defn- match [file-content line end-line]
+  (let [line-index (dec line)
+        eline (if (number? end-line) end-line line)]
+    (->> file-content
+         str/split-lines
+         (drop line-index)
+         (take (- eline line-index))
+         (str/join "\n"))))
+
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
         locs (->> file-content
@@ -80,22 +89,48 @@
                   (find-symbol fully-qualified-name)
                   (filter #(first %)))]
     (when-not (empty? locs)
-      (map #(conj % (.getCanonicalPath file) (->> file-content
-                                                  str/split-lines
-                                                  (drop (dec (first %)))
-                                                  first))
+      (map #(conj % (.getCanonicalPath file) (match file-content (first %) (second %)))
            locs))))
 
-(defn- find-symbol-reply [{:keys [transport ns-string ns name clj-dir] :as msg}]
+(defn- find-global-symbol-reply [file ns var-name clj-dir]
   (let [dir (or clj-dir ".")
-        namespace (or ns (ns-from-string ns-string))
+        namespace (or ns (ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
-                               name
-                               (str/join "/" [namespace name]))
-        syms (->> dir
-                  list-project-clj-files
-                  (mapcat (partial find-symbol-in-file fully-qualified-name))
-                  (map identity))]
+                               var-name
+                               (str/join "/" [namespace var-name]))]
+    (->> dir
+         list-project-clj-files
+         (mapcat (partial find-symbol-in-file fully-qualified-name))
+         (map identity))))
+
+(defn- node-at-loc? [loc-line loc-column node]
+  (and (= loc-line (:line (:env node))) (>= loc-column (:column (:env node))) (<= loc-column (:end-column (:env node)))))
+
+(defn- find-local-symbol-reply [file var-name loc-line loc-column]
+  (when (and (not-empty file)
+             loc-line (or (not (coll? loc-line)) (not-empty loc-line))
+             loc-column (or (not (coll? loc-column)) (not-empty loc-column)))
+    (let [ns-string (slurp file)
+          ast (ns-ast ns-string)]
+      (when-let [form-index (->> ast
+                                 (map-indexed #(vector %1 (->> %2
+                                                               nodes
+                                                               (some (partial node-at-loc? loc-line loc-column)))))
+                                 (filter #(second %))
+                                 ffirst)]
+        (let [top-level-form-ast (nth ast form-index)
+              local-var-name (->> top-level-form-ast
+                                  nodes
+                                  (filter #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))
+                                  (filter (partial node-at-loc? loc-line loc-column))
+                                  first
+                                  :name)]
+             (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
+                  (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %))))))))))
+
+(defn- find-symbol-reply [{:keys [transport file ns name clj-dir loc-line loc-column] :as msg}]
+  (let [syms (or (not-empty (find-local-symbol-reply file name loc-line loc-column))
+                 (find-global-symbol-reply file ns name clj-dir))]
     (doseq [found-sym syms]
       (transport/send transport (response-for msg :occurrence found-sym)))
     (transport/send transport (response-for msg :syms-count (count syms)
@@ -110,17 +145,6 @@
              ;; #'varname style reference
              (= (str/replace var-name "#'" "")
                 (-> form second str))))))
-
-(defn- find-local-symbol-reply [{:keys [transport ns-string var-name form-index loc-line loc-column] :as msg}]
-  (let [top-level-form-ast (-> ns-string ns-ast (nth form-index))
-        local-var-name (->> top-level-form-ast
-                            nodes
-                            (filter #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))
-                            (filter #(and (= loc-line (:line (:env %))) (>= loc-column (:column (:env %))) (<= loc-column (:end-column (:env %)))))
-                            first
-                            :name)
-        local-occurrences (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))]
-    (transport/send transport (response-for msg :occurrence local-occurrences :syms-count (count local-occurrences) :status :done))))
 
 (defn- var-info-reply [{:keys [transport ns-string name] :as msg}]
   (transport/send transport

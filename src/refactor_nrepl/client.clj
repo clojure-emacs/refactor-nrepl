@@ -56,17 +56,10 @@
         replacement (str esc red no-ns-sym esc reset)]
     (str/replace full-hit (re-pattern no-ns-sym) replacement)))
 
-(defn- prettify-found-symbol-result [[line end-line col end-col sym path _]]
-  (let [line-index (dec line)
-        eline (if (number? end-line) end-line line)]
-    (->> path
-         slurp
-         str/split-lines
-         (drop line-index)
-         (take (- eline line-index))
-         (str/join "\n")
-         (colorise-found sym)
-         (str esc yellow path esc reset "[" line "]" ": "))))
+(defn- prettify-found-symbol-result [[line _ _ _ sym path match]]
+  (->> match
+       (colorise-found sym)
+       (str esc yellow path esc reset "[" line "]" ": ")))
 
 (defn- replace-in-line [name new-name occ-line-index col indexed-line]
   (let [line (val indexed-line)]
@@ -103,21 +96,25 @@
                              host "localhost"}}]
   (nrepl/connect :port port :host host))
 
-(defn- act-on-occurrences [action & {:keys [transport ns name clj-dir]}]
+(defn- act-on-occurrences [action & {:keys [transport ns name clj-dir loc-line loc-column file]}]
   (let [tr (or transport @transp (reset! transp (connect)))
-        found-symbols (->> {:op :refactor
-                            :refactor-fn "find-symbol"
-                            :ns ns
-                            :clj-dir (or clj-dir ".")
-                            :name name}
+        req {:op :refactor
+             :refactor-fn "find-symbol"
+             :ns ns
+             :clj-dir (or clj-dir ".")
+             :loc-line loc-line
+             :loc-column loc-column
+             :name name}
+        found-symbols (->> req
+                           (#(if file (assoc % :file file) %))
                            (nrepl-message 60000 tr)
                            (map (juxt :occurrence :syms-count)))]
-    (println (format "found %d occurrences of %s/%s"
+    (println (format "found %d occurrences of %s%s"
                      (->> found-symbols
                           (map second)
                           (remove nil?)
                           first)
-                     ns name))
+                     (if ns (str ns "/") "") name))
     (->> found-symbols
          (map first)
          (remove nil?)
@@ -136,25 +133,10 @@
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name clj-dir file form-index-for-local loc-line loc-column]}]
-  {:pre [(or (and ns name) (and file form-index-for-local))]}
-  (if form-index-for-local
-    (let [tr (or transport @transp (reset! transp (connect)))
-          syms (-> (nrepl-message 60000 tr {:op :refactor
-                                            :refactor-fn "find-local-symbol"
-                                            :form-index form-index-for-local
-                                            :loc-line loc-line
-                                            :loc-column loc-column
-                                            :ns-string (slurp file)
-                                            :var-name name})
-                   first)]
-      (println (format "found %d local occurrences of %s" (:syms-count syms) name))
-      (->> (:occurrence syms)
-           (map #(conj (vec (take 4 %)) name file (last %)))
-           (map prettify-found-symbol-result)
-           doall))
-    (act-on-occurrences prettify-found-symbol-result :transport transport
-                        :ns ns :name name :clj-dir clj-dir :form-index form-index-for-local :file file)))
+  [& {:keys [transport ns name clj-dir file loc-line loc-column]}]
+  {:pre [(or (and ns name) (and file loc-line loc-column))]}
+  (act-on-occurrences prettify-found-symbol-result :transport transport
+                      :ns ns :name name :clj-dir clj-dir :file file :loc-line loc-line :loc-column loc-column))
 
 (defn rename-symbol
   "Renames symbols (defs and defns) in the project's given dir.
