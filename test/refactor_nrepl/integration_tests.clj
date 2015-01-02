@@ -69,7 +69,7 @@
     (println "tmp-dir: " tmp-dir)
     (println "result: " (map println result))
 
-    (is (= 3 (count result)) (format "expected 2 results but got only %d" (count result)))
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
     (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
     (is (re-matches #"(?s).*\[2\].*" (first result)) "call of foo not found in ns com.example.one")
@@ -80,6 +80,19 @@
 
     ;; clean-up
     (.delete tmp-dir)))
+
+(deftest test-find-fn-in-similarly-named-ns
+  (let [tmp-dir (create-test-project)
+        transport (connect :port 7777)
+        result (find-usages :transport transport :ns 'com.example.three
+                            :file (str tmp-dir "/src/com/example/four.clj")
+                            :loc-line 11 :loc-column 3
+                            :name "thre" :clj-dir (str tmp-dir))]
+
+    (println "tmp-dir: " tmp-dir)
+    (println "result: " (map println result))
+
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-rename-foo
   (let [tmp-dir (create-test-project)
@@ -132,6 +145,8 @@
     (+ left right)
     (let [right (+ left 10)]
       (+ right left))))
+
+(defn thre [])
 "]
     (remove-debug-invocations :transport transport :file three-file)
 

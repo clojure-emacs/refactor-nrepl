@@ -51,11 +51,17 @@
   (contains-var? #{var-name} alias-info node))
 
 (defn- contains-const? [var-name alias-info node]
-  (let [[ns name] (str/split var-name #"/")]
-    (and (= :const (:op node))
-         (.contains (-> node :val str) ns)
+  (let [[ns name] (str/split var-name #"/")
+        const-node? (= :const (:op node))
+        node-val-words (when const-node? (->> node
+                                        :val
+                                        str
+                                        (re-seq #"[\w\.:]+")
+                                        set))]
+    (and const-node?
+         (node-val-words ns)
          (or (not name)
-             (.contains (-> node :val str) name))
+             (node-val-words name))
          var-name)))
 
 (defn- contains-var-or-const? [var-name alias-info node]

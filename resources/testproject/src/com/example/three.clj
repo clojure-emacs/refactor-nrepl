@@ -17,3 +17,5 @@
     (+ left right)
     (let [right (+ left 10)]
       (+ right left))))
+
+(defn thre [])
