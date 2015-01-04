@@ -15,7 +15,8 @@
                resolve-missing
                var-info]]
              find-unbound refactor]
-            refactor-nrepl.ns.resolve-missing)
+            refactor-nrepl.ns.resolve-missing
+            [clojure.edn :as edn])
   (:import java.io.File))
 
 (defn- create-temp-dir
@@ -253,5 +254,7 @@
 
 (deftest test-find-unbound-vars
   (let [transport (connect :port 7777)]
-    (is (= (find-unbound :transport transport :form '(+ a b c)) '#{a b c}))
-    (is (empty? (find-unbound :transport transport :form '(+ 1 2))))))
+    (is (= (find-unbound :transport transport :ns "refactor-nrepl.integration-tests")
+           '#{}))
+    (is (= (find-unbound :transport transport :ns "com.example.five")
+           '#{s sep}))))

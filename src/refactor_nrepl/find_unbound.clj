@@ -1,15 +1,14 @@
 (ns refactor-nrepl.find-unbound
-  (:require [clojure.edn :as edn]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]
             [refactor-nrepl.analyzer :refer [find-unbound-vars]]))
 
-(defn- find-unbound-reply [{:keys [transport form] :as msg}]
+(defn- find-unbound-reply [{:keys [transport ns] :as msg}]
   (try
-    (let [unbound (find-unbound-vars (edn/read-string form))]
+    (let [unbound (find-unbound-vars ns)]
       (transport/send transport
                       (response-for msg
                                     :unbound (str/join " " unbound)
@@ -19,7 +18,7 @@
 
 (defn wrap-find-unbound
   [handler]
-  (fn [{:keys [op form] :as msg}]
+  (fn [{:keys [op] :as msg}]
     (if (= "find-unbound" op)
       (find-unbound-reply msg)
       (handler msg))))
@@ -28,8 +27,8 @@
  #'wrap-find-unbound
  {:handles
   {"find-unbound"
-   {:doc "Finds unbound vars in the input form. "
-    :requires {"form" "The form on which to work"}
+   {:doc "Finds unbound vars in the input ns."
+    :requires {"ns" "The ns containing unbound vars"}
     :returns {"status" "done"
               "error" "an error message, intended to be displayed to the user."
               "unbound" "space separated list of unbound vars"}}}})
