@@ -94,6 +94,32 @@
 
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
+(deftest test-find-fn-in-dashed-ns
+  (let [tmp-dir (create-test-project)
+        transport (connect :port 7777)
+        result (find-usages :transport transport :ns 'com.example.twenty-four
+                            :file (str tmp-dir "/src/com/example/four.clj")
+                            :loc-line 14 :loc-column 4
+                            :name "stuff" :clj-dir (str tmp-dir))]
+
+    (println "tmp-dir: " tmp-dir)
+    (println "result: " (map println result))
+
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+
+(deftest test-find-dashed-fn
+  (let [tmp-dir (create-test-project)
+        transport (connect :port 7777)
+        result (find-usages :transport transport :ns 'com.example.twenty-four
+                            :file (str tmp-dir "/src/com/example/four.clj")
+                            :loc-line 16 :loc-column 4
+                            :name "more-stuff" :clj-dir (str tmp-dir))]
+
+    (println "tmp-dir: " tmp-dir)
+    (println "result: " (map println result))
+
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+
 (deftest test-rename-foo
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)

@@ -50,14 +50,16 @@
 (defn- contains-var [var-name alias-info node]
   (contains-var? #{var-name} alias-info node))
 
+(def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
+
 (defn- contains-const? [var-name alias-info node]
   (let [[ns name] (str/split var-name #"/")
         const-node? (= :const (:op node))
         node-val-words (when const-node? (->> node
-                                        :val
-                                        str
-                                        (re-seq #"[\w\.:]+")
-                                        set))]
+                                              :val
+                                              str
+                                              (re-seq symbol-regex)
+                                              set))]
     (and const-node?
          (node-val-words ns)
          (or (not name)
