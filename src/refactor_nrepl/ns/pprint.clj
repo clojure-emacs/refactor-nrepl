@@ -3,6 +3,10 @@
             [clojure.string :as str]
             [refactor-nrepl.ns.helpers :refer [prefix-form?]]))
 
+(defn- libspec-vectors-last [libspecs]
+  (conj (vec (remove sequential? libspecs))
+        (vec (filter sequential? libspecs))))
+
 (defn- pprint-prefix-form [[name & libspecs]]
   (printf "[%s" name)
   (dorun
@@ -20,7 +24,7 @@
                         (if (sequential? (nth libspecs (inc idx)))
                           (printf "%s" libspec)
                           (printf "%s " libspec))))))
-                libspecs)))
+                (libspec-vectors-last libspecs))))
 
 (defn pprint-require-form
   [[_ & libspecs]]

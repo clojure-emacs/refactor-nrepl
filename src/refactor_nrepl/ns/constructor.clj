@@ -76,8 +76,8 @@
 (defn- sort-libspecs-with-prefix
   [libspec]
   (if (prefix-form? libspec)
-    (vec (cons (first libspec)
-               (sort dependency-comparator (rest libspec))))
+    (apply vector (first libspec)
+           (sort dependency-comparator (rest libspec)))
     libspec))
 
 (defn- sort-libspecs

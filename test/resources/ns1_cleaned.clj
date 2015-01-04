@@ -10,7 +10,8 @@
              [instant :as inst]
              [pprint :refer [cl-format formatter get-pretty-writer]]
              [string :refer :all :rename {replace foo reverse bar}]
-             [test :refer :all]]
+             [test :refer :all]
+             xml]
             clojure.test.junit)
   (:import java.io.PushbackReader
            [java.util Calendar Date Random]))

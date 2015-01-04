@@ -6,7 +6,7 @@
 :name com.domain.tiny
 :extends java.lang.Exception
 :methods [[binomial [int int] double]])
-(:require [clojure data edn
+(:require [clojure data edn xml
 [instant :as inst]
 [pprint :refer [cl-format formatter get-pretty-writer]]
 [string :refer :all :rename {replace foo, reverse bar}]
