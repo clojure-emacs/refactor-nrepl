@@ -4,7 +4,8 @@
             [clojure.tools.analyzer.jvm :as aj]
             [clojure.tools.analyzer.passes :refer [schedule]]
             [clojure.tools.analyzer.passes.jvm.validate :refer [validate]]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]])
+            [clojure.tools.namespace.parse :refer [read-ns-decl]]
+            [clojure.tools.analyzer.passes.emit-form :as emit-form])
   (:import java.io.PushbackReader))
 
 ;;; The structure here is {ns {content-hash ast}}
@@ -67,12 +68,19 @@
       (.printStackTrace ex)
       [])))
 
-(defn find-unbound-vars [form]
+;;; Used in eval+analyze to emit code for later evaluation
+;;; This isn't really of interest to us, so this is a no-op
+(defmethod clojure.tools.analyzer.passes.emit-form/-emit-form ::unresolved-sym
+  [& _])
+
+(defn find-unbound-vars [namespace]
   (let [unbound (atom #{})]
     (binding [aj/run-passes (schedule #{#'validate})
               ana/macroexpand-1 noop-macroexpand-1]
-      (aj/analyze form (aj/empty-env)
-                  {:passes-opts
-                   {:validate/unresolvable-symbol-handler
-                    (fn [_ var-name _]  (swap! unbound conj var-name) {})}}))
+      (aj/analyze-ns namespace (aj/empty-env)
+                     {:passes-opts
+                      {:validate/unresolvable-symbol-handler
+                       (fn [_ var-name orig-ast]  (swap! unbound conj var-name)
+                         {:op ::unresolved-sym :sym var-name :env (:env orig-ast)
+                          :form (:form orig-ast)})}}))
     @unbound))

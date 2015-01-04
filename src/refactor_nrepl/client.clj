@@ -236,15 +236,13 @@
   "Finds unbound vars in the input form
 
   Expected input:
-  - form which is the form to be analyzed for unbound vars
+  - ns which is the ns to be analyzed for unbound vars
   - [transport] an optional transport used to communicate with the client"
-  [& {:keys [transport form]}]
+  [& {:keys [transport ns]}]
   (let [tr (or transport @transp (reset! transp (connect)))
-        unbound (-> (nrepl-message tr {:op :find-unbound
-                                       :form (str form)})
-                    first
-                    :unbound)]
-
+        response (nrepl-message tr {:op :find-unbound
+                                    :ns ns})
+        unbound (:unbound (first response))]
     (if-not (str/blank? unbound)
       (->> (str/split unbound #" ")
            (map symbol)
