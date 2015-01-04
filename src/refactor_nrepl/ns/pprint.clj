@@ -74,11 +74,12 @@
                     (not (or docstring? attrs?)) more
                     :else (rest more))]
     (-> (with-out-str
-          (printf "(ns %s\n" name)
+          (printf "(ns %s" name)
+          (if (or docstring? attrs? forms)
+            (println)
+            (print ")"))
           (when docstring? (printf "\"%s\"\n" docstring? ))
           (when attrs? (pprint attrs?))
-          (when-not forms
-            (print ")"))
           (dorun
            (map-indexed
             (fn [idx form]
