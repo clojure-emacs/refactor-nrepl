@@ -4,24 +4,25 @@
             [refactor-nrepl.ns.helpers :refer [prefix-form?]]))
 
 (defn- libspec-vectors-last [libspecs]
-  (conj (vec (remove sequential? libspecs))
-        (vec (filter sequential? libspecs))))
+  (concat (remove sequential? libspecs)
+          (filter sequential? libspecs)))
 
 (defn- pprint-prefix-form [[name & libspecs]]
   (printf "[%s" name)
   (dorun
    (map-indexed (fn [idx libspec]
-                  (when (and (sequential? libspec)
+                  ;; insert newline after all non-libspec vectors
+                  (when (and (vector? libspec)
                              (or (= idx 0)
-                                 (= idx (count (take-while symbol? libspecs)))))
+                                 (= (dec idx) (count (take-while symbol? libspecs)))))
                     (println))
                   (if (= idx (dec (count libspecs)))
                     (printf "%s]\n" libspec)
-                    (if (sequential? libspec)
+                    (if (vector? libspec)
                       (pprint libspec)
                       (if (= idx 0)
                         (printf " %s " libspec)
-                        (if (sequential? (nth libspecs (inc idx)))
+                        (if  (vector? (nth libspecs idx))
                           (printf "%s" libspec)
                           (printf "%s " libspec))))))
                 (libspec-vectors-last libspecs))))
@@ -57,7 +58,7 @@
 
 (defn- pprint-import-form
   [[_ & imports]]
-  (printf "(:import " )
+  (printf "(:import ")
   (dorun
    (map-indexed
     (fn [idx import]
