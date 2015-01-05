@@ -47,7 +47,9 @@
 
 (defn- pprint-gen-class-form
   [[_ & elems]]
-  (println "(:gen-class")
+  (if (empty? elems)
+    (println "(:gen-class)")
+    (println "(:gen-class"))
   (dorun
    (map-indexed
     (fn [idx [key val]]
