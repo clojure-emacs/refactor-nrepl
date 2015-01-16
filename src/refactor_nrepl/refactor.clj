@@ -112,7 +112,10 @@
          (map identity))))
 
 (defn- node-at-loc? [loc-line loc-column node]
-  (and (= loc-line (:line (:env node))) (>= loc-column (:column (:env node))) (<= loc-column (:end-column (:env node)))))
+  (let [env (:env node)]
+    (and (= loc-line (:line env))
+         (>= loc-column (:column env))
+         (<= loc-column (:end-column env)))))
 
 (defn- find-local-symbol-reply [file var-name loc-line loc-column]
   (when (and (not-empty file)

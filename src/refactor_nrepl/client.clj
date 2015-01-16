@@ -130,6 +130,8 @@
   - name of the symbol to find as string
   - clj-dir director to search clj files in, defaults to `.`
   - transport optional, however if you don't provide your own repl
+  - loc-line optional, line of the symbol to find in the source file
+  - loc-column optional, column of the symbol to find in the source file
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
