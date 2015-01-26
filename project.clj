@@ -10,6 +10,7 @@
                  ^:source-dep [http-kit "2.1.19"]
                  [org.clojure/data.json "0.2.5"]
                  ^:source-dep [instaparse "1.3.4"]
+                 ^:source-dep [org.apache.httpcomponents/httpclient "4.3.5"]
                  ^:source-dep [com.cemerick/pomegranate "0.3.0"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.5"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.7"]
