@@ -1,5 +1,5 @@
 (ns refactor-nrepl.artifacts
-  (:require [cemerick.pomegranate :refer [add-dependencies]]
+  (:require [boot.pod :as pod]
             [clojure.data.json :as json]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
@@ -11,7 +11,20 @@
   (:import java.util.Date))
 
 (def artifacts (atom {} :meta {:last-modified nil}))
+
 (def millis-per-day (* 24 60 60 1000))
+
+;; pod without pool
+;; (pod/make-pod {:dependencies '[[com.cemerick/pomegranate "0.3.0"]]})
+;; (.require p-pod (into-array ["cemerick.pomegranate" "cemerick.pomegranate.aether"]))
+
+(defn- ppod-init [new-pod]
+  (pod/with-eval-in new-pod
+    (require '[cemerick.pomegranate]
+             '[cemerick.pomegranate.aether])))
+
+(def pomegranate-pod
+  (pod/pod-pool {:dependencies '[[com.cemerick/pomegranate "0.3.0"]]} :init ppod-init))
 
 (defn get-artifacts-from-clojars!
   "Returns a vector of [[some/lib \"0.1\"]...]."
@@ -101,12 +114,16 @@
   (try
     (let [dependency-vector (edn/read-string coordinates)
           coords [(->> dependency-vector (take 2) vec)]
-          repos (merge cemerick.pomegranate.aether/maven-central
-                       {"clojars" "http://clojars.org/repo"})]
+          repos (pod/with-eval-in (pomegranate-pod :refresh)
+                  (merge cemerick.pomegranate.aether/maven-central
+                         {"clojars" "http://clojars.org/repo"}))]
       (when-not (= (-> coords first count) 2)
         (throw (IllegalArgumentException. (str "Malformed dependency vector: "
                                                coordinates))))
-      (add-dependencies :coordinates coords :repositories repos)
+      (pod/with-eval-in (pomegranate-pod :refresh)
+        (cemerick.pomegranate/add-dependencies :coordinates coords :repositories repos))
+      ;; invoking add-dependencies without pod pool
+      ;;(.invoke (pomegranate-pod :refresh) "cemerick.pomegranate/add-dependencies" :coordinates coords :repositories repos)
       (transport/send transport (response-for msg :status :done
                                               :dependency (first coords))))
     (catch Exception e

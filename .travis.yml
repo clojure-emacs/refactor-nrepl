@@ -1,10 +1,13 @@
 language: clojure
+install:
+  - wget -O boot https://github.com/boot-clj/boot/releases/download/v2-r1/boot.sh
+  - chmod 755 boot
+  - ./boot -V
+env: 
+  global:
+    - BOOT_JVM_OPTIONS='-Xmx1g -XX:MaxPermSize=512m'
 script:
-  - lein2 source-deps
-  - lein2 with-profile +plugin.mranderson/config test
-  - lein2 with-profile +1.5,+plugin.mranderson/config test
-  - lein2 with-profile +1.6,+plugin.mranderson/config test
-  - lein2 with-profile +1.7,+plugin.mranderson/config test
+  - boot test-all
 jdk:
   - openjdk7
   - oraclejdk7

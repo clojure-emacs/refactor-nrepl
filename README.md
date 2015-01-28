@@ -191,6 +191,16 @@ to clojars:
 
 `lein with-profile +plugin.mranderson/config deploy clojars`
 
+## Build with [boot](https://github.com/boot-clj/boot)
+
+to run all tests:
+
+`boot test-all`
+
+to create jar and install locally:
+
+`boot pom jar install`
+
 ## Changelog
 
 * Add `hotload-dependency` which loads a new project dependency into the repl

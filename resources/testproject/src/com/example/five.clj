@@ -1,4 +1,4 @@
-(ns testproject.src.com.example.five
+(ns com.example.five
   (:require [clojure.string :refer [join split blank? trim]]))
 
 (defn fn-with-unbounds []
