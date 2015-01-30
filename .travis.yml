@@ -1,9 +1,9 @@
 language: clojure
 install:
-  - wget -O boot https://github.com/boot-clj/boot/releases/download/v2-r1/boot.sh
+  - wget -O boot https://github.com/boot-clj/boot/releases/download/2.0.0-rc8/boot.sh
   - chmod 755 boot
   - ./boot -V
-env: 
+env:
   global:
     - BOOT_JVM_OPTIONS='-Xmx1g -XX:MaxPermSize=512m'
 script:
