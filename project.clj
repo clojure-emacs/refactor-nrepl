@@ -11,11 +11,12 @@
                  [org.clojure/data.json "0.2.5"]
                  ^:source-dep [instaparse "1.3.4"]
                  ^:source-dep [org.apache.httpcomponents/httpclient "4.3.5"]
-                 ^:source-dep [com.cemerick/pomegranate "0.3.0"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.5"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.7"]
-                 ^:source-dep [org.clojure/tools.reader "0.8.12"]]
+                 ^:source-dep [org.clojure/tools.reader "0.8.12"]
+                 [org.projectodd.shimdandy/shimdandy-api "1.0.1"]]
   :plugins [[thomasa/mranderson "0.3.0"]]
+  :resource-paths ["libs/"]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]]}
              :test {:dependencies [[print-foo "1.0.1"]]}
