@@ -107,8 +107,10 @@
         (throw (IllegalArgumentException. (str "Malformed dependency vector: "
                                                coordinates))))
       (add-dependencies :coordinates coords :repositories repos)
-      (transport/send transport (response-for msg :status :done
-                                              :dependency (first coords))))
+      (transport/send transport
+                      (response-for msg :status :done
+                                    :dependency
+                                    (apply str (interpose " " (first coords))))))
     (catch Exception e
       (transport/send transport (response-for msg :error (.getMessage e)
                                               :status :done)))))
