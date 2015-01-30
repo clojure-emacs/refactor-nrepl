@@ -7,7 +7,7 @@ env:
   global:
     - BOOT_JVM_OPTIONS='-Xmx1g -XX:MaxPermSize=512m'
 script:
-  - boot test-all
+  - ./boot test-all
 jdk:
   - openjdk7
   - oraclejdk7
