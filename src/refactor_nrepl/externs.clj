@@ -9,7 +9,7 @@
 (defn create-runtime []
   (let [urls [(URL. "file:libs/shimdandy-impl-1.1.0.jar")
               (URL. "file:libs/clojure-1.6.0.jar")
-              (URL. "file:libs/pomegranate-0.3.0.jar")]
+              (URL. "file:libs/pomegranate-0.3.1-SNAPSHOT.jar")]
         cl (URLClassLoader. (into-array URL urls))]
     (reset! rt (ClojureRuntimeShim/newRuntime cl "refactor-nrepl"))))
 
