@@ -5,6 +5,7 @@
              [string :as str]]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -33,7 +34,7 @@
   (or (empty? @artifacts)
       (neg? (- millis-per-day
                (- (-> artifacts meta :last-modified .getTime)
-                  (-> (java.util.Date.) .getTime))))))
+                  (.getTime (java.util.Date.)))))))
 
 (defn- get-all-clj-artifacts!
   "All the artifacts under org.clojure in mvn central"
@@ -74,13 +75,12 @@
                           dorun)))))
 
 (defn- get-artifacts-from-mvn-central! []
-  (-> (get-all-clj-artifacts!)
-      (add-artifacts)))
+  (add-artifacts (get-all-clj-artifacts!)))
 
 (defn- update-artifact-cache! []
   (let [mvn-central-futures (get-artifacts-from-mvn-central!)
         clojars-future (future (add-artifacts-from-clojars!))]
-    (-> (map deref mvn-central-futures) dorun)
+    (dorun (map deref mvn-central-futures))
     @clojars-future)
   (alter-meta! artifacts update-in [:last-modified]
                (constantly (java.util.Date.))))
@@ -111,8 +111,7 @@
       (add-dependencies :coordinates coords :repositories repos)
       (transport/send transport
                       (response-for msg :status :done
-                                    :dependency
-                                    (apply str (interpose " " (first coords))))))
+                                    :dependency (str/join " " dependency-vector))))
     (catch Exception e
       (transport/send transport (response-for msg :error (.getMessage e)
                                               :status :done)))))
