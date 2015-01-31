@@ -98,10 +98,30 @@
     (is (= clean-requires requires))
     (is (= clean-imports imports))))
 
+(def artifact-ns '(ns refactor-nrepl.artifacts
+                    (:require [clojure
+                               [edn :as edn]
+                               [string :as str]]
+                              [clojure.data.json :as json]
+                              [clojure.java.io :as io]
+                              [clojure.tools.nrepl
+                               [middleware :refer [set-descriptor!]]
+                               [misc :refer [response-for]]
+                               [transport :as transport]]
+                              [org.httpkit.client :as http]
+                              [refactor-nrepl.externs :refer [add-dependencies]])
+                    (:import java.util.Date)))
+
+(deftest test-pprint-artifact-ns
+  (let [actual (pprint-ns artifact-ns)
+        expected (slurp (.getAbsolutePath (File. "test/resources/artifacts_pprinted_no_indentation")))]
+    (is (= expected actual))))
+
 (comment
   ;; broken across versions due to difference in ordering of objects
   ;; in pprinted maps
   (deftest test-pprint
            (let [ns-str (pprint-ns (clean-ns ns1))
                  ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
-             (is (= ns1-str ns-str)))))
+             (is (= ns1-str ns-str))))
+  )

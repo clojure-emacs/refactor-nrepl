@@ -1,7 +1,9 @@
 (ns refactor-nrepl.artifacts
   (:require [cemerick.pomegranate :refer [add-dependencies]]
+            [clojure
+             [edn :as edn]
+             [string :as str]]
             [clojure.data.json :as json]
-            [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]

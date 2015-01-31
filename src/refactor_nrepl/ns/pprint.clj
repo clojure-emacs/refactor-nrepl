@@ -4,28 +4,29 @@
             [refactor-nrepl.ns.helpers :refer [prefix-form?]]))
 
 (defn- libspec-vectors-last [libspecs]
-  (concat (remove sequential? libspecs)
-          (filter sequential? libspecs)))
+  (vec (concat (remove sequential? libspecs)
+               (filter sequential? libspecs))))
 
 (defn- pprint-prefix-form [[name & libspecs]]
   (printf "[%s" name)
-  (dorun
-   (map-indexed (fn [idx libspec]
-                  ;; insert newline after all non-libspec vectors
-                  (when (and (vector? libspec)
-                             (or (= idx 0)
-                                 (= (dec idx) (count (take-while symbol? libspecs)))))
-                    (println))
-                  (if (= idx (dec (count libspecs)))
-                    (printf "%s]\n" libspec)
-                    (if (vector? libspec)
-                      (pprint libspec)
-                      (if (= idx 0)
-                        (printf " %s " libspec)
-                        (if  (vector? (nth libspecs idx))
-                          (printf "%s" libspec)
-                          (printf "%s " libspec))))))
-                (libspec-vectors-last libspecs))))
+  (let [ordered-libspecs (libspec-vectors-last libspecs)]
+    (dorun
+     (map-indexed (fn [idx libspec]
+                    ;; insert newline after all non-libspec vectors
+                    (when (and (vector? libspec)
+                               (or (zero? idx)
+                                   (symbol? (get ordered-libspecs (dec idx)))))
+                      (println))
+                    (if (= idx (dec (count ordered-libspecs)))
+                      (printf "%s]\n" libspec)
+                      (if (vector? libspec)
+                        (pprint libspec)
+                        (if (zero? idx)
+                          (printf " %s " libspec)
+                          (if (vector? (get ordered-libspecs (inc idx)))
+                            (printf "%s" libspec)
+                            (printf "%s " libspec))))))
+                  ordered-libspecs))))
 
 (defn pprint-require-form
   [[_ & libspecs]]

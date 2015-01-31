@@ -9,14 +9,13 @@
 (defn prefix-form?
   "True if the vector is of the form [prefix libspec1 libspec2...]"
   [v]
-  (and (sequential? v)
+  (and (vector? v)
        (symbol? (first v))
        (every? libspec? (rest v))))
 
 (defn index-of-component [ns-form type]
-  (->> (keep-indexed #(when (and (sequential? %2) (= (first %2) type)) %1)
-                     ns-form)
-       first))
+  (first (keep-indexed #(when (and (sequential? %2) (= (first %2) type)) %1)
+                       ns-form)))
 
 (defn get-ns-component
   "Extracts a sub-component from the ns declaration.
