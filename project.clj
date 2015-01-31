@@ -16,9 +16,9 @@
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]
                  [org.projectodd.shimdandy/shimdandy-api "1.0.1"]]
   :plugins [[thomasa/mranderson "0.3.0"]]
-  :resource-paths ["libs/"]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]]}
+             :base {:resource-paths ["libs/"]}
              :test {:dependencies [[print-foo "1.0.1"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
