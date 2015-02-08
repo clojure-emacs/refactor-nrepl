@@ -113,12 +113,6 @@
   (some-> (get-ns-component ns-form :import) extract-imports
           flatten))
 
-(defn- get-class-name [{:keys [op class children] :as node}]
-  (when (and (and class (not= op :import))
-             (not children)
-             (symbol? class))
-    (.getName (:val node))))
-
 (defn- get-class-name [{:keys [op class type val] :as node}]
   (when-let [c (if (and (= :const op)
                         (= :class type))
