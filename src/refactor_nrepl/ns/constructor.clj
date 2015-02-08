@@ -28,8 +28,7 @@
                       (remove nil?))]
     (if (some #{:all} referred)
       :all
-      (if (empty? referred)
-        nil
+      (when (seq referred)
         (-> referred concat flatten distinct)))))
 
 (defn- get-flags [libspecs]
@@ -63,7 +62,7 @@
                    " ["
                    "")]
       (str name suffix))
-    (-> dep name)))
+    (name dep)))
 
 (defn- dependency-comparator
   "Lexicographical comparison of dependency vectors based on the name
@@ -123,27 +122,27 @@
 
 (defn- create-libspec-vectors-without-prefix
   [libspecs]
-  (-> (for [libspec libspecs]
-        (create-libspec (update-in libspec [:ns] #(-> % suffix symbol))))
-      vec))
+  (vec
+   (for [libspec libspecs]
+         (create-libspec (update-in libspec [:ns] #(-> % suffix symbol))))))
 
 (defn- create-libspec-vectors-with-prefix
   [libspecs]
-  (-> (for [libspec libspecs]
-        (create-libspec libspec))
-      vec))
+  (vec
+   (for [libspec libspecs]
+         (create-libspec libspec))))
 
 (defn- create-prefixed-libspec-vector
   [libspecs]
-  (-> (for [{:keys [ns] :as libspec} libspecs]
-        (create-libspec (assoc libspec :ns (ns-suffix ns))))
-      vec))
+  (vec
+   (for [{:keys [ns] :as libspec} libspecs]
+         (create-libspec (assoc libspec :ns (ns-suffix ns))))))
 
 (defn- create-prefixed-libspec-vectors
   [[libspec & more :as libspecs]]
   (if-not more
     (create-libspec-vectors-with-prefix [libspec])
-    [(into [(ns-prefix (-> libspecs first))]
+    [(into [(ns-prefix (first libspecs))]
            (create-libspec-vectors-without-prefix libspecs))]))
 
 (defn- create-libspec-vectors
@@ -160,7 +159,7 @@
                       by-prefix
                       create-libspec-vectors
                       sort-libspecs)]
-    (when-not (empty? libspecs)
+    (when (seq libspecs)
       (cons :require libspecs))))
 
 (defn- classes-by-prefix
@@ -198,7 +197,7 @@
                          classes-by-prefix
                          create-import-components
                          sort-imports)]
-    (when-not (empty? import-form)
+    (when (seq import-form)
       (cons :import import-form))))
 
 (defn- drop-index [col idx]
