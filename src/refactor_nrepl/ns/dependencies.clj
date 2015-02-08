@@ -5,7 +5,7 @@
             [clojure.tools.analyzer.ast :refer [nodes]]
             [instaparse.core :refer [parse parser]]
             [refactor-nrepl.analyzer :refer [ns-ast]]
-            [refactor-nrepl.ns.helpers :refer [get-ns-component]])
+            [refactor-nrepl.ns.helpers :refer [get-ns-component suffix]])
   (:import java.util.regex.Pattern))
 
 (defn parse-form
@@ -128,9 +128,15 @@
           str
           (str/replace "#'" "")))
 
+(defn- get-interface-name [{:keys [op interface]}]
+  (when (and interface
+             (= op :method))
+    (.getName ^Class interface)))
+
 (defn- node->var [node]
   (or (get-class-name node)
-      (get-var-name node)))
+      (get-var-name node)
+      (get-interface-name node)))
 
 (defn- used-vars
   "Finds used functions and classes"
@@ -144,13 +150,12 @@
 
 (defn- ns-in-use?
   [ns used-syms]
-  (some #(.startsWith % (str ns "/")) used-syms))
+  (some #(.startsWith % (str ns)) used-syms))
 
 (defn- prune-refer
   [refer-clause prefix used-syms]
-  (map #(-> (str/split % #"/") second symbol)
-       (filter (set used-syms)
-               (map #(str prefix "/" %) refer-clause))))
+  (filter (set (map #(-> % suffix symbol) used-syms))
+          refer-clause))
 
 (defn- remove-unused
   [used-syms {:keys [ns refer as] :as libspec}]

@@ -30,6 +30,9 @@ type is either :require, :use or :import"
   (str/join "." (-> fully-qualified-name str (.split "\\.") butlast)))
 
 (defn suffix
-  "java.util.Date -> Date"
+  "java.util.Date -> Date
+  clojure.core/str -> str"
   [fully-qulified-name]
-  (-> fully-qulified-name str (.split "\\.") last))
+  (if (re-find #"/" (str fully-qulified-name))
+    (-> fully-qulified-name str (.split "/") last)
+    (-> fully-qulified-name str (.split "\\.") last)))
