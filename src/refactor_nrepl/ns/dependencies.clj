@@ -200,13 +200,15 @@
        (filter macro?)))
 
 (defn- macro-in-use? [file-content macro]
-  (when (-> macro
-            (str "\\b")
-            re-pattern
-            (re-find file-content)
-            empty?
-            not)
-    macro))
+  (let [m (java.util.regex.Pattern/quote (str macro))
+        before "(\\(?|,|`|'|\\s)\\s*"
+        after "\\s*\\)?"]
+    (when (-> (str before m after)
+              re-pattern
+              (re-find file-content)
+              empty?
+              not)
+      macro)))
 
 (defn- get-referred-macros [file-content libspecs]
   (remove nil? (flatten
