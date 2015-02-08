@@ -11,7 +11,7 @@ prefix-libspec = open prefix (libspec-with-opts | suffix)+ close
 <prefix> = #"[A-Za-z0-9_.?$%!-]+"
 suffix = #"[A-Za-z0-9_?$%!-]+"
 libspec-with-opts = open ns opt* close
-<sym> = #"[A-Za-z0-9_?.$%!*-]+"
+<sym> = #"[A-Za-z0-9_?.$%&!/\;@^*<>:+=-]+"
 <opt> = as | refer | only | flag | rename
 <only> = ':only' sym-vec
 <as> = ':as' sym
