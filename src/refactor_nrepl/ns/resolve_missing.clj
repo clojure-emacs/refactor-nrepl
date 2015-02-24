@@ -4,7 +4,7 @@
              [misc :refer [response-for]]
              [transport :as transport]]
             [refactor-nrepl.ns.helpers :refer [suffix]]
-            [slam.hound.regrow :as slamhound]))
+            [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [type sym]
   (let [res (slamhound/candidates type sym [] {})]

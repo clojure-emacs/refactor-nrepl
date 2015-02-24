@@ -1,7 +1,7 @@
 ;;;; Copied from slamhound 1.5.5
 ;;;; Copyright © 2011-2012 Phil Hagelberg and contributors
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
-(ns slam.hound.future
+(ns refactor-nrepl.ns.slam.hound.future
   "Backports from future versions of Clojure")
 
 (defmacro cond->*

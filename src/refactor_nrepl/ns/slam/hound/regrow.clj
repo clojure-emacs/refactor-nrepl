@@ -1,11 +1,11 @@
 ;;;; Copied from slamhound 1.5.5
 ;;;; Copyright © 2011-2012 Phil Hagelberg and contributors
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
-(ns slam.hound.regrow
+(ns refactor-nrepl.ns.slam.hound.regrow
   (:require [clojure.set :as set]
             [clojure.string :as string]
-            [slam.hound.future :refer [as->* cond->*]]
-            [slam.hound.search :as search])
+            [refactor-nrepl.ns.slam.hound.future :refer [as->* cond->*]]
+            [refactor-nrepl.ns.slam.hound.search :as search])
   (:import (clojure.lang IMapEntry IRecord)
            (java.util.regex Pattern)))
 
