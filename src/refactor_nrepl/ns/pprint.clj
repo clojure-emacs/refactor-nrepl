@@ -36,7 +36,9 @@
     (fn [idx libspec]
       (if (= idx (dec (count libspecs)))
         (printf "%s)\n" (str/trim-newline
-                         (with-out-str (pprint libspec))))
+                         (with-out-str (if (prefix-form? libspec)
+                                         (pprint-prefix-form libspec)
+                                         (pprint libspec)))))
         (if (prefix-form? libspec)
           (pprint-prefix-form libspec)
           (pprint libspec))))
