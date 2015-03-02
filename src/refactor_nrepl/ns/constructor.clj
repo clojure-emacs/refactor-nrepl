@@ -168,7 +168,7 @@
     (doseq [class classes
             :let [package (prefix class)
                   class-name (suffix class)]]
-      (swap! by-prefix update-in [package] conj class-name))
+      (swap! by-prefix update-in [package] (comp distinct conj) class-name))
     @by-prefix))
 
 (defn- create-import-form

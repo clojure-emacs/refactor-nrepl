@@ -18,7 +18,8 @@
                                  reverse bar}])
   (:import java.util.Random
            java.io.PushbackReader
-           [java.util Date Calendar]))
+           java.io.PushbackReader
+           [java.util Date Date Calendar]))
 
 (defn use-everything []
   (get-pretty-writer)
