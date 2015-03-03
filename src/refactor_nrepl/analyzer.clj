@@ -59,14 +59,13 @@
         (update-ast-cache file-content ns (build-ast ns aliases))))))
 
 (defn ns-ast
-  "builds AST for a namespace"
+  "Build AST for a namespace"
   [file-content]
   (try
     (cachable-ast file-content)
     (catch Exception ex
-      (println "error when building AST for" (first (parse-ns file-content)))
-      (.printStackTrace ex)
-      [])))
+      (throw (IllegalStateException.
+              (str (first (parse-ns file-content)) " is in a bad state!"))))))
 
 ;;; Used in eval+analyze to emit code for later evaluation
 ;;; This isn't really of interest to us, so this is a no-op
