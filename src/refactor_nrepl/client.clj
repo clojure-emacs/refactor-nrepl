@@ -109,12 +109,6 @@
                            (#(if file (assoc % :file file) %))
                            (nrepl-message 60000 tr)
                            (map (juxt :occurrence :syms-count)))]
-    (println (format "found %d occurrences of %s%s"
-                     (->> found-symbols
-                          (map second)
-                          (remove nil?)
-                          first)
-                     (if ns (str ns "/") "") name))
     (->> found-symbols
          (map first)
          (remove nil?)

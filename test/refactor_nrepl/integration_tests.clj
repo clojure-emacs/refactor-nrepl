@@ -43,11 +43,9 @@
                     #'refactor-nrepl.refactor/wrap-refactor
                     #'refactor-nrepl.find-unbound/wrap-find-unbound
                     #'refactor-nrepl.ns.resolve-missing/wrap-resolve-missing))]
-    (println "server [" server "]" " started...")
     server))
 
 (defn stop-repl-server [server]
-  (println "stopping server...")
   (nrserver/stop-server server))
 
 (defn wrap-setup-once [f]
@@ -66,10 +64,6 @@
                             :file (str tmp-dir "/src/com/example/one.clj")
                             :loc-line 6 :loc-column 19
                             :name "foo" :clj-dir (str tmp-dir))]
-
-    (println "tmp-dir: " tmp-dir)
-    (println "result: " (map println result))
-
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
     (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
@@ -89,10 +83,6 @@
                             :file (str tmp-dir "/src/com/example/four.clj")
                             :loc-line 11 :loc-column 3
                             :name "thre" :clj-dir (str tmp-dir))]
-
-    (println "tmp-dir: " tmp-dir)
-    (println "result: " (map println result))
-
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-find-fn-in-dashed-ns
@@ -102,10 +92,6 @@
                             :file (str tmp-dir "/src/com/example/four.clj")
                             :loc-line 14 :loc-column 4
                             :name "stuff" :clj-dir (str tmp-dir))]
-
-    (println "tmp-dir: " tmp-dir)
-    (println "result: " (map println result))
-
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-find-dashed-fn
@@ -115,10 +101,6 @@
                             :file (str tmp-dir "/src/com/example/four.clj")
                             :loc-line 16 :loc-column 4
                             :name "more-stuff" :clj-dir (str tmp-dir))]
-
-    (println "tmp-dir: " tmp-dir)
-    (println "result: " (map println result))
-
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-rename-foo
@@ -237,9 +219,6 @@
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
         result (find-usages :transport transport :name "a" :file three-file :loc-line 3 :loc-column 24)]
-    (println "tmp-dir: " tmp-dir)
-    (println "result: " (map println result))
-
     (is (= 5 (count result)) (format "expected 5 results but got %d" (count result)))))
 
 (deftest find-local-let
@@ -247,9 +226,6 @@
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
         result (find-usages :transport transport :name "right" :file three-file :loc-line 12 :loc-column 12)]
-    (println "tmp-dir: " tmp-dir)
-    (println "result: " (map println result))
-
     (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))
 
 (deftest test-find-unbound-vars
