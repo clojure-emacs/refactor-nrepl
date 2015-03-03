@@ -32,8 +32,7 @@
   use-form)
 
 (defn- validate [ns-form]
-  (-> (get-ns-component ns-form :use)
-      assert-no-exclude-clause)
+  (assert-no-exclude-clause (get-ns-component ns-form :use))
   ns-form)
 
 (defn read-ns-form
