@@ -186,11 +186,9 @@ to clojars:
 ## Changelog
 
 * Add `hotload-dependency` which loads a new project dependency into the repl
-* Add caching of ASTs (by ns and hash of file content)
+* Add caching of ASTs for better performance
 * Add `resolve-missing` which resolves a missing symbol by scanning the classpath
 * Add `clean-ns` which performs various cleanups on the ns form.
-* Add `var-info` returns basic var info (ns and name) based on the AST
-* Add `find-local-symbols` finds locally bound symbols
 
 ### 0.2.2
 
