@@ -117,30 +117,36 @@
          (>= loc-column (:column env))
          (<= loc-column (:end-column env)))))
 
-(defn- find-local-symbol-reply [file var-name loc-line loc-column]
-  (when (and (not-empty file)
-             loc-line (or (not (coll? loc-line)) (not-empty loc-line))
-             loc-column (or (not (coll? loc-column)) (not-empty loc-column)))
-    (let [ns-string (slurp file)
-          ast (ns-ast ns-string)]
-      (when-let [form-index (->> ast
-                                 (map-indexed #(vector %1 (->> %2
-                                                               nodes
-                                                               (some (partial node-at-loc? loc-line loc-column)))))
-                                 (filter #(second %))
-                                 ffirst)]
-        (let [top-level-form-ast (nth ast form-index)
-              local-var-name (->> top-level-form-ast
-                                  nodes
-                                  (filter #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))
-                                  (filter (partial node-at-loc? loc-line loc-column))
-                                  first
-                                  :name)]
-             (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
-                  (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %))))))))))
+(defn- find-local-symbol [file var-name line column]
+  "Find local symbol occurrences
+
+file is the file where the request is made
+var-name is the name of the var the user wants to know about
+line is the line number of the occurrences
+column is the column of the occurrence"
+  {:pre [(number? line)
+         (number? column)
+         (not-empty file)]}
+  (let [ns-string (slurp file)
+        ast (ns-ast ns-string)]
+    (when-let [form-index (->> ast
+                               (map-indexed #(vector %1 (->> %2
+                                                             nodes
+                                                             (some (partial node-at-loc? line column)))))
+                               (filter #(second %))
+                               ffirst)]
+      (let [top-level-form-ast (nth ast form-index)
+            local-var-name (->> top-level-form-ast
+                                nodes
+                                (filter #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))
+                                (filter (partial node-at-loc? line column))
+                                first
+                                :name)]
+        (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
+             (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
 
 (defn- find-symbol-reply [{:keys [transport file ns name clj-dir loc-line loc-column] :as msg}]
-  (let [syms (or (not-empty (find-local-symbol-reply file name loc-line loc-column))
+  (let [syms (or (when file (not-empty (find-local-symbol file name loc-line loc-column)))
                  (find-global-symbol-reply file ns name clj-dir))]
     (doseq [found-sym syms]
       (transport/send transport (response-for msg :occurrence found-sym)))
@@ -156,21 +162,6 @@
              ;; #'varname style reference
              (= (str/replace var-name "#'" "")
                 (-> form second str))))))
-
-(defn- var-info-reply [{:keys [transport ns-string name] :as msg}]
-  (transport/send transport
-                  (response-for msg
-                                :var-info
-                                (-> (->> ns-string
-                                         ns-ast
-                                         (map nodes)
-                                         flatten
-                                         (filter (partial form-contains-var name))
-                                         first)
-                                    :var
-                                    (str/replace "#'" "")
-                                    (str/split #"/"))
-                                :status :done)))
 
 (defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
   (let [ast (ns-ast ns-string)
@@ -188,8 +179,6 @@
       (cond (= "find-referred" refactor-fn) (find-referred-reply msg)
             (= "find-debug-fns" refactor-fn) (find-debug-fns-reply msg)
             (= "find-symbol" refactor-fn) (find-symbol-reply msg)
-            (= "var-info" refactor-fn) (var-info-reply msg)
-            (= "find-local-symbol" refactor-fn) (find-local-symbol-reply msg)
             :else
             (handler msg))
       (handler msg))))
@@ -204,12 +193,7 @@
           - find-debug-fns: finds debug functions returns tuples containing
             [line-number end-line-number column-number end-column-number fn-name]
           - find-symbol: finds symbol in the project returns tuples containing
-            [line-number end-line-number column-number end-column-number fn-name absolute-path the-matched-line]
-            when done returns done status message a found symbols count                           - var-info: returns var's info tuples containing
-            [ns name]
-           - find-local-symbol: returns local var's info tuples containing
-            [line-number end-line-number column-number end-column-number local-type]
-            local type can be one of arg, catch, fn, let, letfn or loop"
+            [line-number end-line-number column-number end-column-number fn-name absolute-path the-matched-line]"
     :requires {"ns-string" "the body of the namespace to build the AST with"
                "refactor-fn" "The refactor function to invoke"}
     :returns {"status" "done"

@@ -107,14 +107,6 @@ Finds and renames occurrences of symbols like defs and defns both where they are
 (refactor-nrepl.client/rename-symbol :ns 'leiningen.gargamel :name "gargamel-changelog" :new-name "garg-cl")
 ```
 
-### var info
-
-Provides information about a var. Currently this info is namespace and name. Similar to cider's info middleware but the namespace does not need to be loaded into the repl to be successful.
-
-### find local symbols
-
-Finds occurrences of local symbol (arguments, bound names in let, loops etc) both where they are defined and where they are used.
-
 ### clean-ns
 
 The `clean-ns` op will perform the following cleanups on an ns form:
