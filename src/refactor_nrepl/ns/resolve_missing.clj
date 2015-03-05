@@ -1,41 +1,41 @@
 (ns refactor-nrepl.ns.resolve-missing
-  (:require [clojure.tools.nrepl
+  (:require [cider.nrepl.middleware.info :refer [info-clj]]
+            [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]
-            [refactor-nrepl.ns.helpers :refer [suffix]]
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
 
-(defn- candidates [type sym]
-  (let [res (slamhound/candidates type sym [] {})]
-    (when-not (empty? res)
-      res)))
+(defn- candidates [sym]
+  (seq (concat (slamhound/candidates :import sym [] {})
+               (slamhound/candidates :refer sym [] {}))))
 
-(defn- capitalized? [x]
-  (and (string? x) (Character/isUpperCase ^Character (first (name x)))))
+(defn- get-type [sym]
+  (let [info (info-clj 'user sym)]
+    (if-let [clazz (:class info)]
+      (cond
+        ((set (:interfaces info)) 'clojure.lang.IType) :type
+        ((set (:interfaces info)) 'clojure.lang.IRecord) :type
+        :else :class)                   ; interfaces are included here
+      :ns)))
 
-(defn symbol-is-class?
-  [sym]
-  (let [sym-str (str sym)
-        suffix? (suffix sym-str)]
-    (or (capitalized? sym-str)
-        (capitalized? suffix?))))
+(defn- collate-type-info
+  [candidates]
+  (map #(list % (get-type %)) candidates))
 
 (defn- get-candidates [sym]
-  (some->> (if (symbol-is-class? sym)
-             (candidates :import sym)
-             (candidates :refer sym))
-           (into [])
-           (interpose " ")
-           (apply str)))
+  (some->> sym
+           candidates
+           collate-type-info
+           print-str))
 
 (defn resolve-missing-reply [{sym :symbol transport :transport :as msg}]
   (try
+    (when-not (and sym (string? sym) (seq sym))
+      (throw (IllegalArgumentException. (str "Invalid input to resolve missing: '" sym "'"))))
     (transport/send transport
                     (response-for msg
                                   :candidates (-> sym symbol get-candidates)
-                                  :type (if (symbol-is-class? sym)
-                                          :import :require)
                                   :status :done))
     (catch Exception e
       (transport/send transport
@@ -53,10 +53,9 @@
  {:handles
   {"resolve-missing"
    {:doc "Resolves a missing symbol to provide candidate imports."
-    :requires {"symbol" "Either a var or class to import."}
+    :requires {"symbol" "A symbol to resolve on the classpath for use
+    in a require or import statement"}
     :returns {"status" "done"
               "error" "An error message, intended to be displayed to
               the user, in case of failure."
-              "candidates" "A space separated listed of candidates"
-              "type" "Either 'require' or 'import', so the client knows where to
-put any newly created libspec."}}}})
+              "candidates" "An alist of  (symbol . type), where type is :type for deftypes and records, :class for classes and interfaces and :ns for namespaces."}}}})

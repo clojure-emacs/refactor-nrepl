@@ -132,7 +132,7 @@ The goal of the op is to provide intelligent suggestions when the user wants to 
 
 The op requires `symbol` which represents a name to look up on the classpath.
 
-The return value `candidates` is a space separated string of candidates to import or require into the current ns.
+The return value `candidates` is an alist of `((candidate1 . type1) (candidate2 . type2) ...)` where type is in `#{:type :class :ns}` so we can branch on the 3 various way to import.  `:type` means the symbol resolved to a var created by `defrecord` or `deftype`, `:class` also includes interfaces.
 
 ### hotload-dependency
 

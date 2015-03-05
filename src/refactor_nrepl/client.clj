@@ -219,14 +219,12 @@
   - symbol which is either a var or a class to resolve on the classpath
   - [transport] an optional transport used to communicate with the client"
   [& {transport :transport sym :symbol}]
-  (let [tr (or transport @transp (reset! transp (connect)))
-        candidates (-> (nrepl-message tr {:op :resolve-missing
-                                          :symbol sym})
-                       first
-                       :candidates)]
-    (when-not (str/blank? candidates)
-      (->> (str/split candidates #" ")
-           (map symbol)))))
+  (-> transport
+      (or @transp (reset! transp (connect)))
+      (nrepl-message {:op :resolve-missing :symbol sym})
+      first
+      :candidates
+      edn/read-string))
 
 (defn find-unbound
   "Finds unbound vars in the input form
