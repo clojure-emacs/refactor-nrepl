@@ -3,20 +3,9 @@
             [clojure.test :refer :all]
             [clojure.tools.nrepl.server :as nrserver]
             [me.raynes.fs :as fs]
-            [refactor-nrepl
-             [client
-              :refer
-              [connect
-               find-referred
-               find-unbound
-               find-usages
-               remove-debug-invocations
-               rename-symbol
-               resolve-missing
-               var-info]]
-             find-unbound refactor]
-            refactor-nrepl.ns.resolve-missing
-            [clojure.edn :as edn])
+            [refactor-nrepl find-unbound refactor
+             [client :refer [connect find-usages remove-debug-invocations rename-symbol resolve-missing]]]
+            refactor-nrepl.ns.resolve-missing)
   (:import java.io.File))
 
 (defn- create-temp-dir
@@ -160,17 +149,6 @@
     (remove-debug-invocations :transport transport :file three-file)
 
     (is (= new-three (slurp three-file)) "remove println failed")))
-
-(deftest test-find-referred
-  (let [tmp-dir (create-test-project)
-        four-file (str tmp-dir "/src/com/example/four.clj")
-        transport (connect :port 7777)]
-
-    (is (find-referred :transport transport :file four-file
-                       :referred "clojure.string/split") "referred not found")
-
-    (is (not (find-referred :transport transport :file four-file
-                            :referred "clojure.string/join")) "referred found when was not used in namespace")))
 
 (deftest test-resolve-missing
   (let [transport (connect :port 7777)

@@ -66,10 +66,6 @@ Example call from the repl using the clojure client:
 (refactor-nrepl.client/remove-debug-invocations :transport tr :file "src/secret_santa/core.clj")
 ```
 
-### Find Referred
-
-This is only available as a temporary performance tweak for [clj-refactor.el/remove-requires](https://github.com/clojure-emacs/clj-refactor.el#usage). Remove unusued requires is planned to be migrated as a whole (and hopefully improved too) in the near future to be supported by the middleware. This feature might not be supported anymore by then.
-
 ### Artifact lookup
 
 This middleware provides operations for obtaining information about artifacts from clojars, or mvn central.
@@ -185,6 +181,7 @@ to clojars:
 
 ## Changelog
 
+* Remove find referred
 * Add `hotload-dependency` which loads a new project dependency into the repl
 * Add caching of ASTs for better performance
 * Add `resolve-missing` which resolves a missing symbol by scanning the classpath

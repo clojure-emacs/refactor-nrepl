@@ -1,14 +1,12 @@
 (ns refactor-nrepl.refactor
-  (:require [clojure
-             [edn :as edn]
-             [string :as str :refer [join split]]]
+  (:require [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer :all]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]
             [refactor-nrepl
-             [analyzer :refer [find-unbound-vars ns-ast]]
+             [analyzer :refer [ns-ast]]
              [util :refer :all]]))
 
 (defn- node->var [alias-info node]
@@ -18,7 +16,7 @@
                                     (str/replace "#'" "")
                                     (str/replace "clojure.core/" "")))
         full-class (get alias-info class class)]
-    (join "/" (remove nil? [full-class (:field node)]))))
+    (str/join "/" (remove nil? [full-class (:field node)]))))
 
 (defn- fn-invoked [alias-info node]
   (node->var alias-info (:fn node)))
@@ -45,7 +43,7 @@
   "Finds fn invokes in the AST.
   Returns a list of line, end-line, column, end-column and fn name tuples"
   [ast fn-names]
-  (find-nodes ast (partial fns-invoked? (into #{} (split fn-names #",")) (alias-info ast))))
+  (find-nodes ast (partial fns-invoked? (into #{} (str/split fn-names #",")) (alias-info ast))))
 
 (defn- contains-var [var-name alias-info node]
   (contains-var? #{var-name} alias-info node))
@@ -163,21 +161,13 @@ column is the column of the occurrence"
              (= (str/replace var-name "#'" "")
                 (-> form second str))))))
 
-(defn- find-referred-reply [{:keys [transport ns-string referred] :as msg}]
-  (let [ast (ns-ast ns-string)
-        matches (find-nodes ast (partial contains-var referred (alias-info ast)))
-        result (< 0 (count matches))]
-    (transport/send transport (response-for msg :value (when result (str result))
-                                            :status :done))))
-
 (defn wrap-refactor
   "Ensures that refactor only triggered with the right operation and
   forks to the appropriate refactor function"
   [handler]
   (fn [{:keys [op refactor-fn ns-string] :as msg}]
     (if (= "refactor" op)
-      (cond (= "find-referred" refactor-fn) (find-referred-reply msg)
-            (= "find-debug-fns" refactor-fn) (find-debug-fns-reply msg)
+      (cond (= "find-debug-fns" refactor-fn) (find-debug-fns-reply msg)
             (= "find-symbol" refactor-fn) (find-symbol-reply msg)
             :else
             (handler msg))
@@ -189,7 +179,6 @@ column is the column of the occurrence"
   {"refactor"
    {:doc "Returns a an appropriate result for the given refactor fn.
           Currently available:
-          - find-referred: searches for referred class in the AST returns the referred if found, nil otherwise
           - find-debug-fns: finds debug functions returns tuples containing
             [line-number end-line-number column-number end-column-number fn-name]
           - find-symbol: finds symbol in the project returns tuples containing
