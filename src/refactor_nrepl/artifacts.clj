@@ -1,6 +1,5 @@
 (ns refactor-nrepl.artifacts
-  (:require [cemerick.pomegranate :refer [add-dependencies]]
-            [clojure
+  (:require [clojure
              [edn :as edn]
              [string :as str]]
             [clojure.data.json :as json]
@@ -10,7 +9,8 @@
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]
-            [org.httpkit.client :as http])
+            [org.httpkit.client :as http]
+            [refactor-nrepl.externs :refer [add-dependencies]])
   (:import java.util.Date))
 
 (def artifacts (atom {} :meta {:last-modified nil}))
@@ -102,13 +102,12 @@
   [{:keys [transport coordinates] :as msg}]
   (try
     (let [dependency-vector (edn/read-string coordinates)
-          coords [(->> dependency-vector (take 2) vec)]
-          repos (merge cemerick.pomegranate.aether/maven-central
+          repos (merge {"central" "http://repo1.maven.org/maven2/"}
                        {"clojars" "http://clojars.org/repo"})]
-      (when-not (= (-> coords first count) 2)
+      (when-not (= (count dependency-vector) 2)
         (throw (IllegalArgumentException. (str "Malformed dependency vector: "
                                                coordinates))))
-      (add-dependencies :coordinates coords :repositories repos)
+      (add-dependencies dependency-vector repos)
       (transport/send transport
                       (response-for msg :status :done
                                     :dependency (str/join " " dependency-vector))))
@@ -141,6 +140,7 @@
     :returns {"status" "done"
               "value" "string containing artifact versions, separated by spaces."}}
    "hotload-dependency"
+
    {:doc "Adds non-conflicting dependency changes to active nrepl."
     :requires {:coordinates "A leiningen coordinate vector"}
     :returns {"status" "done" "dependency" "the coordinate vector that was hotloaded"}}}})
