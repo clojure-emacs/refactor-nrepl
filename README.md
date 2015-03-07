@@ -16,6 +16,18 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
 :plugins [[refactor-nrepl "0.2.2"]]
 ```
 
+Additionally you have to add a dependency on [alembic](https://github.com/pallet/alembic). Either in your `project.clj`:
+
+```clojure
+:profiles {:dev {:dependencies [[alembic "0.3.2"]]}}
+```
+
+or in your `~/.lein/profiles.clj`:
+
+```clj
+{:user {:dependencies [[alembic "0.3.2"]]}}
+```
+
 ### Clojure client
 
 A clojure client is provided for demonstrative purposes, and to make some refactorings available from the REPL.

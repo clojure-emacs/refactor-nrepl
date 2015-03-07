@@ -1,5 +1,5 @@
 (ns refactor-nrepl.artifacts
-  (:require [cemerick.pomegranate :refer [add-dependencies]]
+  (:require [alembic.still :refer [distill]]
             [clojure
              [edn :as edn]
              [string :as str]]
@@ -103,12 +103,12 @@
   (try
     (let [dependency-vector (edn/read-string coordinates)
           coords [(->> dependency-vector (take 2) vec)]
-          repos (merge cemerick.pomegranate.aether/maven-central
-                       {"clojars" "http://clojars.org/repo"})]
+          repos {"clojars" "http://clojars.org/repo"
+                 "central" "http://repo1.maven.org/maven2/"}]
       (when-not (= (-> coords first count) 2)
         (throw (IllegalArgumentException. (str "Malformed dependency vector: "
                                                coordinates))))
-      (add-dependencies :coordinates coords :repositories repos)
+      (distill coords :repositories repos)
       (transport/send transport
                       (response-for msg :status :done
                                     :dependency (str/join " " dependency-vector))))
