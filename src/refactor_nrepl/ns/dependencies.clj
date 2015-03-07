@@ -1,9 +1,7 @@
 (ns refactor-nrepl.ns.dependencies
   (:require [cider.nrepl.middleware.info :refer [info-clj]]
-            [clojure
-             [edn :as edn]
-             [string :as str]]
             [clojure.java.io :as io]
+            [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [instaparse.core :refer [parse parser]]
             [refactor-nrepl.analyzer :refer [ns-ast]]
