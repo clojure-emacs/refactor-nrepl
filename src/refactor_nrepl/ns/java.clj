@@ -134,14 +134,6 @@
                              (assoc ret n (zipmap (map :argtypes ms) ms)))
                            {}))}))
 
-(def source-info
-  "When `tools.jar` is available, return class info from its parsed source;
-  otherwise return nil."
-  (if jdk-tools
-    (do (require '[cider.nrepl.middleware.util.java.parser :as src])
-        (resolve 'src/source-info))
-    (constantly nil)))
-
 (defn class-info*
   "For the class symbol, return Java class and member info. Members are indexed
   first by name, and then by argument types to list all overloads."
@@ -150,7 +142,6 @@
                            (catch Exception _))]
     (let [r (JavaReflector. (.getClassLoader c))] ; for dynamically loaded classes
       (deep-merge (reflect-info (r/reflect c :reflector r))
-                       (source-info class)
                        {:name       (-> c .getSimpleName symbol)
                         :class      (-> c .getName symbol)
                         ;; Classes defined by deftype and defrecord don't have a package
