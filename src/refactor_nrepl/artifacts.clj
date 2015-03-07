@@ -32,9 +32,9 @@
 
 (defn- stale-cache? []
   (or (empty? @artifacts)
-      (neg? (- millis-per-day
-               (- (-> artifacts meta :last-modified .getTime)
-                  (.getTime (java.util.Date.)))))))
+      (if-let [last-modified (some-> artifacts meta :last-modified .getTime)]
+        (neg? (- millis-per-day (- last-modified (.getTime (java.util.Date.)))))
+        true)))
 
 (defn- get-all-clj-artifacts!
   "All the artifacts under org.clojure in mvn central"
