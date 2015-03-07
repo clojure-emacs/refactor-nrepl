@@ -1,12 +1,17 @@
 (ns refactor-nrepl.ns.dependencies
   (:require [cider.nrepl.middleware.info :refer [info-clj]]
+            [clojure
+             [edn :as edn]
+             [string :as str]]
             [clojure.java.io :as io]
-            [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [instaparse.core :refer [parse parser]]
             [refactor-nrepl.analyzer :refer [ns-ast]]
             [refactor-nrepl.ns.helpers :refer [get-ns-component suffix]])
-  (:import java.util.regex.Pattern))
+  (:import [java.io PushbackReader StringReader]
+           java.util.regex.Pattern))
+
+(def qualified-symbol-regex #"[A-Za-z0-9_.?$%!-]+/[A-Za-z0-9_?$%!*-]+")
 
 (defn parse-form
   "Form is either (:import..) (:use ..) or (:require ..)"
@@ -120,22 +125,26 @@
                  ;; catches static-invoke/static-field
                  (when (class? class)
                    class))]
-    (.getName ^Class c)))
+    {:name (.getName ^Class c)}))
 
-(defn- get-var-name [node]
-  (some-> node
-          :var
-          str
-          (str/replace "#'" "")))
+(defn- get-var-name-and-alias [node]
+  (when-let [variable (some-> node :var str (str/replace "#'" ""))]
+    {:name variable
+     :alias (some->>
+             node
+             :form
+             str
+             (re-matches
+              (re-pattern (str "[A-Za-z0-9_.?$%!-]+/" (suffix variable)))))}))
 
 (defn- get-interface-name [{:keys [op interface]}]
   (when (and interface
              (= op :method))
-    (.getName ^Class interface)))
+    {:name (.getName ^Class interface)}))
 
-(defn- node->var [node]
+(defn- node->name-and-alias [node]
   (or (get-class-name node)
-      (get-var-name node)
+      (get-var-name-and-alias node)
       (get-interface-name node)))
 
 (defn- used-vars
@@ -144,25 +153,30 @@
   (->> ast
        (map nodes)
        flatten
-       (map node->var)
-       (remove str/blank?)
-       set))
+       (map node->name-and-alias)
+       (remove #(str/blank? (:name %)))))
 
 (defn- ns-in-use?
   [ns used-syms]
-  (some #(.startsWith % (str ns)) used-syms))
+  (some #(.startsWith % (str ns)) (map :name used-syms)))
+
+(defn- referred-symbol-in-use?
+  [used-syms sym]
+  (some (fn [{:keys [name alias]}]
+          (and (= (symbol (suffix name)) sym)
+               (not alias)))
+        used-syms))
 
 (defn- prune-refer
-  [refer-clause prefix used-syms]
-  (filter (set (map #(-> % suffix symbol) used-syms))
-          refer-clause))
+  [refer-clause used-syms]
+  (filter (partial referred-symbol-in-use? used-syms) refer-clause))
 
 (defn- remove-unused
   [used-syms {:keys [ns refer as] :as libspec}]
   (when (ns-in-use? ns used-syms)
     (if (= refer :all)
       libspec
-      (update-in libspec [:refer] prune-refer ns used-syms))))
+      (update-in libspec [:refer] prune-refer used-syms))))
 
 (defn remove-empty-refer
   [{:keys [refer] :as libspec}]
@@ -178,7 +192,7 @@
 
 (defn- remove-unused-imports
   [symbols-in-use imports]
-  (filter (set symbols-in-use) imports))
+  (filter (set (map :name symbols-in-use)) imports))
 
 (defn- macro? [ns sym]
   (:macro (info-clj ns sym)))
@@ -195,28 +209,45 @@
 
 (defn- find-fully-qualified-macros [file-content]
   (->> file-content
-       (re-matches #"[A-Za-z0-9_.?$%!-]+/[A-Za-z0-9_?$%!*-]+")
+       (re-matches qualified-symbol-regex)
        (map symbol)
        (filter macro?)))
 
+(defn- file-content-sans-ns [file-content]
+  (let [rdr (PushbackReader. (StringReader. file-content))
+        ns (edn/read rdr)
+        first-form (edn/read rdr)
+        first-str-beyond-ns (pr-str (first first-form))
+        content-split (->> first-str-beyond-ns
+                           Pattern/quote
+                           re-pattern
+                           (str/split file-content))]
+    (if (> (count content-split) 1)
+      (second content-split)
+      ;; If the split fails the macro will be found in the ns and it
+      ;; won't get pruned
+      file-content)))
+
 (defn- macro-in-use? [file-content macro]
-  (let [m (java.util.regex.Pattern/quote (str macro))
+  (let [m (Pattern/quote (str macro))
         before "(\\(?|,|`|'|\\s)\\s*"
-        after "\\s*\\)?"]
+        after "\\s*\\)?"
+        content-sans-ns (file-content-sans-ns file-content)]
     (when (-> (str before m after)
               re-pattern
-              (re-find file-content)
+              (re-find content-sans-ns)
               empty?
               not)
       macro)))
 
 (defn- get-referred-macros [file-content libspecs]
-  (remove nil? (flatten
-                (for [libspec libspecs]
-                  (some->> libspec
-                           get-referred-macros-from-refer
-                           (map (partial macro-in-use? file-content))
-                           (map (partial add-prefix (:ns libspec))))))))
+  (flatten
+   (for [libspec libspecs]
+     (some->> libspec
+              get-referred-macros-from-refer
+              (map (partial macro-in-use? file-content))
+              (remove nil?)
+              (map (partial add-prefix (:ns libspec)))))))
 
 (defn- used-macros [file-content libspecs]
   (let [referred-macros-in-use  (get-referred-macros file-content libspecs)]
@@ -224,7 +255,8 @@
          find-fully-qualified-macros
          (filter (partial macro-in-use? file-content))
          (concat referred-macros-in-use)
-         (map str))))
+         (map str)
+         (map #(assoc {} :name %)))))
 
 (defn- remove-unused-requires [symbols-in-use libspecs]
   (map (partial remove-unused-syms-and-specs symbols-in-use) libspecs))

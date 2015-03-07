@@ -7,7 +7,7 @@
    :extends java.lang.Exception
    :methods [[binomial [int int] double]])
   (:require
-   [clojure.instant :as inst]
+   [clojure.instant :as inst :refer [read-instant-date]]
    [clojure data edn]
    [clojure.pprint :refer [get-pretty-writer formatter cl-format]]
    clojure.test.junit

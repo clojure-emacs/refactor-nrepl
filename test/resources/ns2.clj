@@ -5,7 +5,8 @@
    [clojure.pprint :refer [cl-format]]
    [clojure.pprint :refer [get-pretty-writer fresh-line cl-format]]
    [clojure.instant :refer [read-instant-calendar]]
-   [clojure.instant :refer :all])
+   [clojure.instant :refer :all]
+   [clojure.test.junit :refer [with-junit-output]])
   (:use clojure.test
         clojure.test
         [clojure.string :rename {replace foo
