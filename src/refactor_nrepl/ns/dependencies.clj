@@ -215,18 +215,13 @@
 
 (defn- file-content-sans-ns [file-content]
   (let [rdr (PushbackReader. (StringReader. file-content))
-        ns (edn/read rdr)
-        first-form (edn/read rdr)
-        first-str-beyond-ns (pr-str (first first-form))
-        content-split (->> first-str-beyond-ns
-                           Pattern/quote
-                           re-pattern
-                           (str/split file-content))]
-    (if (> (count content-split) 1)
-      (second content-split)
-      ;; If the split fails the macro will be found in the ns and it
-      ;; won't get pruned
-      file-content)))
+        ns (read rdr false :eof)
+        contents (atom [])]
+    (loop [form (read rdr false :eof)]
+      (when-not (= form :eof)
+        (swap! contents conj form)
+        (recur (read rdr false :eof))))
+    (str/join "\n" @contents)))
 
 (defn- macro-in-use? [file-content macro]
   (let [m (Pattern/quote (str macro))
