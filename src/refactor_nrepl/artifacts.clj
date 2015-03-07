@@ -95,6 +95,8 @@
     (transport/send transport (response-for msg :value names :status :done))))
 
 (defn- artifact-versions [{:keys [transport artifact] :as msg}]
+  (when (stale-cache?)
+    (update-artifact-cache!))
   (let [versions (->> artifact (@artifacts) (interpose " ") (apply str))]
     (transport/send transport (response-for msg :value versions  :status :done))))
 
