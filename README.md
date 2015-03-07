@@ -16,18 +16,6 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
 :plugins [[refactor-nrepl "0.2.2"]]
 ```
 
-Additionally you have to add a dependency on [alembic](https://github.com/pallet/alembic). Either in your `project.clj`:
-
-```clojure
-:profiles {:dev {:dependencies [[alembic "0.3.2"]]}}
-```
-
-or in your `~/.lein/profiles.clj`:
-
-```clj
-{:user {:dependencies [[alembic "0.3.2"]]}}
-```
-
 ### Clojure client
 
 A clojure client is provided for demonstrative purposes, and to make some refactorings available from the REPL.
@@ -168,7 +156,7 @@ Return valus `status` of `done` and `unbound` which is a space-separated list of
 
 To work with `mranderson` the first thing to do is:
 
-`lein do clean, source-deps`
+`lein do clean, source-deps "{:prefix-exclusions [\"classlojure\"]}"`
 
 this creates the munged local dependencies in target/srcdeps directory
 
@@ -190,6 +178,14 @@ locally:
 to clojars:
 
 `lein with-profile +plugin.mranderson/config deploy clojars`
+
+Or alternitavely run
+
+`./build.sh install`
+
+`./build.sh deploy clojars`
+
+build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
 ## Changelog
 

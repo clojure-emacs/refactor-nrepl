@@ -9,14 +9,14 @@
                  [org.clojure/tools.nrepl "0.2.7"]
                  ^:source-dep [http-kit "2.1.19"]
                  [org.clojure/data.json "0.2.5"]
+                 ^:source-dep [alembic "0.3.2"]
                  ^:source-dep [instaparse "1.3.4"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.5"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.7"]
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]]
-  :plugins [[thomasa/mranderson "0.3.0"]]
+  :plugins [[thomasa/mranderson "0.3.1"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
-  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]
-                                       [alembic "0.3.2"]]}
+  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]]}
              :test {:dependencies [[print-foo "1.0.1"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
