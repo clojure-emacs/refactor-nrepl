@@ -54,15 +54,16 @@
       (merge-libspecs libspecs))))
 
 (defn- get-sort-name [dep]
-  (if (sequential? dep)
-    (let [name (-> dep first name)
-          ;; penalize prefix forms so [foo.bar :as bar]
-          ;; comes before [foo.bar [qux :as qux] [quux ..]]
-          suffix (if (and (> (count dep) 1) (sequential? (second dep)))
-                   " ["
-                   "")]
-      (str name suffix))
-    (name dep)))
+  (str/lower-case
+   (if (sequential? dep)
+     (let [name (-> dep first name)
+           ;; penalize prefix forms so [foo.bar :as bar]
+           ;; comes before [foo.bar [qux :as qux] [quux ..]]
+           suffix (if (and (> (count dep) 1) (sequential? (second dep)))
+                    " ["
+                    "")]
+       (str name suffix))
+     (name dep))))
 
 (defn- dependency-comparator
   "Lexicographical comparison of dependency vectors based on the name
@@ -124,19 +125,19 @@
   [libspecs]
   (vec
    (for [libspec libspecs]
-         (create-libspec (update-in libspec [:ns] #(-> % suffix symbol))))))
+     (create-libspec (update-in libspec [:ns] #(-> % suffix symbol))))))
 
 (defn- create-libspec-vectors-with-prefix
   [libspecs]
   (vec
    (for [libspec libspecs]
-         (create-libspec libspec))))
+     (create-libspec libspec))))
 
 (defn- create-prefixed-libspec-vector
   [libspecs]
   (vec
    (for [{:keys [ns] :as libspec} libspecs]
-         (create-libspec (assoc libspec :ns (ns-suffix ns))))))
+     (create-libspec (assoc libspec :ns (ns-suffix ns))))))
 
 (defn- create-prefixed-libspec-vectors
   [[libspec & more :as libspecs]]
