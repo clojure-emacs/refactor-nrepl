@@ -1,5 +1,5 @@
 (ns refactor-nrepl.ns.dependencies
-  (:require [cider.nrepl.middleware.info :refer [info-clj]]
+  (:require [refactor-nrepl.ns.info :refer [info-clj]]
             [clojure
              [edn :as edn]
              [string :as str]]

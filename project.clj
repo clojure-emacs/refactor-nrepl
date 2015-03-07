@@ -16,8 +16,7 @@
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]]
   :plugins [[thomasa/mranderson "0.3.1"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
-  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]]}
-             :test {:dependencies [[print-foo "1.0.1"]]}
+  :profiles {:test {:dependencies [[print-foo "1.0.1"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0-alpha5"]]}

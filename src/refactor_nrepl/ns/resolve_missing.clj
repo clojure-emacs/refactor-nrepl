@@ -1,5 +1,5 @@
 (ns refactor-nrepl.ns.resolve-missing
-  (:require [cider.nrepl.middleware.info :refer [info-clj]]
+  (:require [refactor-nrepl.ns.info :refer [info-clj]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
