@@ -115,13 +115,14 @@
          (>= loc-column (:column env))
          (<= loc-column (:end-column env)))))
 
-(defn- find-local-symbol [file var-name line column]
+(defn- find-local-symbol
   "Find local symbol occurrences
 
 file is the file where the request is made
 var-name is the name of the var the user wants to know about
 line is the line number of the occurrences
 column is the column of the occurrence"
+  [file var-name line column]
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
