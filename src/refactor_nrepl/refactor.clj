@@ -150,7 +150,7 @@ column is the column of the occurrence"
 
 (defn- find-symbol-reply [{:keys [transport file ns name clj-dir loc-line loc-column] :as msg}]
   (try
-    (let [syms (or (when file (not-empty (find-local-symbol file name loc-line loc-column)))
+    (let [syms (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name loc-line loc-column)))
                       (find-global-symbol-reply file ns name clj-dir))]
          (doseq [found-sym syms]
            (transport/send transport (response-for msg :occurrence found-sym)))
