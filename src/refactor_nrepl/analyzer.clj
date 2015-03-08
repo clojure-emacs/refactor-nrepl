@@ -2,10 +2,12 @@
   (:refer-clojure :exclude [macroexpand-1])
   (:require [clojure.tools.analyzer :as ana]
             [clojure.tools.analyzer.jvm :as aj]
+            [clojure.tools.analyzer.jvm.utils :as ajutils]
             [clojure.tools.analyzer.passes :refer [schedule]]
             [clojure.tools.analyzer.passes.jvm.validate :refer [validate]]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [clojure.tools.analyzer.passes.emit-form :as emit-form])
+            [clojure.tools.analyzer.passes.emit-form :as emit-form]
+            [clojure.java.io :as io])
   (:import java.io.PushbackReader))
 
 ;;; The structure here is {ns {content-hash ast}}
@@ -46,17 +48,22 @@
   (swap! ast-cache update-in [ns] merge {(hash file-content) ast})
   ast)
 
+(defn- ns-on-cp? [ns]
+  (io/resource (ajutils/ns->relpath ns)))
+
 (defn- build-ast
   [ns aliases]
-  (binding [ana/macroexpand-1 noop-macroexpand-1]
-    (assoc-in (aj/analyze-ns ns) [0 :alias-info] aliases)))
+  (when (ns-on-cp? ns)
+    (binding [ana/macroexpand-1 noop-macroexpand-1]
+      (assoc-in (aj/analyze-ns ns) [0 :alias-info] aliases))))
 
 (defn- cachable-ast [file-content]
   (let [[ns aliases] (parse-ns file-content)]
     (when ns
       (if-let [cached-ast (get-ast-from-cache ns file-content)]
         cached-ast
-        (update-ast-cache file-content ns (build-ast ns aliases))))))
+        (when-let [new-ast (build-ast ns aliases)]
+          (update-ast-cache file-content ns new-ast))))))
 
 (defn ns-ast
   "Build AST for a namespace"
