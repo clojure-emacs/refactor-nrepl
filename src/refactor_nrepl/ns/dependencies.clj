@@ -213,13 +213,13 @@
 
 (defn- file-content-sans-ns [file-content]
   (let [rdr (PushbackReader. (StringReader. file-content))
-        ns (read rdr false :eof)
-        contents (atom [])]
-    (loop [form (read rdr false :eof)]
-      (when-not (= form :eof)
-        (swap! contents conj form)
-        (recur (read rdr false :eof))))
-    (str/join "\n" @contents)))
+        ns (read rdr false :eof)]
+    (str/join "\n"
+              (loop [form (read rdr false :eof)
+                     contents []]
+                (if (= form :eof)
+                  contents
+                  (recur (read rdr false :eof) (conj contents form)))))))
 
 (defn- macro-in-use? [file-content macro]
   (let [m (Pattern/quote (str macro))
