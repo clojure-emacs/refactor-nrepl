@@ -73,11 +73,15 @@
     (find-nodes ast (partial contains-var-or-const? name (alias-info ast)))))
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
-  (let [ast (ns-ast ns-string)
-        result (find-invokes ast debug-fns)]
-    (transport/send transport
-                    (response-for msg :value (when (not-empty result) result)
-                                  :status :done))))
+  (try
+    (let [ast (ns-ast ns-string)
+             result (find-invokes ast debug-fns)]
+         (transport/send transport
+                         (response-for msg :value (when (not-empty result) result)
+                                       :status :done)))
+    (catch Exception e
+      (transport/send transport
+                      (response-for msg :error (.getMessage e) :status :done)))))
 
 (defn- match [file-content line end-line]
   (let [line-index (dec line)
@@ -145,12 +149,16 @@ column is the column of the occurrence"
              (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
 
 (defn- find-symbol-reply [{:keys [transport file ns name clj-dir loc-line loc-column] :as msg}]
-  (let [syms (or (when file (not-empty (find-local-symbol file name loc-line loc-column)))
-                 (find-global-symbol-reply file ns name clj-dir))]
-    (doseq [found-sym syms]
-      (transport/send transport (response-for msg :occurrence found-sym)))
-    (transport/send transport (response-for msg :syms-count (count syms)
-                                            :status :done))))
+  (try
+    (let [syms (or (when file (not-empty (find-local-symbol file name loc-line loc-column)))
+                      (find-global-symbol-reply file ns name clj-dir))]
+         (doseq [found-sym syms]
+           (transport/send transport (response-for msg :occurrence found-sym)))
+         (transport/send transport (response-for msg :syms-count (count syms)
+                                                 :status :done)))
+    (catch Exception e
+      (transport/send transport
+                      (response-for msg :error (.getMessage e) :status :done)))))
 
 (defn wrap-refactor
   "Ensures that refactor only triggered with the right operation and
