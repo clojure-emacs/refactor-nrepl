@@ -152,16 +152,6 @@ column is the column of the occurrence"
     (transport/send transport (response-for msg :syms-count (count syms)
                                             :status :done))))
 
-(defn- form-contains-var [var-name node]
-  (let [form (:form node)]
-    (or (= var-name (str form)) ;; invoke
-        (and (coll? form) (= "def" (-> form first str))
-             (= var-name (-> form second str))) ; def/defn definition
-        (and (coll? form) (= "var" (-> form first str))
-             ;; #'varname style reference
-             (= (str/replace var-name "#'" "")
-                (-> form second str))))))
-
 (defn wrap-refactor
   "Ensures that refactor only triggered with the right operation and
   forks to the appropriate refactor function"
