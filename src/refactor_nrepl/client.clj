@@ -172,7 +172,6 @@
                                   :refactor-fn "find-debug-fns"
                                   :debug-fns debug-fns})
         invocations (-> result first :value)]
-    (println "found invocations: " invocations)
     (when-not (empty? invocations)
       (->> ns-string
            str/split-lines
