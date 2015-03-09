@@ -68,7 +68,7 @@
   (or (contains-var var-name alias-info node)
       (contains-const? var-name alias-info node)))
 
-(defn- find-symbol [name ast]
+(defn- find-symbol-in-ast [name ast]
   (when ast
     (find-nodes ast (partial contains-var-or-const? name (alias-info ast)))))
 
@@ -96,7 +96,7 @@
   (let [file-content (slurp file)
         locs (->> file-content
                   ns-ast
-                  (find-symbol fully-qualified-name)
+                  (find-symbol-in-ast fully-qualified-name)
                   (filter #(first %)))]
     (when-not (empty? locs)
       (map #(conj % (.getCanonicalPath file) (match file-content (first %) (second %)))
@@ -148,13 +148,16 @@ column is the column of the occurrence"
         (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
              (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
 
-(defn- find-symbol-reply [{:keys [transport file ns name clj-dir loc-line loc-column] :as msg}]
+(defn- find-symbol [{:keys [file ns name clj-dir loc-line loc-column]}]
+  (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name loc-line loc-column)))
+      (find-global-symbol file ns name clj-dir)))
+
+(defn- find-symbol-reply [{:keys [transport] :as msg}]
   (try
-    (let [syms (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name loc-line loc-column)))
-                      (find-global-symbol file ns name clj-dir))]
-      (doseq [found-sym syms]
-        (transport/send transport (response-for msg :occurrence found-sym)))
-      (transport/send transport (response-for msg :syms-count (count syms)
+    (let [occurrences (find-symbol msg)]
+      (doseq [occurrence occurrences]
+        (transport/send transport (response-for msg :occurrence occurrence)))
+      (transport/send transport (response-for msg :syms-count (count occurrences)
                                               :status :done)))
     (catch Exception e
       (transport/send transport
