@@ -102,7 +102,7 @@
       (map #(conj % (.getCanonicalPath file) (match file-content (first %) (second %)))
            locs))))
 
-(defn- find-global-symbol-reply [file ns var-name clj-dir]
+(defn- find-global-symbol [file ns var-name clj-dir]
   (let [dir (or clj-dir ".")
         namespace (or ns (ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
@@ -151,11 +151,11 @@ column is the column of the occurrence"
 (defn- find-symbol-reply [{:keys [transport file ns name clj-dir loc-line loc-column] :as msg}]
   (try
     (let [syms (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name loc-line loc-column)))
-                      (find-global-symbol-reply file ns name clj-dir))]
-         (doseq [found-sym syms]
-           (transport/send transport (response-for msg :occurrence found-sym)))
-         (transport/send transport (response-for msg :syms-count (count syms)
-                                                 :status :done)))
+                      (find-global-symbol file ns name clj-dir))]
+      (doseq [found-sym syms]
+        (transport/send transport (response-for msg :occurrence found-sym)))
+      (transport/send transport (response-for msg :syms-count (count syms)
+                                              :status :done)))
     (catch Exception e
       (transport/send transport
                       (response-for msg :error (.getMessage e) :status :done)))))
