@@ -88,17 +88,14 @@
 (defn- artifacts-list [{:keys [transport force] :as msg}]
   (when (or (= force "true") (stale-cache?))
     (update-artifact-cache!))
-  (let [names (->> @artifacts
-                   keys
-                   (interpose " ")
-                   (apply str))]
-    (transport/send transport (response-for msg :value names :status :done))))
+  (let [names (->> @artifacts keys list*)]
+    (transport/send transport (response-for msg :artifacts names :status :done))))
 
 (defn- artifact-versions [{:keys [transport artifact] :as msg}]
   (when (stale-cache?)
     (update-artifact-cache!))
-  (let [versions (->> artifact (@artifacts) (interpose " ") (apply str))]
-    (transport/send transport (response-for msg :value versions  :status :done))))
+  (let [versions (->> artifact (@artifacts) list)]
+    (transport/send transport (response-for msg :versions versions  :status :done))))
 
 (defn- hotload-dependency
   [{:keys [transport coordinates] :as msg}]
@@ -135,13 +132,13 @@
     :requires {}
     :optional {"force" "which, if present, indicates whether we should force an update of the list of artifacts, rather than use the cache."}
     :returns {"status" "done"
-              "value" "string containing artifacts, separated by spaces."}}
+              "artifacts" "List of strings of artifacts."}}
    "artifact-versions"
    {:doc "Get all the available versions for an artifact."
     :requires {"artifact" "the artifact whose versions we're interested in"}
     :optional {}
     :returns {"status" "done"
-              "value" "string containing artifact versions, separated by spaces."}}
+              "versions" "List of strings of artifact versions."}}
    "hotload-dependency"
    {:doc "Adds non-conflicting dependency changes to active nrepl."
     :requires {:coordinates "A leiningen coordinate vector"}

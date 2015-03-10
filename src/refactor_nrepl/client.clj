@@ -96,25 +96,25 @@
                              host "localhost"}}]
   (nrepl/connect :port port :host host))
 
-(defn- act-on-occurrences [action & {:keys [transport ns name clj-dir loc-line loc-column file]}]
+(defn- act-on-occurrences [action & {:keys [transport ns name dir line column file]}]
   (let [tr (or transport @transp (reset! transp (connect)))
-        req {:op :refactor
-             :refactor-fn "find-symbol"
+        req {:op :find-symbol
              :ns ns
-             :clj-dir (or clj-dir ".")
-             :loc-line loc-line
-             :loc-column loc-column
+             :dir (or dir ".")
+             :line line
+             :column column
              :name name}
         found-symbols (->> req
                            (#(if file (assoc % :file file) %))
                            (nrepl-message 60000 tr)
-                           (map (juxt :occurrence :syms-count)))]
+                           (map (juxt :occurrence :count)))]
     (->> found-symbols
          (map first)
          (remove nil?)
+         (map edn/read-string)
+         (map #(remove keyword? %))
          (map action)
          doall)))
-
 
 (defn find-usages
   "Finds and lists symbols (defs, defns) in the project: both where they are defined and their occurrences.
@@ -122,17 +122,17 @@
   Expected input:
   - ns namespace of the symbol to find
   - name of the symbol to find as string
-  - clj-dir director to search clj files in, defaults to `.`
+  - dir director to search clj files in, defaults to `.`
   - transport optional, however if you don't provide your own repl
-  - loc-line optional, line of the symbol to find in the source file
-  - loc-column optional, column of the symbol to find in the source file
+  - line optional, line of the symbol to find in the source file
+  - column optional, column of the symbol to find in the source file
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name clj-dir file loc-line loc-column]}]
-  {:pre [(or (and ns name) (and file loc-line loc-column))]}
+  [& {:keys [transport ns name dir file line column]}]
+  {:pre [(or (and ns name) (and file line column))]}
   (act-on-occurrences prettify-found-symbol-result :transport transport
-                      :ns ns :name name :clj-dir clj-dir :file file :loc-line loc-line :loc-column loc-column))
+                      :ns ns :name name :dir dir :file file :line line :column column))
 
 (defn rename-symbol
   "Renames symbols (defs and defns) in the project's given dir.
@@ -146,10 +146,10 @@
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name new-name clj-dir]}]
+  [& {:keys [transport ns name new-name dir]}]
   {:pre [ns name new-name]}
   (act-on-occurrences (partial rename-symbol-occurrence! name new-name)
-                      :transport transport :ns ns :name name :clj-dir clj-dir))
+                      :transport transport :ns ns :name name :dir dir))
 
 (defn remove-debug-invocations
   "Removes debug function invocations. In reality it could remove any function
@@ -167,9 +167,8 @@
   {:pre [file]}
   (let [tr (or transport @transp (reset! transp (connect)))
         ns-string (slurp file)
-        result (nrepl-message tr {:op :refactor
+        result (nrepl-message tr {:op :find-debug-fns
                                   :ns-string ns-string
-                                  :refactor-fn "find-debug-fns"
                                   :debug-fns debug-fns})
         invocations (-> result first :value)]
     (when-not (empty? invocations)

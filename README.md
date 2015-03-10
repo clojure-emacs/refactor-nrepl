@@ -74,17 +74,39 @@ Two ops are available:
 
 #### artifact-list
 
-Takes no arguments and returns a space-separated list of all available artifacts.
+Takes no arguments and returns a list of all available artifacts.
 
 #### artifact-versions
 
 Takes one required argument, `artifact` which is the full name of the artifact e.g. `core.clojure/clojure`, and one optional argument `force` which indicates whether we should force an update of the cached artifacts.
 
-The return value is a space-separated list of all the available versions for the artifact.
+The return value is a list of all the available versions for the artifact.
 
-### find symbols
+### find-symbol
 
-Finds occurrences of symbols like defs and defns both where they are defined (if available) and where they are used.
+This op finds occurrences of a single symbol.
+
+`find-symbol` requires:
+
+`file` "The absolute path to the file containing the symbol to lookup.
+
+`dir` Only files below this dir will be searched.
+
+`ns` The ns where the symbol is defined.
+
+`name` The name of the symbol
+
+`line` The line number where the symbol occurrs.
+
+`column` The column number where the symbol occurs.
+
+The return value is a stream of occurrences under the key `occurrence` which is an alist like this:
+
+`(:line-beg 5 :line-end 5 :col-beg 19 :col-end 26 :name a-name :file \"/aboslute/path/to/file.clj\" :match (fn-name some args))`
+
+When the fine `occurrence` has been send a final message is sent with `count`, indicating the total number of matches, and `status` `done`.
+
+In the event of an error the key `error` will contain a message which is intended for display to the user.
 
 #### find usages (application of find symbols)
 

@@ -3,8 +3,9 @@
             [clojure.test :refer :all]
             [clojure.tools.nrepl.server :as nrserver]
             [me.raynes.fs :as fs]
-            [refactor-nrepl find-unbound refactor
-             [client :refer [connect find-usages remove-debug-invocations rename-symbol resolve-missing]]]
+            [refactor-nrepl find-unbound find_symbol
+             [client :refer [connect find-usages remove-debug-invocations
+                             rename-symbol resolve-missing]]]
             refactor-nrepl.ns.resolve-missing)
   (:import java.io.File))
 
@@ -29,7 +30,7 @@
         (nrserver/start-server
          :port 7777
          :handler (nrserver/default-handler
-                    #'refactor-nrepl.refactor/wrap-refactor
+                    #'refactor-nrepl.find-symbol/wrap-find-symbol
                     #'refactor-nrepl.find-unbound/wrap-find-unbound
                     #'refactor-nrepl.ns.resolve-missing/wrap-resolve-missing))]
     server))
@@ -49,10 +50,11 @@
 (deftest test-find-two-foo
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
-        result (find-usages :transport transport :ns 'com.example.two
-                            :file (str tmp-dir "/src/com/example/one.clj")
-                            :loc-line 6 :loc-column 19
-                            :name "foo" :clj-dir (str tmp-dir))]
+        response (find-usages :transport transport :ns 'com.example.two
+                              :file (str tmp-dir "/src/com/example/one.clj")
+                              :line 6 :column 19
+                              :name "foo" :dir (str tmp-dir))
+        result (remove keyword? response)]
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
     (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
@@ -68,28 +70,31 @@
 (deftest test-find-fn-in-similarly-named-ns
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
-        result (find-usages :transport transport :ns 'com.example.three
-                            :file (str tmp-dir "/src/com/example/four.clj")
-                            :loc-line 11 :loc-column 3
-                            :name "thre" :clj-dir (str tmp-dir))]
+        response (find-usages :transport transport :ns 'com.example.three
+                              :file (str tmp-dir "/src/com/example/four.clj")
+                              :line 11 :column 3
+                              :name "thre" :dir (str tmp-dir))
+        result (remove keyword? response)]
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-find-fn-in-dashed-ns
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
-        result (find-usages :transport transport :ns 'com.example.twenty-four
-                            :file (str tmp-dir "/src/com/example/four.clj")
-                            :loc-line 14 :loc-column 4
-                            :name "stuff" :clj-dir (str tmp-dir))]
+        response (find-usages :transport transport :ns 'com.example.twenty-four
+                              :file (str tmp-dir "/src/com/example/four.clj")
+                              :line 14 :column 4
+                              :name "stuff" :dir (str tmp-dir))
+        result (remove keyword? response)]
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-find-dashed-fn
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)
-        result (find-usages :transport transport :ns 'com.example.twenty-four
-                            :file (str tmp-dir "/src/com/example/four.clj")
-                            :loc-line 16 :loc-column 4
-                            :name "more-stuff" :clj-dir (str tmp-dir))]
+        response (find-usages :transport transport :ns 'com.example.twenty-four
+                              :file (str tmp-dir "/src/com/example/four.clj")
+                              :line 16 :column 4
+                              :name "more-stuff" :dir (str tmp-dir))
+        result (remove keyword? response)]
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-rename-foo
@@ -111,7 +116,7 @@
   \"foo\")
 "]
     (rename-symbol :transport transport :ns 'com.example.two :name "foo"
-                   :clj-dir (str tmp-dir) :new-name "baz")
+                   :dir (str tmp-dir) :new-name "baz")
 
     (is (= new-one (slurp (str tmp-dir "/src/com/example/one.clj")))
         "rename failed in com.example.one")
@@ -182,14 +187,16 @@
   (let [tmp-dir (create-test-project)
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
-        result (find-usages :transport transport :name "a" :file three-file :loc-line 3 :loc-column 24)]
+        response (find-usages :transport transport :name "a" :file three-file :line 3 :column 24)
+        result (remove keyword? response)]
     (is (= 5 (count result)) (format "expected 5 results but got %d" (count result)))))
 
 (deftest find-local-let
   (let [tmp-dir (create-test-project)
         three-file (str tmp-dir "/src/com/example/three.clj")
         transport (connect :port 7777)
-        result (find-usages :transport transport :name "right" :file three-file :loc-line 12 :loc-column 12)]
+        response (find-usages :transport transport :name "right" :file three-file :line 12 :column 12)
+        result (remove keyword? response)]
     (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))
 
 ;; commented out because the other tests depend on the classpath being

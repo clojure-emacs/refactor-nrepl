@@ -1,4 +1,4 @@
-(ns refactor-nrepl.refactor
+(ns refactor-nrepl.find-symbol
   (:require [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer :all]
             [clojure.tools.nrepl
@@ -148,44 +148,61 @@ column is the column of the occurrence"
         (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
              (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
 
-(defn- find-symbol [{:keys [file ns name clj-dir loc-line loc-column]}]
-  (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name loc-line loc-column)))
-      (find-global-symbol file ns name clj-dir)))
+(defn- find-symbol [{:keys [file ns name dir line column]}]
+  (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name line column)))
+      (find-global-symbol file ns name dir)))
+
+(defn- create-result-alist
+  [line-beg line-end col-beg col-end name file match]
+  (list :line-beg line-beg
+        :line-end line-end
+        :col-beg col-beg
+        :col-end col-end
+        :name name
+        :file file
+        :match match))
 
 (defn- find-symbol-reply [{:keys [transport] :as msg}]
   (try
     (let [occurrences (find-symbol msg)]
-      (doseq [occurrence occurrences]
-        (transport/send transport (response-for msg :occurrence occurrence)))
-      (transport/send transport (response-for msg :syms-count (count occurrences)
+      (doseq [occurrence occurrences
+              :let [response (pr-str (apply create-result-alist occurrence))]]
+        (transport/send transport
+                        (response-for msg :occurrence response)))
+      (transport/send transport (response-for msg :count (count occurrences)
                                               :status :done)))
     (catch Exception e
       (transport/send transport
                       (response-for msg :error (.getMessage e) :status :done)))))
 
-(defn wrap-refactor
-  "Ensures that refactor only triggered with the right operation and
-  forks to the appropriate refactor function"
+(defn wrap-find-symbol
   [handler]
-  (fn [{:keys [op refactor-fn ns-string] :as msg}]
-    (if (= "refactor" op)
-      (cond (= "find-debug-fns" refactor-fn) (find-debug-fns-reply msg)
-            (= "find-symbol" refactor-fn) (find-symbol-reply msg)
-            :else
-            (handler msg))
-      (handler msg))))
+  (fn [{:keys [op ns-string] :as msg}]
+    (cond (= op "find-debug-fns") (find-debug-fns-reply msg)
+          (= op "find-symbol") (find-symbol-reply msg)
+          :else
+          (handler msg))))
 
 (set-descriptor!
- #'wrap-refactor
+ #'wrap-find-symbol
  {:handles
-  {"refactor"
-   {:doc "Returns a an appropriate result for the given refactor fn.
-          Currently available:
-          - find-debug-fns: finds debug functions returns tuples containing
-            [line-number end-line-number column-number end-column-number fn-name]
-          - find-symbol: finds symbol in the project returns tuples containing
-            [line-number end-line-number column-number end-column-number fn-name absolute-path the-matched-line]"
-    :requires {"ns-string" "the body of the namespace to build the AST with"
-               "refactor-fn" "The refactor function to invoke"}
+  {"find-symbol"
+   {:doc "Streams back information about each occurrence of symbol."
+    :requires {"file" "The absolute path to the file containing the
+    symbol to lookup."
+               "dir" "Only files below this dir will be searched."
+               "ns" "The ns where the symbol is defined."
+               "name" "The name of the symbol"
+               "line" "The line number where the symbol occurrs."
+               "column" "The column number where the symbol occurs."}
     :returns {"status" "done"
-              "value" "result of the refactor"}}}})
+              "count" "The total number of symbols found"
+              "occurrence" "Information about a single occurrence:
+              e.g.
+(:line-beg 5 :line-end 5 :col-beg 19 :col-end 26
+:name a-name :file \"/aboslute/path/to/file.clj\"
+:match (fn-name some args))"}
+    "error" "An error message intended to be displayed to the user."}
+   "find-debug-fns"
+   {:doc "- find-debug-fns: finds debug functions returns tuples containing
+    [line-number end-line-number column-number end-column-number fn-name]"}}})
