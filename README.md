@@ -78,7 +78,7 @@ Takes no arguments and returns a list of all available artifacts.
 
 #### artifact-versions
 
-Takes one required argument, `artifact` which is the full name of the artifact e.g. `core.clojure/clojure`, and one optional argument `force` which indicates whether we should force an update of the cached artifacts.
+Takes one required argument, `artifact` which is the full name of the artifact e.g. `org.clojure/clojure`, and one optional argument `force` which indicates whether we should force an update of the cached artifacts.
 
 The return value is a list of all the available versions for the artifact.
 
@@ -88,7 +88,7 @@ This op finds occurrences of a single symbol.
 
 `find-symbol` requires:
 
-`file` "The absolute path to the file containing the symbol to lookup.
+`file` The absolute path to the file containing the symbol to lookup.
 
 `dir` Only files below this dir will be searched.
 
