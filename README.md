@@ -74,13 +74,13 @@ Two ops are available:
 
 #### artifact-list
 
-Takes no arguments and returns a space-separated list of all available artifacts.
+Takes no arguments and returns a list of all available artifacts.
 
 #### artifact-versions
 
 Takes one required argument, `artifact` which is the full name of the artifact e.g. `core.clojure/clojure`, and one optional argument `force` which indicates whether we should force an update of the cached artifacts.
 
-The return value is a space-separated list of all the available versions for the artifact.
+The return value is a list of all the available versions for the artifact.
 
 ### find-symbol
 
