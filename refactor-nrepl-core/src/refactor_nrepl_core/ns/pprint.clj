@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.pprint
+(ns refactor-nrepl-core.ns.pprint
   (:require [clojure.pprint :refer [pprint]]
             [clojure.string :as str]
             [refactor-nrepl.ns.helpers :refer [prefix-form?]]))

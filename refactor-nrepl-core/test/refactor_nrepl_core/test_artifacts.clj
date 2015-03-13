@@ -1,4 +1,4 @@
-(ns refactor-nrepl.test-artifacts
+(ns refactor-nrepl-core.test-artifacts
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer :all]

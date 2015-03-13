@@ -1,9 +1,9 @@
-(ns refactor-nrepl.test-namespace
+(ns refactor-nrepl-core.ns.clean-ns-test
   (:require [clojure.test :refer :all]
-            [refactor-nrepl.ns
+            [refactor-nrepl-core.ns
              [clean-ns :refer [clean-ns read-ns-form]]
              [helpers :refer [get-ns-component]]]
-            [refactor-nrepl.ns.pprint :refer [pprint-ns]])
+            [refactor-nrepl-core.ns.pprint :refer [pprint-ns]])
   (:import java.io.File))
 
 (def ns1 (.getAbsolutePath (File. "test/resources/ns1.clj")))
@@ -98,7 +98,7 @@
     (is (= clean-requires requires))
     (is (= clean-imports imports))))
 
-(def artifact-ns '(ns refactor-nrepl.artifacts
+(def artifact-ns '(ns refactor-nrepl-core.artifacts
                     (:require [clojure
                                [edn :as edn]
                                [string :as str]]
@@ -121,7 +121,7 @@
   ;; broken across versions due to difference in ordering of objects
   ;; in pprinted maps
   (deftest test-pprint
-           (let [ns-str (pprint-ns (clean-ns ns1))
-                 ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
-             (is (= ns1-str ns-str))))
+    (let [ns-str (pprint-ns (clean-ns ns1))
+          ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
+      (is (= ns1-str ns-str))))
   )

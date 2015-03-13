@@ -3,10 +3,9 @@
             [clojure.test :refer :all]
             [clojure.tools.nrepl.server :as nrserver]
             [me.raynes.fs :as fs]
-            [refactor-nrepl find-unbound find_symbol
+            [refactor-nrepl middleware
              [client :refer [connect find-usages remove-debug-invocations
-                             rename-symbol resolve-missing]]]
-            refactor-nrepl.ns.resolve-missing)
+                             rename-symbol resolve-missing]]])
   (:import java.io.File))
 
 (defn- create-temp-dir
@@ -30,9 +29,7 @@
         (nrserver/start-server
          :port 7777
          :handler (nrserver/default-handler
-                    #'refactor-nrepl.find-symbol/wrap-find-symbol
-                    #'refactor-nrepl.find-unbound/wrap-find-unbound
-                    #'refactor-nrepl.ns.resolve-missing/wrap-resolve-missing))]
+                    #'refactor-nrepl.middleware/wrap-refactor))]
     server))
 
 (defn stop-repl-server [server]
@@ -172,6 +169,7 @@
                                         foo-res)))
         bar-type (second (first (filter #(= (first %) 'refactor_nrepl.integration_tests.Bar) bar-res)))
         baz-type (second (first (filter #(= (first %) 'refactor_nrepl.integration_tests.Baz) baz-res)))]
+
     (is ((set (map first split-res)) 'clojure.string))
     (is ((set (map first date-res)) 'java.util.Date))
     (is ((set (map first foo-res)) 'refactor_nrepl.integration_tests.Foo))
@@ -198,12 +196,3 @@
         response (find-usages :transport transport :name "right" :file three-file :line 12 :column 12)
         result (remove keyword? response)]
     (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))
-
-;; commented out because the other tests depend on the classpath being
-;; in a pristine condition
-;; (deftest test-find-unbound-vars
-;;   (let [transport (connect :port 7777)]
-;;     (is (= (find-unbound :transport transport :ns "refactor-nrepl.integration-tests")
-;;            '#{}))
-;;     (is (= (find-unbound :transport transport :ns "resources.test-unbound")
-;;            '#{s sep}))))

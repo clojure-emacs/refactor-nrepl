@@ -1,7 +1,7 @@
 ;;;; Copied from slamhound 1.5.5
 ;;;; Copyright © 2011-2012 Phil Hagelberg and contributors
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
-(ns refactor-nrepl.ns.slam.hound.regrow
+(ns refactor-nrepl-core.ns.slam.hound.regrow
   (:require [clojure.set :as set]
             [clojure.string :as string]
             [refactor-nrepl.ns.slam.hound.future :refer [as->* cond->*]]

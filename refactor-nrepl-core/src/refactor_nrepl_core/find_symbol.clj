@@ -1,10 +1,6 @@
-(ns refactor-nrepl.find-symbol
+(ns refactor-nrepl-core.find-symbol
   (:require [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer :all]
-            [clojure.tools.nrepl
-             [middleware :refer [set-descriptor!]]
-             [misc :refer [response-for]]
-             [transport :as transport]]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
              [util :refer :all]]))
@@ -72,17 +68,6 @@
   (when ast
     (find-nodes ast (partial contains-var-or-const? name (alias-info ast)))))
 
-(defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
-  (try
-    (let [ast (ns-ast ns-string)
-             result (find-invokes ast debug-fns)]
-         (transport/send transport
-                         (response-for msg :value (when (not-empty result) result)
-                                       :status :done)))
-    (catch Exception e
-      (transport/send transport
-                      (response-for msg :error (.getMessage e) :status :done)))))
-
 (defn- match [file-content line end-line]
   (let [line-index (dec line)
         eline (if (number? end-line) end-line line)]
@@ -148,10 +133,6 @@ column is the column of the occurrence"
         (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
              (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
 
-(defn- find-symbol [{:keys [file ns name dir line column]}]
-  (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name line column)))
-      (find-global-symbol file ns name dir)))
-
 (defn- create-result-alist
   [line-beg line-end col-beg col-end name file match]
   (list :line-beg line-beg
@@ -162,47 +143,14 @@ column is the column of the occurrence"
         :file file
         :match match))
 
-(defn- find-symbol-reply [{:keys [transport] :as msg}]
-  (try
-    (let [occurrences (find-symbol msg)]
-      (doseq [occurrence occurrences
-              :let [response (pr-str (apply create-result-alist occurrence))]]
-        (transport/send transport
-                        (response-for msg :occurrence response)))
-      (transport/send transport (response-for msg :count (count occurrences)
-                                              :status :done)))
-    (catch Exception e
-      (transport/send transport
-                      (response-for msg :error (.getMessage e) :status :done)))))
+(defn find-symbol [{:keys [file ns name dir line column]}]
+  (map #(apply create-result-alist %)
+       (or (when (and file (not-empty file))
+             (not-empty (find-local-symbol file name line column)))
+           (find-global-symbol file ns name dir))))
 
-(defn wrap-find-symbol
-  [handler]
-  (fn [{:keys [op ns-string] :as msg}]
-    (cond (= op "find-debug-fns") (find-debug-fns-reply msg)
-          (= op "find-symbol") (find-symbol-reply msg)
-          :else
-          (handler msg))))
 
-(set-descriptor!
- #'wrap-find-symbol
- {:handles
-  {"find-symbol"
-   {:doc "Streams back information about each occurrence of symbol."
-    :requires {"file" "The absolute path to the file containing the
-    symbol to lookup."
-               "dir" "Only files below this dir will be searched."
-               "ns" "The ns where the symbol is defined."
-               "name" "The name of the symbol"
-               "line" "The line number where the symbol occurrs."
-               "column" "The column number where the symbol occurs."}
-    :returns {"status" "done"
-              "count" "The total number of symbols found"
-              "occurrence" "Information about a single occurrence:
-              e.g.
-(:line-beg 5 :line-end 5 :col-beg 19 :col-end 26
-:name a-name :file \"/aboslute/path/to/file.clj\"
-:match (fn-name some args))"}
-    "error" "An error message intended to be displayed to the user."}
-   "find-debug-fns"
-   {:doc "- find-debug-fns: finds debug functions returns tuples containing
-    [line-number end-line-number column-number end-column-number fn-name]"}}})
+(defn find-debug-fns [{:keys [ns-string debug-fns]}]
+  (-> ns-string
+      ns-ast
+      (find-invokes debug-fns)))

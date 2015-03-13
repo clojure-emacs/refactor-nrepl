@@ -1,4 +1,4 @@
-(ns refactor-nrepl.util
+(ns refactor-nrepl-core.util
   (:require [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [clojure.tools.namespace.parse :refer [read-ns-decl]])
   (:import java.io.PushbackReader))

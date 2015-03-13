@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.dependencies
+(ns refactor-nrepl-core.ns.dependencies
   (:require [cider.nrepl.middleware.info :refer [info-clj]]
             [clojure.java.io :as io]
             [clojure.string :as str]

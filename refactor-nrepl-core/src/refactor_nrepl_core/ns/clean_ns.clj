@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.clean-ns
+(ns refactor-nrepl-core.ns.clean-ns
   "Contains functionality for cleaning namespaces.
 
   * Eliminate :use clauses
@@ -11,15 +11,10 @@
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
   (:require [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [clojure.tools.nrepl
-             [middleware :refer [set-descriptor!]]
-             [misc :refer [response-for]]
-             [transport :as transport]]
             [refactor-nrepl.ns
              [constructor :refer [rebuild-ns-form]]
              [dependencies :refer [extract-dependencies]]
-             [helpers :refer [get-ns-component]]
-             [pprint :refer [pprint-ns]]])
+             [helpers :refer [get-ns-component]]])
   (:import [java.io FileReader PushbackReader]))
 
 (defn- assert-no-exclude-clause
@@ -37,8 +32,7 @@
 
 (defn read-ns-form
   [path]
-  (if-let [ns-form
-           (read-ns-decl (PushbackReader. (FileReader. path)))]
+  (if-let [ns-form (read-ns-decl (PushbackReader. (FileReader. path)))]
     ns-form
     (throw (IllegalArgumentException. "Malformed ns form!"))))
 
@@ -50,30 +44,3 @@
                          (rebuild-ns-form ns-form))]
     (when-not (= ns-form new-ns-form)
       new-ns-form)))
-
-(defn clean-ns-reply [{:keys [transport path] :as msg}]
-  (try
-    (let [ns (some-> path clean-ns pprint-ns)]
-      (transport/send transport (response-for msg :ns ns :status :done)))
-    (catch Exception e
-      (transport/send transport
-                      (response-for msg :error (.getMessage e) :status :done)))))
-
-(defn wrap-clean-ns
-  [handler]
-  (fn [{:keys [op] :as msg}]
-    (cond
-     (= op "clean-ns") (clean-ns-reply msg)
-     :else
-     (handler msg))))
-
-(set-descriptor!
- #'wrap-clean-ns
- {:handles
-  {"clean-ns"
-   {:doc "Various cleanups on the ns form."
-    :requires {"path" "The absolute path to the file to clean."}
-    :returns {"status" "done"
-              "error" "An error message, intended to be displayed to
-              the user, in case of failure."
-              "ns" "The entire (ns ..) form in pristine condition, or nil if nothing was done."}}}})

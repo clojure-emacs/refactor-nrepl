@@ -1,15 +1,10 @@
-(ns refactor-nrepl.artifacts
-  (:require [alembic.still :refer [distill]]
-            [clojure
+(ns refactor-nrepl-core.artifacts
+  (:require [clojure
              [edn :as edn]
              [string :as str]]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [clojure.tools.nrepl
-             [middleware :refer [set-descriptor!]]
-             [misc :refer [response-for]]
-             [transport :as transport]]
             [org.httpkit.client :as http])
   (:import java.util.Date))
 
@@ -85,61 +80,12 @@
   (alter-meta! artifacts update-in [:last-modified]
                (constantly (java.util.Date.))))
 
-(defn- artifacts-list [{:keys [transport force] :as msg}]
+(defn artifacts-list [{:keys [force]}]
   (when (or (= force "true") (stale-cache?))
     (update-artifact-cache!))
-  (let [names (->> @artifacts keys list*)]
-    (transport/send transport (response-for msg :artifacts names :status :done))))
+  (->> @artifacts keys list*))
 
-(defn- artifact-versions [{:keys [transport artifact] :as msg}]
+(defn artifact-versions [{:keys [artifact]}]
   (when (stale-cache?)
     (update-artifact-cache!))
-  (let [versions (->> artifact (@artifacts) list)]
-    (transport/send transport (response-for msg :versions versions  :status :done))))
-
-(defn- hotload-dependency
-  [{:keys [transport coordinates] :as msg}]
-  (try
-    (let [dependency-vector (edn/read-string coordinates)
-          coords [(->> dependency-vector (take 2) vec)]
-          repos {"clojars" "http://clojars.org/repo"
-                 "central" "http://repo1.maven.org/maven2/"}]
-      (when-not (= (-> coords first count) 2)
-        (throw (IllegalArgumentException. (str "Malformed dependency vector: "
-                                               coordinates))))
-      (distill coords :repositories repos)
-      (transport/send transport
-                      (response-for msg :status :done
-                                    :dependency (str/join " " dependency-vector))))
-    (catch Exception e
-      (transport/send transport (response-for msg :error (.getMessage e)
-                                              :status :done)))))
-
-(defn wrap-artifacts
-  [handler]
-  (fn [{:keys [op] :as msg}]
-    (cond (= op "artifact-list") (artifacts-list msg)
-          (= op "artifact-versions") (artifact-versions msg)
-          (= op "hotload-dependency") (hotload-dependency msg)
-          :else
-          (handler msg))))
-
-(set-descriptor!
- #'wrap-artifacts
- {:handles
-  {"artifact-list"
-   {:doc "Returns a list of all the artifacts avilable on clojars, and a select few from mvn central.  The value is is cached for one day, or until the repl session is terminated."
-    :requires {}
-    :optional {"force" "which, if present, indicates whether we should force an update of the list of artifacts, rather than use the cache."}
-    :returns {"status" "done"
-              "artifacts" "List of strings of artifacts."}}
-   "artifact-versions"
-   {:doc "Get all the available versions for an artifact."
-    :requires {"artifact" "the artifact whose versions we're interested in"}
-    :optional {}
-    :returns {"status" "done"
-              "versions" "List of strings of artifact versions."}}
-   "hotload-dependency"
-   {:doc "Adds non-conflicting dependency changes to active nrepl."
-    :requires {:coordinates "A leiningen coordinate vector"}
-    :returns {"status" "done" "dependency" "the coordinate vector that was hotloaded"}}}})
+  (->> artifact (@artifacts) list))

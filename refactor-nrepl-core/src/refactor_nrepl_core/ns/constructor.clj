@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.constructor
+(ns refactor-nrepl-core.ns.constructor
   (:require [clojure.string :as str]
             [refactor-nrepl.ns.helpers
              :refer [get-ns-component prefix-form? prefix suffix

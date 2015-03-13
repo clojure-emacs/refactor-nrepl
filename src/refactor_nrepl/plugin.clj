@@ -1,11 +1,11 @@
 (ns refactor-nrepl.plugin
   (:require [clojure.java.io :as io]))
 
-(defn- version []
+(defn version []
   (let [v (-> (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
               slurp
               read-string
-              (nth 2))]
+              (nth 3))]
     (assert (string? v)
             (str "Something went wrong, version is not a string: "
                  v))

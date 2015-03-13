@@ -1,4 +1,4 @@
-(ns refactor-nrepl.artifacts
+(ns refactor-nrepl-core.artifacts
 (:require [clojure
 [edn :as edn]
 [string :as str]]

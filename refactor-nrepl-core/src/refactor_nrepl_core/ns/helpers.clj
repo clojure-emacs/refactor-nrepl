@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.helpers
+(ns refactor-nrepl-core.ns.helpers
   (:require [clojure.string :as str]))
 
 (defn- libspec?

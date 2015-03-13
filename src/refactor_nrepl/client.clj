@@ -170,7 +170,7 @@
         result (nrepl-message tr {:op :find-debug-fns
                                   :ns-string ns-string
                                   :debug-fns debug-fns})
-        invocations (-> result first :value)]
+        invocations (-> result first :value edn/read-string)]
     (when-not (empty? invocations)
       (->> ns-string
            str/split-lines

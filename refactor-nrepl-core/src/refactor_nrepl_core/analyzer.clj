@@ -1,4 +1,4 @@
-(ns refactor-nrepl.analyzer
+(ns refactor-nrepl-core.analyzer
   (:refer-clojure :exclude [macroexpand-1])
   (:require [clojure.tools.analyzer :as ana]
             [clojure.tools.analyzer.jvm :as aj]
