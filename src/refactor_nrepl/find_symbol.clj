@@ -113,31 +113,20 @@
          (mapcat (partial find-symbol-in-file fully-qualified-name))
          (map identity))))
 
-(defn- node-at-loc? [loc-line loc-column node]
-  (let [env (:env node)]
-    (and (= loc-line (:line env))
-         (>= loc-column (:column env))
-         (<= loc-column (:end-column env)))))
-
 (defn- find-local-symbol
   "Find local symbol occurrences
 
 file is the file where the request is made
 var-name is the name of the var the user wants to know about
-line is the line number of the occurrences
-column is the column of the occurrence"
+line is the line number of the symbol
+column is the column of the symbol"
   [file var-name line column]
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
   (let [ns-string (slurp file)
         ast (ns-ast ns-string)]
-    (when-let [form-index (->> ast
-                               (map-indexed #(vector %1 (->> %2
-                                                             nodes
-                                                             (some (partial node-at-loc? line column)))))
-                               (filter #(second %))
-                               ffirst)]
+    (when-let [form-index (top-level-form-index line column ast)]
       (let [top-level-form-ast (nth ast form-index)
             local-var-name (->> top-level-form-ast
                                 nodes
@@ -200,7 +189,7 @@ column is the column of the occurrence"
               "occurrence" "Information about a single occurrence:
               e.g.
 (:line-beg 5 :line-end 5 :col-beg 19 :col-end 26
-:name a-name :file \"/aboslute/path/to/file.clj\"
+:name a-name :file \"/absolute/path/to/file.clj\"
 :match (fn-name some args))"}
     "error" "An error message intended to be displayed to the user."}
    "find-debug-fns"
