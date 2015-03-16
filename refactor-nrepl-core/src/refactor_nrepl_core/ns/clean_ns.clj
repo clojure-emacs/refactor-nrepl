@@ -11,7 +11,7 @@
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
   (:require [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [refactor-nrepl.ns
+            [refactor-nrepl-core.ns
              [constructor :refer [rebuild-ns-form]]
              [dependencies :refer [extract-dependencies]]
              [helpers :refer [get-ns-component]]])
