@@ -7,14 +7,6 @@
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]
-            [refactor-nrepl-core
-             [analyzer :refer [find-unbound-vars]]
-             [artifacts :refer [artifact-versions artifacts-list]]
-             [find-symbol :refer [find-debug-fns find-symbol]]]
-            [refactor-nrepl-core.ns
-             [clean-ns :refer [clean-ns]]
-             [pprint :refer [pprint-ns]]
-             [resolve-missing :refer [resolve-missing]]]
             [refactor-nrepl.bootstrap :refer [repositories init-classloader]]
             [classlojure.core :refer [eval-in]]))
 
@@ -66,7 +58,7 @@
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
   (reply transport msg {:ns (eval-in cl '(some-> path clean-ns pprint-ns)) :status :done}))
 
-(defn- resolve-missing-reply [{sym :symbol transport :transport :as msg}]
+(defn- resolve-missing-reply [{transport :transport :as msg}]
   (reply transport msg {:candidates (eval-in cl 'resolve-missing msg) :status :done}))
 
 (def refactor-nrepl-ops
