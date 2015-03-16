@@ -24,12 +24,18 @@
        (filter #(re-find #"clojure-\d.\d.\d.jar" %))
        first
        File.
+       .toURI
        .toURL))
 
 (defn init-classloader []
-  (let [still (atom (make-still (classlojure (clojure-jar-URL))))]
+  (let [still (atom (make-still (classlojure (clojure-jar-URL)
+                                             (-> "refactor-nrepl-core/src"
+                                                 File.
+                                                 .toURI
+                                                 .toURL))))]
     (doseq [dep (conj (core-dependencies)
-                      ['refactor-nrepl-core "0.3.0-SNAPSHOT"])]
+                      ;; ['refactor-nrepl-core "0.3.0-SNAPSHOT"]
+                      '[org.clojure/tools.nrepl "0.2.7"] )]
       (distill dep :repositories repositories :still still))
     (eval-in (:classloader @still)
              '(do

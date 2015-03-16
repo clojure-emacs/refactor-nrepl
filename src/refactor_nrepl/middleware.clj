@@ -16,6 +16,7 @@
   `(try
      ~@body
      (catch Exception e#
+       (println (.getCause e#))
        (transport/send ~transport
                        (response-for ~msg :error (.getMessage e#) :status :done)))))
 
@@ -25,7 +26,7 @@
 
 (defn- find-symbol-reply [{:keys [transport] :as msg}]
   (with-errors-being-passed-on transport msg
-    (let [occurrences (eval-in cl find-symbol msg)]
+    (let [occurrences (eval-in cl 'find-symbol msg)]
       (doseq [occurrence occurrences]
         (transport/send transport (response-for msg :occurrence (pr-str occurrence))))
       (transport/send transport (response-for msg :count (count occurrences)
@@ -39,27 +40,38 @@
     (distill coords :repositories repositories)
     dependency-vector))
 
-
 (defn- hotload-dependency-reply [{:keys [transport] :as msg}]
   (reply transport msg {:dependency (pr-str (hotload-dependency msg)) :status :done }))
 
 (defn- find-debug-fns-reply [{:keys [transport] :as msg}]
-  (reply transport msg {:value (seq (eval-in cl 'find-debug-fns msg)) :status :done}))
+  (reply transport msg
+         {:value (seq (eval-in cl 'find-debug-fns msg))
+          :status :done}))
 
 (defn- artifact-list-reply [{:keys [transport] :as msg}]
-  (reply transport msg {:artifacts (eval-in cl 'artifacts-list msg) :status :done}))
+  (reply transport msg
+         {:artifacts (eval-in cl 'artifacts-list msg)
+          :status :done}))
 
 (defn- artifact-versions-reply [{:keys [transport] :as msg}]
-  (reply transport msg {:versions (eval-in cl 'artifact-versions msg) :status :done}))
+  (reply transport msg
+         {:versions (eval-in cl 'artifact-versions msg)
+          :status :done}))
 
 (defn- find-unbound-reply [{:keys [transport ns] :as msg}]
-  (reply transport msg {:unbound (str/join " " (eval-in cl 'find-unbound-vars ns)) :status :done}))
+  (reply transport msg
+         {:unbound (str/join " " (eval-in cl 'find-unbound-vars ns))
+          :status :done}))
 
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
-  (reply transport msg {:ns (eval-in cl '(some-> path clean-ns pprint-ns)) :status :done}))
+  (reply transport msg
+         {:ns (eval-in cl `(some-> ~path clean-ns pprint-ns))
+          :status :done}))
 
 (defn- resolve-missing-reply [{transport :transport :as msg}]
-  (reply transport msg {:candidates (eval-in cl 'resolve-missing msg) :status :done}))
+  (reply transport msg
+         {:candidates (eval-in cl 'resolve-missing {:symbol "split"})
+          :status :done}))
 
 (def refactor-nrepl-ops
   {"resolve-missing" resolve-missing-reply
