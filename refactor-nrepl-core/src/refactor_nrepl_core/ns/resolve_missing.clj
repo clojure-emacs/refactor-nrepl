@@ -19,7 +19,7 @@
   [candidates]
   (map #(list % (get-type %)) candidates))
 
-(defn resolve-missing [{sym :symbol}]
+(defn resolve-missing [^String sym]
   (when-not (and sym (string? sym) (seq sym))
     (throw (IllegalArgumentException.
             (str "Invalid input to resolve missing: '" sym "'"))))

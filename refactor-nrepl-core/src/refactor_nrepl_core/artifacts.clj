@@ -80,12 +80,12 @@
   (alter-meta! artifacts update-in [:last-modified]
                (constantly (java.util.Date.))))
 
-(defn artifacts-list [{:keys [force]}]
+(defn artifacts-list [force]
   (when (or (= force "true") (stale-cache?))
     (update-artifact-cache!))
   (->> @artifacts keys list*))
 
-(defn artifact-versions [{:keys [artifact]}]
+(defn artifact-versions [artifact]
   (when (stale-cache?)
     (update-artifact-cache!))
   (->> artifact (@artifacts) list))

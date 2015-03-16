@@ -24,9 +24,9 @@
   (with-errors-being-passed-on transport msg
     (transport/send transport (response-for msg response))))
 
-(defn- find-symbol-reply [{:keys [transport] :as msg}]
+(defn- find-symbol-reply [{:keys [transport file ns name dir line column] :as msg}]
   (with-errors-being-passed-on transport msg
-    (let [occurrences (eval-in cl 'find-symbol msg)]
+    (let [occurrences (eval-in cl 'find-symbol file ns name dir line column)]
       (doseq [occurrence occurrences]
         (transport/send transport (response-for msg :occurrence (pr-str occurrence))))
       (transport/send transport (response-for msg :count (count occurrences)
@@ -43,19 +43,19 @@
 (defn- hotload-dependency-reply [{:keys [transport] :as msg}]
   (reply transport msg {:dependency (pr-str (hotload-dependency msg)) :status :done }))
 
-(defn- find-debug-fns-reply [{:keys [transport] :as msg}]
+(defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (reply transport msg
-         {:value (seq (eval-in cl 'find-debug-fns msg))
+         {:value (seq (eval-in cl 'find-debug-fns ns-string debug-fns))
           :status :done}))
 
-(defn- artifact-list-reply [{:keys [transport] :as msg}]
+(defn- artifact-list-reply [{:keys [transport force] :as msg}]
   (reply transport msg
-         {:artifacts (eval-in cl 'artifacts-list msg)
+         {:artifacts (eval-in cl 'artifacts-list force)
           :status :done}))
 
-(defn- artifact-versions-reply [{:keys [transport] :as msg}]
+(defn- artifact-versions-reply [{:keys [transport artifact] :as msg}]
   (reply transport msg
-         {:versions (eval-in cl 'artifact-versions msg)
+         {:versions (eval-in cl 'artifact-versions artifact)
           :status :done}))
 
 (defn- find-unbound-reply [{:keys [transport ns] :as msg}]
@@ -70,7 +70,7 @@
 
 (defn- resolve-missing-reply [{transport :transport :as msg}]
   (reply transport msg
-         {:candidates (eval-in cl 'resolve-missing {:symbol "split"})
+         {:candidates (eval-in cl 'resolve-missing (:symbol msg))
           :status :done}))
 
 (def refactor-nrepl-ops

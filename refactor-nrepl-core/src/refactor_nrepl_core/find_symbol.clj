@@ -150,7 +150,7 @@ column is the column of the occurrence"
            (find-global-symbol file ns name dir))))
 
 
-(defn find-debug-fns [{:keys [ns-string debug-fns]}]
+(defn find-debug-fns [ns-string debug-fns]
   (-> ns-string
       ns-ast
       (find-invokes debug-fns)))
