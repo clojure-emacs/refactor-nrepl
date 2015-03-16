@@ -4,8 +4,8 @@
 (ns refactor-nrepl-core.ns.slam.hound.regrow
   (:require [clojure.set :as set]
             [clojure.string :as string]
-            [refactor-nrepl.ns.slam.hound.future :refer [as->* cond->*]]
-            [refactor-nrepl.ns.slam.hound.search :as search])
+            [refactor-nrepl-core.ns.slam.hound.future :refer [as->* cond->*]]
+            [refactor-nrepl-core.ns.slam.hound.search :as search])
   (:import (clojure.lang IMapEntry IRecord)
            (java.util.regex Pattern)))
 

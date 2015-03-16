@@ -4,8 +4,8 @@
             [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [instaparse.core :refer [parse parser]]
-            [refactor-nrepl.analyzer :refer [ns-ast]]
-            [refactor-nrepl.ns.helpers :refer [get-ns-component suffix]])
+            [refactor-nrepl-core.analyzer :refer [ns-ast]]
+            [refactor-nrepl-core.ns.helpers :refer [get-ns-component suffix]])
   (:import [java.io PushbackReader StringReader]
            java.util.regex.Pattern))
 

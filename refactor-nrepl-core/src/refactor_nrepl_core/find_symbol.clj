@@ -1,7 +1,7 @@
 (ns refactor-nrepl-core.find-symbol
   (:require [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer :all]
-            [refactor-nrepl
+            [refactor-nrepl-core
              [analyzer :refer [ns-ast]]
              [util :refer :all]]))
 

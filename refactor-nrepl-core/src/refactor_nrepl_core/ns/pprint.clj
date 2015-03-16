@@ -1,7 +1,7 @@
 (ns refactor-nrepl-core.ns.pprint
   (:require [clojure.pprint :refer [pprint]]
             [clojure.string :as str]
-            [refactor-nrepl.ns.helpers :refer [prefix-form?]]))
+            [refactor-nrepl-core.ns.helpers :refer [prefix-form?]]))
 
 (defn- libspec-vectors-last [libspecs]
   (vec (concat (remove sequential? libspecs)

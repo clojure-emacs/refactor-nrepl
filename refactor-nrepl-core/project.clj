@@ -1,4 +1,4 @@
-(defproject refactor-nrepl-core VERSION
+(defproject refactor-nrepl-core "0.3.0-SNAPSHOT"
   :description "nREPL middleware to support editor-agnostic refactoring"
   :url "http://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"

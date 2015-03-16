@@ -1,6 +1,6 @@
 (ns refactor-nrepl-core.ns.resolve-missing
   (:require [cider.nrepl.middleware.info :refer [info-clj]]
-            [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
+            [refactor-nrepl-core.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [sym]
   (seq (concat (slamhound/candidates :import sym [] {})

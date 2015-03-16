@@ -1,6 +1,6 @@
 (ns refactor-nrepl-core.ns.constructor
   (:require [clojure.string :as str]
-            [refactor-nrepl.ns.helpers
+            [refactor-nrepl-core.ns.helpers
              :refer [get-ns-component prefix-form? prefix suffix
                      index-of-component]]))
 
