@@ -71,8 +71,9 @@
 (defn- load-core-dependencies
   [still]
   (doseq [dep (conj (core-dependencies)
+                    []
                     ;; ['refactor-nrepl-core "0.3.0-SNAPSHOT"]
-                    '[org.clojure/tools.nrepl "0.2.7"] )]
+                    )]
     (distill dep :repositories repositories :still still :verbose false))
   (:classloader @still))
 

@@ -9,10 +9,11 @@
               {:type :bytes :path "refactor-nrepl-core/project.clj"}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]
                                        [http-kit "2.1.19"]
-                                       [org.clojure/data.json "0.2.5"]
                                        [instaparse "1.3.4"]
+                                       [org.clojure/data.json "0.2.5"]
                                        [org.clojure/tools.analyzer.jvm "0.6.5"]
                                        [org.clojure/tools.namespace "0.2.7"]
+                                       [org.clojure/tools.nrepl "0.2.8"]
                                        [org.clojure/tools.reader "0.8.12"]]}
              :test {:dependencies [[org.tcrawley/dynapath "0.2.3"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
