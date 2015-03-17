@@ -2,7 +2,7 @@
   (:require [clojure.edn :as edn]
             [clojure.java.io :as io]
             [clojure.test :refer :all]
-            [refactor-nrepl.artifacts :as artifacts]))
+            [refactor-nrepl-core.artifacts :as artifacts]))
 
 (def clojure-versions (-> (io/resource "resources/clojure-versions.edn")
                           slurp

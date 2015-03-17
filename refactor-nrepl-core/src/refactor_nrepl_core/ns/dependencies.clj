@@ -15,7 +15,7 @@
   "Form is either (:import..) (:use ..) or (:require ..)"
   [form]
   (let [ns-parser (parser
-                   (io/resource "refactor_nrepl/ns/require-or-use-or-import.bnf")
+                   (io/resource "refactor_nrepl_core/ns/require-or-use-or-import.bnf")
                    :auto-whitespace :comma)]
     (parse ns-parser (str form))))
 
