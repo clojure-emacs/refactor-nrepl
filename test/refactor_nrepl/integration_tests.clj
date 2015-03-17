@@ -152,35 +152,6 @@
 
     (is (= new-three (slurp three-file)) "remove println failed")))
 
-(defrecord Foo [])
-(deftype Bar [])
-(definterface Baz)
-
-(deftest test-resolve-missing
-  (let [transport (connect :port 7777)
-        split-res (resolve-missing :transport transport :symbol "split")
-        date-res (resolve-missing :transport transport :symbol "Date")
-        foo-res (resolve-missing :transport transport :symbol "Foo")
-        bar-res (resolve-missing :transport transport :symbol "Bar")
-        baz-res (resolve-missing :transport transport :symbol "Baz")
-        split-type (second (first (filter #(= (first %) 'clojure.string) split-res)))
-        date-type (second (first (filter #(= (first %) 'java.util.Date) date-res)))
-        foo-type (second (first (filter #(= (first %) 'refactor_nrepl.integration_tests.Foo)
-                                        foo-res)))
-        bar-type (second (first (filter #(= (first %) 'refactor_nrepl.integration_tests.Bar) bar-res)))
-        baz-type (second (first (filter #(= (first %) 'refactor_nrepl.integration_tests.Baz) baz-res)))]
-
-    (is ((set (map first split-res)) 'clojure.string))
-    (is ((set (map first date-res)) 'java.util.Date))
-    (is ((set (map first foo-res)) 'refactor_nrepl.integration_tests.Foo))
-    (is ((set (map first bar-res)) 'refactor_nrepl.integration_tests.Bar))
-    (is ((set (map first baz-res)) 'refactor_nrepl.integration_tests.Baz))
-    (is (= date-type :class))
-    (is (= foo-type :type))
-    (is (= bar-type :type))
-    (is (= baz-type :class))
-    (is (= split-type :ns))))
-
 (deftest find-local-arg
   (let [tmp-dir (create-test-project)
         three-file (str tmp-dir "/src/com/example/three.clj")

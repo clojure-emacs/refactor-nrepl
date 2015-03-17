@@ -14,3 +14,5 @@ pom.xml.asc
 *~
 \#*\#
 .\#*
+
+/refactor-nrepl-core/target
