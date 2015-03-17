@@ -22,9 +22,19 @@
 (def repositories {"clojars" "http://clojars.org/repo"
                    "central" "http://repo1.maven.org/maven2/"})
 
+(defn- get-lein-project-file []
+  (-> "user.dir" System/getProperty (str "/project.clj") slurp read-string))
+
+(defn- dogfooding?
+  "True when refactor-nrepl is being used to work on itself."
+  []
+  (= (second (get-lein-project-file))
+     'refactor-nrepl))
+
 (defn- core-dependencies []
-  (let [profiles (->> (or (io/resource "refactor-nrepl-core/project.clj")
-                          "refactor-nrepl-core/project.clj")
+  (let [profiles (->> (if (dogfooding?)
+                        "refactor-nrepl-core/project.clj"
+                        (io/resource "refactor-nrepl-core/project.clj"))
                       slurp
                       read-string
                       (drop-while #(not= % :profiles))
@@ -63,8 +73,9 @@
       re-pattern
       (re-find file-path)))
 
-(defn- normalize-path [file-path]
+(defn- normalize-path
   "Get rid of leading / and lowercase"
+  [file-path]
   (-> file-path File. .getAbsolutePath str/lower-case))
 
 (defn- add-host-project-to-classpath [still]
@@ -77,14 +88,6 @@
           (map (partial add-classpath-url cl))
           dorun)
     still))
-
-(defn- get-lein-project-file []
-  (-> "user.dir" System/getProperty (str "/project.clj") slurp read-string))
-
-(defn- dogfooding? []
-  "True when refactor-nrepl is being used to work on itself."
-  (= (second (get-lein-project-file))
-     'refactor-nrepl))
 
 (defn- refactor-nrepl-artifact-vector []
   ['refactor-nrepl (nth (get-lein-project-file) 2)])
@@ -102,12 +105,13 @@
                                  (.. (File. "refactor-nrepl-core/src")
                                      toURI toURL)))))
 
-(defn init-classloader []
+(defn init-classloader
   "Create an isolated classloader containing refactor-nrepl-core and
   all of core's dependencies.
 
-The classloader's classpath is also seeded with all the classpath
-entries found below the project's root."
+  The classloader's classpath is also seeded with all the classpath
+  entries found below the project's root."
+  []
   (-> (create-still)
       add-host-project-to-classpath
       load-core-with-dependencies
