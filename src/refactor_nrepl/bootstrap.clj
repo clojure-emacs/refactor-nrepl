@@ -1,4 +1,14 @@
 (ns refactor-nrepl.bootstrap
+  "refactor-nrepl-core runs in an isolated classloader.  This ns is
+  responsible for bootstrapping that classloader.  The following work is done:
+
+  1. Create a fresh classloader.
+  2. Use alembic to load refactor-nrepl-core and core's dependencies into the
+     classloader.
+  3. Add to the classpath of the classloader all the files from the original
+     classpath which are found below the project root.
+  4. Require all the namespaces in core to make the public API available for
+     consumption with classlojure."
   (:require [alembic.still :refer [distill make-still]]
             [classlojure.core
              :refer
@@ -68,12 +78,22 @@
           dorun)
     still))
 
-(defn- load-core-dependencies
+(defn- get-lein-project-file []
+  (-> "user.dir" System/getProperty (str "/project.clj") slurp read-string))
+
+(defn- dogfooding? []
+  "True when refactor-nrepl is being used to work on itself."
+  (= (second (get-lein-project-file))
+     'refactor-nrepl))
+
+(defn- refactor-nrepl-artifact-vector []
+  ['refactor-nrepl (nth (get-lein-project-file) 2)])
+
+(defn- load-core-with-dependencies
   [still]
-  (doseq [dep (conj (core-dependencies)
-                    []
-                    ;; ['refactor-nrepl-core "0.3.0-SNAPSHOT"]
-                    )]
+  (doseq [dep (if (dogfooding?)
+                (core-dependencies)
+                (conj (core-dependencies) (refactor-nrepl-artifact-vector)))]
     (distill dep :repositories repositories :still still :verbose false))
   (:classloader @still))
 
@@ -83,7 +103,12 @@
                                      toURI toURL)))))
 
 (defn init-classloader []
+  "Create an isolated classloader containing refactor-nrepl-core and
+  all of core's dependencies.
+
+The classloader's classpath is also seeded with all the classpath
+entries found below the project's root."
   (-> (create-still)
       add-host-project-to-classpath
-      load-core-dependencies
+      load-core-with-dependencies
       require-from-core))

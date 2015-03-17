@@ -1,5 +1,17 @@
 (ns refactor-nrepl.middleware
+  "The nrepl-middleware of refactor-nrepl.
+
+This project is split in two: refactor-nrepl and refactor-nrepl-core.
+
+  Refactor-nrepl-core contains the core where the actual work is done.
+  Refactor-nrepl is a thin wrapper around refactor-nrepl-core, in the
+  form an nrepl-middleware and a leinigen plugin.
+
+  To avoid polluting the user's classpath with tooling dependencies
+  refactor-nrepl-core runs in an isolated classloader managed in this
+  file."
   (:require [alembic.still :refer [distill]]
+            [classlojure.core :refer [eval-in]]
             [clojure
              [edn :as edn]
              [string :as str]]
@@ -7,8 +19,7 @@
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]
-            [refactor-nrepl.bootstrap :refer [repositories init-classloader]]
-            [classlojure.core :refer [eval-in]]))
+            [refactor-nrepl.bootstrap :refer [init-classloader repositories]]))
 
 (defonce cl (init-classloader))
 
@@ -16,32 +27,36 @@
   `(try
      ~@body
      (catch Exception e#
-       (println (.getCause e#))
        (transport/send ~transport
-                       (response-for ~msg :error (.getMessage e#) :status :done)))))
+                       (response-for ~msg :error (.getMessage e#)
+                                     :status :done)))))
 
 (defn reply [transport msg response]
   (with-errors-being-passed-on transport msg
     (transport/send transport (response-for msg response))))
 
-(defn- find-symbol-reply [{:keys [transport file ns name dir line column] :as msg}]
+(defn- find-symbol-reply
+  [{:keys [transport file ns name dir line column] :as msg}]
   (with-errors-being-passed-on transport msg
     (let [occurrences (eval-in cl 'find-symbol file ns name dir line column)]
       (doseq [occurrence occurrences]
-        (transport/send transport (response-for msg :occurrence (pr-str occurrence))))
+        (transport/send transport
+                        (response-for msg :occurrence (pr-str occurrence))))
       (transport/send transport (response-for msg :count (count occurrences)
                                               :status :done)))))
 
-(defn hotload-dependency [{:keys [coordinates]}]
+(defn hotload-dependency [coordinates]
   (let [dependency-vector (edn/read-string coordinates)
         coords [(->> dependency-vector (take 2) vec)]]
     (when-not (= (-> coords first count) 2)
-      (throw (IllegalArgumentException. (str "Malformed dependency vector: " coordinates))))
+      (throw (IllegalArgumentException. (str "Malformed dependency vector: "
+                                             coordinates))))
     (distill coords :repositories repositories)
     dependency-vector))
 
-(defn- hotload-dependency-reply [{:keys [transport] :as msg}]
-  (reply transport msg {:dependency (pr-str (hotload-dependency msg)) :status :done }))
+(defn- hotload-dependency-reply [{:keys [transport coordinates] :as msg}]
+  (reply transport msg {:dependency (pr-str (hotload-dependency coordinates))
+                        :status :done }))
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (reply transport msg
