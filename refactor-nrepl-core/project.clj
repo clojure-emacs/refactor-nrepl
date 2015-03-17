@@ -4,9 +4,6 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.6.0"]]
-  :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj"
-               :bytes ~(slurp "project.clj")}
-              {:type :bytes :path "refactor-nrepl-core/project.clj"}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]
                                        [http-kit "2.1.19"]
                                        [instaparse "1.3.4"]
