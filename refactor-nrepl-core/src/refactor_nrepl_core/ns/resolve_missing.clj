@@ -3,8 +3,8 @@
             [refactor-nrepl-core.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [sym]
-  (seq (concat (slamhound/candidates :import sym [] {})
-               (slamhound/candidates :refer sym [] {}))))
+  (concat (slamhound/candidates :import sym [] {})
+          (slamhound/candidates :refer sym [] {})))
 
 (defn- get-type [sym]
   (let [info (info-clj 'user sym)]
@@ -19,12 +19,11 @@
   [candidates]
   (map #(list % (get-type %)) candidates))
 
-(defn resolve-missing [^String sym]
+(defn resolve-missing [sym]
   (when-not (and sym (string? sym) (seq sym))
     (throw (IllegalArgumentException.
             (str "Invalid input to resolve missing: '" sym "'"))))
   (some->> sym
            symbol
            candidates
-           collate-type-info
-           pr-str))
+           collate-type-info))

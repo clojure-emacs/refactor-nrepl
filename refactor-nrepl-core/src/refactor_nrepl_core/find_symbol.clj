@@ -143,12 +143,11 @@ column is the column of the occurrence"
         :file file
         :match match))
 
-(defn find-symbol [{:keys [file ns name dir line column]}]
+(defn find-symbol [file ns name dir line column]
   (map #(apply create-result-alist %)
        (or (when (and file (not-empty file))
              (not-empty (find-local-symbol file name line column)))
            (find-global-symbol file ns name dir))))
-
 
 (defn find-debug-fns [ns-string debug-fns]
   (-> ns-string

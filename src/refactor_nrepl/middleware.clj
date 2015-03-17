@@ -68,9 +68,9 @@
          {:ns (eval-in cl `(some-> ~path clean-ns pprint-ns))
           :status :done}))
 
-(defn- resolve-missing-reply [{transport :transport :as msg}]
+(defn- resolve-missing-reply [{:keys [transport symbol] :as msg}]
   (reply transport msg
-         {:candidates (eval-in cl 'resolve-missing (:symbol msg))
+         {:candidates (pr-str (eval-in cl 'resolve-missing symbol))
           :status :done}))
 
 (def refactor-nrepl-ops
