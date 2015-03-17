@@ -10,7 +10,6 @@
   :filespecs [{:type :bytes :path "refactor-nrepl-core/project.clj"
                :bytes ~(slurp "refactor-nrepl-core/project.clj")}]
   :profiles {:dev {:dependencies [[me.raynes/fs "1.4.6"]
-                                  [refactor-nrepl-core "0.3.0-SNAPSHOT"]
                                   [cider/cider-nrepl "0.8.2"]
                                   [http-kit "2.1.19"]
                                   [org.clojure/data.json "0.2.5"]
@@ -18,4 +17,7 @@
                                   [org.clojure/tools.analyzer.jvm "0.6.5"]
                                   [org.clojure/tools.namespace "0.2.7"]
                                   [org.clojure/tools.reader "0.8.12"]]
-                   :resource-paths ["resources/testproject/src"]}})
+                   :resource-paths ["resources/testproject/src"]}
+             :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
+             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-alpha5"]]}})
