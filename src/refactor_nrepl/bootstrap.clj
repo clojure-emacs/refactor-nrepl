@@ -4,20 +4,23 @@
 
   1. Create a fresh classloader.
   2. Use alembic to load refactor-nrepl-core and core's dependencies into the
-     classloader.
+  classloader.
   3. Add to the classpath of the classloader all the files from the original
-     classpath which are found below the project root.
+  classpath which are found below the project root.
   4. Require all the namespaces in core to make the public API available for
-     consumption with classlojure."
+  consumption with classlojure."
   (:require [alembic.still :refer [distill make-still]]
             [classlojure.core
              :refer
              [base-classloader classlojure eval-in get-classpath]]
             [clojure.java.io :as io]
             [clojure.string :as str]
-            [dynapath.util :refer [add-classpath-url]])
+            [dynapath.util :refer [add-classpath-url]]
+            [clojure.java.io :refer [as-url as-file]])
   (:import java.io.File
-           java.util.regex.Pattern))
+           java.util.regex.Pattern
+           refactor_nrepl.PostDelegationClassLoader
+           java.net.URL))
 
 (def repositories {"clojars" "http://clojars.org/repo"
                    "central" "http://repo1.maven.org/maven2/"})
@@ -78,17 +81,6 @@
   [file-path]
   (-> file-path File. .getAbsolutePath str/lower-case))
 
-(defn- add-host-project-to-classpath [still]
-  (let [cl (:classloader @still)]
-    (->>  base-classloader
-          get-classpath
-          (map normalize-path)
-          (filter project-file?)
-          (map #(-> % File. .toURI .toURL))
-          (map (partial add-classpath-url cl))
-          dorun)
-    still))
-
 (defn- refactor-nrepl-artifact-vector []
   ['refactor-nrepl (nth (get-lein-project-file) 2)])
 
@@ -100,10 +92,16 @@
     (distill dep :repositories repositories :still still :verbose false))
   (:classloader @still))
 
+(defn- create-post-delegating-classloader []
+  (->> (Thread/currentThread)
+       .getContextClassLoader
+       (PostDelegationClassLoader.
+        (if (dogfooding?)
+          (into-array URL [(-> "refactor-nrepl-core/src/" as-file as-url)])
+          (make-array URL 0)))))
+
 (defn- create-still []
-  (atom (make-still (classlojure (clojure-jar-URL)
-                                 (.. (File. "refactor-nrepl-core/src")
-                                     toURI toURL)))))
+  (atom (make-still (create-post-delegating-classloader))))
 
 (defn init-classloader
   "Create an isolated classloader containing refactor-nrepl-core and
@@ -113,6 +111,5 @@
   entries found below the project's root."
   []
   (-> (create-still)
-      add-host-project-to-classpath
       load-core-with-dependencies
       require-from-core))

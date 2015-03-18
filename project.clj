@@ -9,6 +9,7 @@
                  [org.flatland/classlojure "0.7.1"]]
   :filespecs [{:type :bytes :path "refactor-nrepl-core/project.clj"
                :bytes ~(slurp "refactor-nrepl-core/project.clj")}]
+  :java-source-paths ["src/java"]
   :profiles {:dev {:dependencies [[me.raynes/fs "1.4.6"]
                                   [cider/cider-nrepl "0.8.2"]
                                   [http-kit "2.1.19"]
