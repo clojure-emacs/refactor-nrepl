@@ -63,7 +63,7 @@
 
 (defn- hotload-dependency-reply [{:keys [transport coordinates] :as msg}]
   (reply transport msg {:dependency (pr-str (hotload-dependency coordinates))
-                        :status :done }))
+                        :status :done}))
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (reply transport msg
@@ -75,7 +75,7 @@
 (defn- artifact-list-reply [{:keys [transport force] :as msg}]
   (reply transport msg
          {:artifacts
-          (eval-in cl '(do (in-ns 'utter-isolation)
+          (eval-in cl `(do (in-ns 'utter-isolation)
                            (refactor-nrepl-core.artifacts/artifacts-list ~force)))
           :status :done}))
 
