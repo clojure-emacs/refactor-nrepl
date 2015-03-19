@@ -5,7 +5,7 @@
 
   Refactor-nrepl-core contains the core where the actual work is done.
   Refactor-nrepl is a thin wrapper around refactor-nrepl-core, in the
-  form an nrepl-middleware and a leinigen plugin.
+  form an nrepl-middleware and a leiningen plugin.
 
   To avoid polluting the user's classpath with tooling dependencies
   refactor-nrepl-core runs in an isolated classloader managed in this

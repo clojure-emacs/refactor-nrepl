@@ -1,12 +1,13 @@
 (ns refactor-nrepl.bootstrap
   "refactor-nrepl-core runs in an isolated classloader.  This ns is
-  responsible for bootstrapping that classloader.  The following work is done:
+  responsible for bootstrapping that classloader.
 
-  1. Create a fresh classloader.
+  The following work is done:
+
+  1. Create a fresh classloader, which does lookup in itself before consulting
+     parent classloaders.
   2. Use alembic to load refactor-nrepl-core and core's dependencies into the
-  classloader.
-  3. Add to the classpath of the classloader all the files from the original
-  classpath which are found below the project root.
+     classloader.
   4. Require all the namespaces in core to make the public API available for
   consumption with classlojure."
   (:require [alembic.still :refer [distill make-still]]
