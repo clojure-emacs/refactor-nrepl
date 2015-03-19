@@ -88,4 +88,4 @@
 (defn artifact-versions [artifact]
   (when (stale-cache?)
     (update-artifact-cache!))
-  (->> artifact (@artifacts) list))
+  (->> artifact (@artifacts) list*))

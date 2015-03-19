@@ -67,24 +67,29 @@
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (reply transport msg
-         {:value (seq (eval-in cl `(do (in-ns 'utter-isolation)
+         {:value (binding [clojure.core/*print-length* nil]
+                   (seq
+                    (eval-in cl `(do (in-ns 'utter-isolation)
+                                     (binding [clojure.core/*print-length* nil]
                                        (refactor-nrepl-core.find-symbol/find-debug-fns
-                                        ~ns-string ~debug-fns))))
+                                        ~ns-string ~debug-fns))))))
           :status :done}))
 
 (defn- artifact-list-reply [{:keys [transport force] :as msg}]
   (reply transport msg
          {:artifacts
-          (eval-in cl `(do (in-ns 'utter-isolation)
-                           (refactor-nrepl-core.artifacts/artifacts-list ~force)))
+          (binding [clojure.core/*print-length* nil]
+            (eval-in cl `(do (in-ns 'utter-isolation)
+                             (refactor-nrepl-core.artifacts/artifacts-list ~force))))
           :status :done}))
 
 (defn- artifact-versions-reply [{:keys [transport artifact] :as msg}]
   (reply transport msg
          {:versions
-          (eval-in cl `(do (in-ns 'utter-isolation)
-                           (refactor-nrepl-core.artifacts/artifact-versions
-                            ~artifact)))
+          (binding [clojure.core/*print-length* nil]
+            (eval-in cl `(do (in-ns 'utter-isolation)
+                             (refactor-nrepl-core.artifacts/artifact-versions
+                              ~artifact))))
           :status :done}))
 
 (defn- find-unbound-reply [{:keys [transport ns] :as msg}]
@@ -96,17 +101,19 @@
 
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
   (reply transport msg
-         {:ns (eval-in cl `(do (in-ns 'utter-isolation)
-                               (some-> ~path
-                                       refactor-nrepl-core.ns.clean-ns/clean-ns
-                                       refactor-nrepl-core.ns.pprint/pprint-ns)))
+         {:ns (binding [clojure.core/*print-length* nil]
+                (eval-in cl `(do (in-ns 'utter-isolation)
+                                 (some-> ~path
+                                         refactor-nrepl-core.ns.clean-ns/clean-ns
+                                         refactor-nrepl-core.ns.pprint/pprint-ns))))
           :status :done}))
 
 (defn- resolve-missing-reply [{:keys [transport symbol] :as msg}]
   (reply transport msg
          {:candidates
-          (pr-str (eval-in cl `(do (in-ns 'utter-isolation)
-                                   (refactor-nrepl-core.ns.resolve-missing/resolve-missing ~symbol))))
+          (binding [clojure.core/*print-length* nil]
+            (eval-in cl `(do (in-ns 'utter-isolation)
+                             (refactor-nrepl-core.ns.resolve-missing/resolve-missing ~symbol))))
           :status :done}))
 
 (def refactor-nrepl-ops
