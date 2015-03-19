@@ -47,12 +47,13 @@
 (defn- require-from-core [classloader]
   (eval-in classloader
            '(do
-              (require
+              (in-ns 'utter-isolation)
+              (clojure.core/require
                '[refactor-nrepl-core.ns
                  [clean-ns :refer [clean-ns]]
                  [pprint :refer [pprint-ns]]
                  [resolve-missing :refer [resolve-missing]]])
-              (require
+              (clojure.core/require
                '[refactor-nrepl-core
                  [analyzer :refer [find-unbound-vars]]
                  [artifacts :refer [artifact-versions artifacts-list]]
@@ -67,7 +68,7 @@
   (doseq [dep (if (dogfooding?)
                 (core-dependencies)
                 (conj (core-dependencies) (refactor-nrepl-artifact-vector)))]
-    (distill dep :repositories repositories :still still :verbose true))
+    (distill dep :repositories repositories :still still :verbose false))
   (:classloader @still))
 
 (defn- create-post-delegating-classloader []

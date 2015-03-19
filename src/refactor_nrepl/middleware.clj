@@ -1,7 +1,7 @@
 (ns refactor-nrepl.middleware
   "The nrepl-middleware of refactor-nrepl.
 
-This project is split in two: refactor-nrepl and refactor-nrepl-core.
+  This project is split in two: refactor-nrepl and refactor-nrepl-core.
 
   Refactor-nrepl-core contains the core where the actual work is done.
   Refactor-nrepl is a thin wrapper around refactor-nrepl-core, in the
@@ -42,7 +42,10 @@ This project is split in two: refactor-nrepl and refactor-nrepl-core.
 (defn- find-symbol-reply
   [{:keys [transport file ns name dir line column] :as msg}]
   (with-errors-being-passed-on transport msg
-    (let [occurrences (eval-in cl 'find-symbol file ns name dir line column)]
+    (let [occurrences
+          (eval-in cl `(do (in-ns 'utter-isolation)
+                           (refactor-nrepl-core.find-symbol/find-symbol
+                            ~file ~ns ~name ~dir ~line ~column)))]
       (doseq [occurrence occurrences]
         (transport/send transport
                         (response-for msg :occurrence (pr-str occurrence))))
@@ -64,34 +67,46 @@ This project is split in two: refactor-nrepl and refactor-nrepl-core.
 
 (defn- find-debug-fns-reply [{:keys [transport ns-string debug-fns] :as msg}]
   (reply transport msg
-         {:value (seq (eval-in cl 'find-debug-fns ns-string debug-fns))
+         {:value (seq (eval-in cl `(do (in-ns 'utter-isolation)
+                                       (refactor-nrepl-core.find-symbol/find-debug-fns
+                                        ~ns-string ~debug-fns))))
           :status :done}))
 
 (defn- artifact-list-reply [{:keys [transport force] :as msg}]
   (reply transport msg
-         {:artifacts (eval-in cl 'artifacts-list force)
+         {:artifacts
+          (eval-in cl '(do (in-ns 'utter-isolation)
+                           (refactor-nrepl-core.artifacts/artifacts-list ~force)))
           :status :done}))
 
 (defn- artifact-versions-reply [{:keys [transport artifact] :as msg}]
   (reply transport msg
-         {:versions (eval-in cl 'artifact-versions artifact)
+         {:versions
+          (eval-in cl `(do (in-ns 'utter-isolation)
+                           (refactor-nrepl-core.artifacts/artifact-versions
+                            ~artifact)))
           :status :done}))
 
 (defn- find-unbound-reply [{:keys [transport ns] :as msg}]
   (reply transport msg
-         {:unbound (str/join " " (eval-in cl 'find-unbound-vars ns))
+         {:unbound
+          (str/join " " (eval-in cl `(do (in-ns 'utter-isolation)
+                                         (refactor-nrepl-core.analyzer/find-unbound-vars ~ns))))
           :status :done}))
 
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
   (reply transport msg
-         {:ns (eval-in cl `(some-> ~path
-                                   refactor-nrepl-core.ns.clean-ns/clean-ns
-                                   refactor-nrepl-core.ns.pprint/pprint-ns))
+         {:ns (eval-in cl `(do (in-ns 'utter-isolation)
+                               (some-> ~path
+                                       refactor-nrepl-core.ns.clean-ns/clean-ns
+                                       refactor-nrepl-core.ns.pprint/pprint-ns)))
           :status :done}))
 
 (defn- resolve-missing-reply [{:keys [transport symbol] :as msg}]
   (reply transport msg
-         {:candidates (pr-str (eval-in cl 'resolve-missing symbol))
+         {:candidates
+          (pr-str (eval-in cl `(do (in-ns 'utter-isolation)
+                                   (refactor-nrepl-core.ns.resolve-missing/resolve-missing ~symbol))))
           :status :done}))
 
 (def refactor-nrepl-ops
@@ -106,8 +121,8 @@ This project is split in two: refactor-nrepl and refactor-nrepl-core.
 
 (defn wrap-refactor
   [handler]
- (fn [{:keys [op] :as msg}]
-   ((get refactor-nrepl-ops op handler) msg)))
+  (fn [{:keys [op] :as msg}]
+    ((get refactor-nrepl-ops op handler) msg)))
 
 (set-descriptor!
  #'wrap-refactor
