@@ -10,17 +10,10 @@
   4. Require all the namespaces in core to make the public API available for
   consumption with classlojure."
   (:require [alembic.still :refer [distill make-still]]
-            [classlojure.core
-             :refer
-             [base-classloader classlojure eval-in get-classpath]]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [dynapath.util :refer [add-classpath-url]]
-            [clojure.java.io :refer [as-url as-file]])
-  (:import java.io.File
-           java.util.regex.Pattern
-           refactor_nrepl.PostDelegationClassLoader
-           java.net.URL))
+            [classlojure.core :refer [base-classloader eval-in]]
+            [clojure.java.io :as io :refer [as-file as-url]])
+  (:import java.net.URL
+           refactor_nrepl.PostDelegationClassLoader))
 
 (def repositories {"clojars" "http://clojars.org/repo"
                    "central" "http://repo1.maven.org/maven2/"})
