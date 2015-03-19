@@ -44,15 +44,6 @@
                       second)]
     (-> profiles :provided :dependencies)))
 
-(defn- clojure-jar-URL []
-  (->> base-classloader
-       get-classpath
-       (filter #(re-find #"org/clojure/clojure/.*/clojure-.*\.jar" %))
-       first
-       File.
-       .toURI
-       .toURL))
-
 (defn- require-from-core [classloader]
   (eval-in classloader
            '(do
@@ -68,19 +59,6 @@
                  [find-symbol :refer [find-debug-fns find-symbol]]])))
   classloader)
 
-(defn- project-file? [file-path]
-  (-> "user.dir"
-      System/getProperty
-      str/lower-case
-      Pattern/quote
-      re-pattern
-      (re-find file-path)))
-
-(defn- normalize-path
-  "Get rid of leading / and lowercase"
-  [file-path]
-  (-> file-path File. .getAbsolutePath str/lower-case))
-
 (defn- refactor-nrepl-artifact-vector []
   ['refactor-nrepl (nth (get-lein-project-file) 2)])
 
@@ -89,12 +67,11 @@
   (doseq [dep (if (dogfooding?)
                 (core-dependencies)
                 (conj (core-dependencies) (refactor-nrepl-artifact-vector)))]
-    (distill dep :repositories repositories :still still :verbose false))
+    (distill dep :repositories repositories :still still :verbose true))
   (:classloader @still))
 
 (defn- create-post-delegating-classloader []
-  (->> (Thread/currentThread)
-       .getContextClassLoader
+  (->> base-classloader
        (PostDelegationClassLoader.
         (if (dogfooding?)
           (into-array URL [(-> "refactor-nrepl-core/src/" as-file as-url)])
