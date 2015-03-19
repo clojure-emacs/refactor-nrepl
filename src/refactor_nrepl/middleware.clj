@@ -26,6 +26,10 @@ This project is split in two: refactor-nrepl and refactor-nrepl-core.
 (defmacro with-errors-being-passed-on [transport msg & body]
   `(try
      ~@body
+     (catch java.lang.reflect.InvocationTargetException e#
+       (transport/send ~transport
+                       (response-for ~msg :error (.getMessage (.getCause e#))
+                                     :status :done)))
      (catch Exception e#
        (transport/send ~transport
                        (response-for ~msg :error (.getMessage e#)
@@ -80,7 +84,9 @@ This project is split in two: refactor-nrepl and refactor-nrepl-core.
 
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
   (reply transport msg
-         {:ns (eval-in cl `(some-> ~path clean-ns pprint-ns))
+         {:ns (eval-in cl `(some-> ~path
+                                   refactor-nrepl-core.ns.clean-ns/clean-ns
+                                   refactor-nrepl-core.ns.pprint/pprint-ns))
           :status :done}))
 
 (defn- resolve-missing-reply [{:keys [transport symbol] :as msg}]
