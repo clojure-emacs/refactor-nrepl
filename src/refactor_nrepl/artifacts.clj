@@ -94,7 +94,7 @@
 (defn- artifact-versions [{:keys [transport artifact] :as msg}]
   (when (stale-cache?)
     (update-artifact-cache!))
-  (let [versions (->> artifact (@artifacts) list)]
+  (let [versions (->> artifact (@artifacts) list*)]
     (transport/send transport (response-for msg :versions versions  :status :done))))
 
 (defn- hotload-dependency
