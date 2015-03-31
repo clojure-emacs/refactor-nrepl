@@ -27,7 +27,9 @@ type is either :require, :use or :import"
 (defn prefix
   "java.util.Date -> java.util"
   [fully-qualified-name]
-  (str/join "." (-> fully-qualified-name str (.split "\\.") butlast)))
+  (let [parts (-> fully-qualified-name str (.split "\\.") butlast)]
+    (when (seq parts)
+      (str/join "." parts))))
 
 (defn suffix
   "java.util.Date -> Date

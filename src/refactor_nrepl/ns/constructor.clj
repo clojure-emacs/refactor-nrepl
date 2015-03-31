@@ -94,7 +94,9 @@
 (defn- ns-prefix
   "Extracts the prefix from a libspec."
   [{:keys [ns]}]
-  (symbol (prefix ns)))
+  (if (prefix ns)
+    (symbol (prefix ns))
+    :none))
 
 (defn- ns-suffix
   [{:keys [ns]}]
