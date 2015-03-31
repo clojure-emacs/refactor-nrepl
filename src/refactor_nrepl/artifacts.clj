@@ -3,7 +3,7 @@
             [clojure
              [edn :as edn]
              [string :as str]]
-            [clojure.data.json :as json]
+            [cheshire.core :as json]
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.nrepl
@@ -41,7 +41,7 @@
   []
   (let [search-url "http://search.maven.org/solrsearch/select?q=g:%22org.clojure%22+AND+p:%22jar%22&rows=2000&wt=json"
         {:keys [_ _ body _]} @(http/get search-url {:as :text})
-        search-result (json/read-str body :key-fn keyword)]
+        search-result (json/parse-string body true)]
     (map :a (-> search-result :response :docs))))
 
 (defn- get-versions!
@@ -52,7 +52,7 @@
                                              artifact
                                              "%22&core=gav&rows=200&wt=json")
                                         {:as :text})]
-    (->> (json/read-str body :key-fn keyword)
+    (->> (json/parse-string body true)
          :response
          :docs
          (map :v)
