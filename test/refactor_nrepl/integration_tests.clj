@@ -5,7 +5,7 @@
             [me.raynes.fs :as fs]
             [refactor-nrepl find-unbound find_symbol
              [client :refer [connect find-usages remove-debug-invocations
-                             rename-symbol resolve-missing]]]
+                             rename-symbol resolve-missing find-unbound]]]
             refactor-nrepl.ns.resolve-missing)
   (:import java.io.File))
 
@@ -199,11 +199,11 @@
         result (remove keyword? response)]
     (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))
 
-;; commented out because the other tests depend on the classpath being
-;; in a pristine condition
-;; (deftest test-find-unbound-vars
-;;   (let [transport (connect :port 7777)]
-;;     (is (= (find-unbound :transport transport :ns "refactor-nrepl.integration-tests")
-;;            '#{}))
-;;     (is (= (find-unbound :transport transport :ns "resources.test-unbound")
-;;            '#{s sep}))))
+(deftest test-find-unbound-vars
+  (let [tmp-dir (create-test-project)
+        five-file (str tmp-dir "/src/com/example/five.clj")
+        transport (connect :port 7777)]
+    (is (= (find-unbound :transport transport :file five-file :line 12 :column 6)
+           '#{s}))
+    (is (= (find-unbound :transport transport :file five-file :line 13 :column 13)
+           '#{s sep}))))

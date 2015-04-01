@@ -200,11 +200,16 @@
   Expected input:
   - ns which is the ns to be analyzed for unbound vars
   - [transport] an optional transport used to communicate with the client"
-  [& {:keys [transport ns]}]
+  [& {:keys [transport file line column]}]
   (let [tr (or transport @transp (reset! transp (connect)))
         response (nrepl-message tr {:op :find-unbound
-                                    :ns ns})
-        unbound (:unbound (first response))]
+                                    :file file
+                                    :line line
+                                    :column column})
+        unbound (:unbound (first response))
+        error (:error (first response))]
+    (when error
+      (println "something bad happened: " error))
     (if-not (str/blank? unbound)
       (->> (str/split unbound #" ")
            (map symbol)
