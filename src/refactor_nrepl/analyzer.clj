@@ -2,9 +2,8 @@
   (:refer-clojure :exclude [macroexpand-1])
   (:require [clojure.java.io :as io]
             [clojure.tools.analyzer :as ana]
-            [clojure.tools.analyzer
-             [jvm :as aj]
-             [passes :refer [schedule]]]
+            [clojure.tools.analyzer.jvm :as aj]
+            [clojure.tools.analyzer.passes :refer [schedule]]
             [clojure.tools.analyzer.jvm.utils :as ajutils]
             [clojure.tools.analyzer.passes.emit-form :as emit-form]
             [clojure.tools.analyzer.passes.jvm.validate :refer [validate]]
