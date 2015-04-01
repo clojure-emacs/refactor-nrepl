@@ -13,7 +13,7 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "0.2.2"]]
+:plugins [[refactor-nrepl "1.0.0"]]
 ```
 
 ### Clojure client
@@ -213,7 +213,7 @@ locally:
 
 to clojars:
 
-`lein with-profile +plugin.mranderson/config deploy clojars`
+`lein with-profile plugin.mranderson/config deploy clojars`
 
 Or alternitavely run
 
@@ -225,6 +225,8 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 ## Changelog
 
+### 1.0.0
+
 * Config setting for `clean-ns` to not do any prefix rewriting
 * Add `configure` op to set various config opts.
 * Remove find referred
@@ -232,6 +234,7 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 * Add caching of ASTs for better performance
 * Add `resolve-missing` which resolves a missing symbol by scanning the classpath
 * Add `clean-ns` which performs various cleanups on the ns form.
+* various cleaning and refactoring stuff
 
 ### 0.2.2
 
