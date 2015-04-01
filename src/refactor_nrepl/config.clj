@@ -6,7 +6,7 @@
              [misc :refer [response-for]]
              [transport :as transport]]))
 
-;; NOTE: Update the readme whenever this map is updaed
+;; NOTE: Update the readme whenever this map is changed
 (def ^:private opts
   (atom
    {
@@ -43,7 +43,7 @@
       (response-for msg :error (.getMessage e) :status :done))
     (catch Exception e
       (transport/send transport
-                      (response-for msg (err-info e :clean-ns-error))))))
+                      (response-for msg (err-info e :configure-error))))))
 
 (defn wrap-config
   [handler]
