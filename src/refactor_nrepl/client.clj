@@ -208,10 +208,6 @@
                                     :column column})
         unbound (:unbound (first response))
         error (:error (first response))]
-    (when error
-      (println "something bad happened: " error))
-    (if-not (str/blank? unbound)
-      (->> (str/split unbound #" ")
-           (map symbol)
-           set)
-      #{})))
+    (if error
+      (println "something bad happened: " error)
+      (set (map symbol unbound )))))
