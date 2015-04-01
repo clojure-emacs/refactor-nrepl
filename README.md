@@ -31,6 +31,18 @@ You also need to pass in the path to the file you want to refactor. Pass in a pa
 
 ## Available features
 
+### Configure
+
+The `configure` op takes a single argument `opts` which is an options map to use for the current session.  At present this settings map looks like this:
+
+```clj
+{
+:prefix-rewriting true ; Should clean-ns favor prefix forms in the ns macro?
+}
+```
+
+The op returns a `status` of `done` on success and an `error` with a message intended for the user in the event of failure.
+
 ### Find (debug) function invocations
 
 Searches for invocations of predefined list of functions.
@@ -142,11 +154,13 @@ The `clean-ns` requires a `path` which is the absolute path to the file containi
 
 The return value, `ns` is the entire `(ns ..)` form in prestine condition, or `nil` if nothing was done (so the client doesn't update the timestamp on files when nothing actually needs doing).
 
-Pretty-printing the `(ns ..)` form is surprisingly difficult.  The current implementation just puts stuff on the right line and delegates the actual indentation to the consumer.
+Pretty-printing the `(ns ..)` form is surprisingly difficult.  The current implementation just puts stuff on the right line and delegates the actual indentation to the client.
 
 In the event of an error `clean-ns` will return `error` which is an error message intended for display to the user.
 
 **Warning**: The `clean -ns` op dependes on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
+
+This op can be [configured](#configure).
 
 ### resolve-missing
 
@@ -211,6 +225,8 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 ## Changelog
 
+* Config setting for `clean-ns` to not do any prefix rewriting
+* Add `configure` op to set various config opts.
 * Remove find referred
 * Add `hotload-dependency` which loads a new project dependency into the repl
 * Add caching of ASTs for better performance

@@ -1,11 +1,11 @@
 (ns refactor-nrepl.artifacts
   (:require [alembic.still :refer [distill]]
+            [cheshire.core :as json]
+            [cider.nrepl.middleware.util.misc :refer [err-info]]
             [clojure
              [edn :as edn]
              [string :as str]]
-            [clojure.data.json :as json]
             [clojure.java.io :as io]
-            [clojure.string :as str]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -41,7 +41,7 @@
   []
   (let [search-url "http://search.maven.org/solrsearch/select?q=g:%22org.clojure%22+AND+p:%22jar%22&rows=2000&wt=json"
         {:keys [_ _ body _]} @(http/get search-url {:as :text})
-        search-result (json/read-str body :key-fn keyword)]
+        search-result (json/parse-string body true)]
     (map :a (-> search-result :response :docs))))
 
 (defn- get-versions!
@@ -52,7 +52,7 @@
                                              artifact
                                              "%22&core=gav&rows=200&wt=json")
                                         {:as :text})]
-    (->> (json/read-str body :key-fn keyword)
+    (->> (json/parse-string body true)
          :response
          :docs
          (map :v)
@@ -85,17 +85,24 @@
   (alter-meta! artifacts update-in [:last-modified]
                (constantly (java.util.Date.))))
 
-(defn- artifacts-list [{:keys [transport force] :as msg}]
-  (when (or (= force "true") (stale-cache?))
-    (update-artifact-cache!))
-  (let [names (->> @artifacts keys list*)]
-    (transport/send transport (response-for msg :artifacts names :status :done))))
+(defn- artifact-list [{:keys [transport force] :as msg}]
+  (try (when (or (= force "true") (stale-cache?))
+         (update-artifact-cache!))
+       (let [names (->> @artifacts keys list*)]
+         (transport/send
+          transport (response-for msg :artifacts names :status :done)))
+       (catch Exception e
+         (transport/send
+          transport (response-for msg (err-info e :artifact-list-error))))))
 
 (defn- artifact-versions [{:keys [transport artifact] :as msg}]
-  (when (stale-cache?)
-    (update-artifact-cache!))
-  (let [versions (->> artifact (@artifacts) list)]
-    (transport/send transport (response-for msg :versions versions  :status :done))))
+  (try (when (stale-cache?)
+         (update-artifact-cache!))
+       (let [versions (->> artifact (@artifacts) list*)]
+         (transport/send transport (response-for msg :versions versions :status :done)))
+       (catch Exception e
+         (transport/send
+          transport (response-for msg (err-info e :artifact-versions-error))))))
 
 (defn- hotload-dependency
   [{:keys [transport coordinates] :as msg}]
@@ -111,14 +118,16 @@
       (transport/send transport
                       (response-for msg :status :done
                                     :dependency (str/join " " dependency-vector))))
+    (catch IllegalArgumentException e
+      (response-for msg :error (.getMessage e) :status :done))
     (catch Exception e
-      (transport/send transport (response-for msg :error (.getMessage e)
-                                              :status :done)))))
+      (transport/send
+       transport (response-for msg (err-info e :hotload-dependency-error))))))
 
 (defn wrap-artifacts
   [handler]
   (fn [{:keys [op] :as msg}]
-    (cond (= op "artifact-list") (artifacts-list msg)
+    (cond (= op "artifact-list") (artifact-list msg)
           (= op "artifact-versions") (artifact-versions msg)
           (= op "hotload-dependency") (hotload-dependency msg)
           :else

@@ -10,7 +10,8 @@
   * Remove any duplication in the :require and :import form.
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
-  (:require [clojure.tools.namespace.parse :refer [read-ns-decl]]
+  (:require [cider.nrepl.middleware.util.misc :refer [err-info]]
+            [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -55,9 +56,13 @@
   (try
     (let [ns (some-> path clean-ns pprint-ns)]
       (transport/send transport (response-for msg :ns ns :status :done)))
+    (catch IllegalArgumentException e
+      (response-for msg :error (.getMessage e) :status :done))
+    (catch IllegalStateException e
+      (response-for msg :error (.getMessage e) :status :done))
     (catch Exception e
       (transport/send transport
-                      (response-for msg :error (.getMessage e) :status :done)))))
+                      (response-for msg (err-info e :clean-ns-error))))))
 
 (defn wrap-clean-ns
   [handler]

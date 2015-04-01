@@ -2,7 +2,8 @@
   (:require [clojure
              [set :as set]
              [string :as str]]
-            [clojure.tools.analyzer.ast :refer :all]
+            [clojure.tools.analyzer.ast :refer [nodes]]
+            [cider.nrepl.middleware.util.misc :refer [err-info]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -37,7 +38,7 @@
                                     :unbound (str/join " " unbound)
                                     :status :done)))
     (catch Exception e
-      (transport/send transport (response-for msg :error (.getMessage e))))))
+      (transport/send transport (response-for msg (err-info e :find-unbound-error))))))
 
 (defn wrap-find-unbound
   [handler]

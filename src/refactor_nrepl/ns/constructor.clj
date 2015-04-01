@@ -1,8 +1,9 @@
 (ns refactor-nrepl.ns.constructor
   (:require [clojure.string :as str]
             [refactor-nrepl.ns.helpers
-             :refer [get-ns-component prefix-form? prefix suffix
-                     index-of-component]]))
+             :refer
+             [index-of-component prefix prefix-form? suffix]]
+            [refactor-nrepl.config :refer [get-opt]]))
 
 (defn- assert-single-alias
   [libspecs alias]
@@ -94,7 +95,9 @@
 (defn- ns-prefix
   "Extracts the prefix from a libspec."
   [{:keys [ns]}]
-  (symbol (prefix ns)))
+  (if (prefix ns)
+    (symbol (prefix ns))
+    :none))
 
 (defn- ns-suffix
   [{:keys [ns]}]
@@ -141,10 +144,12 @@
 
 (defn- create-prefixed-libspec-vectors
   [[libspec & more :as libspecs]]
-  (if-not more
-    (create-libspec-vectors-with-prefix [libspec])
-    [(into [(ns-prefix (first libspecs))]
-           (create-libspec-vectors-without-prefix libspecs))]))
+  (if-not (get-opt :prefix-rewriting)
+    (create-libspec-vectors-with-prefix libspecs)
+    (if-not more
+      (create-libspec-vectors-with-prefix [libspec])
+      [(into [(ns-prefix (first libspecs))]
+             (create-libspec-vectors-without-prefix libspecs))])))
 
 (defn- create-libspec-vectors
   [libspecs-by-prefix]
