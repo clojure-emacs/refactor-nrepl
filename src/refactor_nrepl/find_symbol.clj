@@ -1,5 +1,6 @@
 (ns refactor-nrepl.find-symbol
-  (:require [clojure.string :as str]
+  (:require [cider.nrepl.middleware.util.misc :refer [err-info]]
+            [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer :all]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
@@ -79,9 +80,11 @@
          (transport/send transport
                          (response-for msg :value (when (not-empty result) result)
                                        :status :done)))
+    (catch IllegalArgumentException e
+      (response-for msg :error (.getMessage e) :status :done))
     (catch Exception e
       (transport/send transport
-                      (response-for msg :error (.getMessage e) :status :done)))))
+                      (response-for msg (err-info e :find-debug-fns-error))))))
 
 (defn- match [file-content line end-line]
   (let [line-index (dec line)
@@ -171,9 +174,11 @@ column is the column of the occurrence"
                         (response-for msg :occurrence response)))
       (transport/send transport (response-for msg :count (count occurrences)
                                               :status :done)))
+    (catch IllegalArgumentException e
+      (response-for msg :error (.getMessage e) :status :done))
     (catch Exception e
       (transport/send transport
-                      (response-for msg :error (.getMessage e) :status :done)))))
+                      (response-for msg (err-info e :find-symbol-error))))))
 
 (defn wrap-find-symbol
   [handler]

@@ -1,5 +1,6 @@
 (ns refactor-nrepl.ns.resolve-missing
   (:require [cider.nrepl.middleware.info :refer [info-clj]]
+            [cider.nrepl.middleware.util.misc :refer [err-info]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -39,7 +40,7 @@
                                   :status :done))
     (catch Exception e
       (transport/send transport
-                      (response-for msg :error (.getMessage e) :status :done)))))
+                      (response-for msg (err-info e :resolve-missing-error))))))
 
 (defn wrap-resolve-missing
   [handler]

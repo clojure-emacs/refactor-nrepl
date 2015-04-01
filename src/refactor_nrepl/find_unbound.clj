@@ -1,5 +1,6 @@
 (ns refactor-nrepl.find-unbound
-  (:require [clojure.string :as str]
+  (:require [cider.nrepl.middleware.util.misc :refer [err-info]]
+            [clojure.string :as str]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -14,7 +15,7 @@
                                     :unbound (str/join " " unbound)
                                     :status :done)))
     (catch Exception e
-      (transport/send transport (response-for msg :error (.getMessage e))))))
+      (transport/send transport (response-for msg (err-info e :find-unbound-error))))))
 
 (defn wrap-find-unbound
   [handler]

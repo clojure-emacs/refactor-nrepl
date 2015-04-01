@@ -1,13 +1,14 @@
 (ns refactor-nrepl.analyzer
   (:refer-clojure :exclude [macroexpand-1])
-  (:require [clojure.tools.analyzer :as ana]
-            [clojure.tools.analyzer.jvm :as aj]
+  (:require [clojure.java.io :as io]
+            [clojure.tools.analyzer :as ana]
+            [clojure.tools.analyzer
+             [jvm :as aj]
+             [passes :refer [schedule]]]
             [clojure.tools.analyzer.jvm.utils :as ajutils]
-            [clojure.tools.analyzer.passes :refer [schedule]]
-            [clojure.tools.analyzer.passes.jvm.validate :refer [validate]]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.tools.analyzer.passes.emit-form :as emit-form]
-            [clojure.java.io :as io])
+            [clojure.tools.analyzer.passes.jvm.validate :refer [validate]]
+            [clojure.tools.namespace.parse :refer [read-ns-decl]])
   (:import java.io.PushbackReader))
 
 ;;; The structure here is {ns {content-hash ast}}
