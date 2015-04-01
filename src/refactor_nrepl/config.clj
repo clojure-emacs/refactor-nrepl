@@ -36,7 +36,6 @@
   opts)
 
 (defn config-reply [{:keys [transport opts] :as msg}]
-  (check-opts opts)
   (try
     (-> opts edn/read-string check-opts set-opts!)
     (transport/send transport (response-for msg :status :done))
