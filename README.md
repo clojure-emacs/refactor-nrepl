@@ -182,9 +182,9 @@ The return value is a `status` of `done` and `dependency` which is the coordinat
 
 This op finds unbound vars in some ns on the classpath.  In `clj-refactor` we use this as the underlying op for the `extract-function` refactoring: anything unbound in the body of the newly created defn has to be function parameters.
 
-This op requires `ns` which is the name of a namespace on the classpath in which to find unbound vars.
+This op requires `file` which is the name of the file to work on and well as `line` and `column` to find the nearest enclosing form to work on.
 
-Return valus `status` of `done` and `unbound` which is a space-separated list of unbound vars, or `error` when something went wrong.
+Return valus `status` of `done` and `unbound` which is a  list of unbound vars, or `error` when something went wrong.
 
 ## Development with `mranderson`
 

@@ -12,17 +12,17 @@
              [analyzer :refer [ns-ast]]
              [util :refer :all]]))
 
-(defn- find-unbound-vars [file line column]
+(defn- find-unbound-vars [{:keys [file line column]}]
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
   (let [ast (-> file slurp ns-ast)
         selected-sexpr (->> ast
-                           (top-level-form-index line column)
-                           (nth ast)
-                           nodes
-                           (filter (partial node-at-loc? line column))
-                           first)]
+                            (top-level-form-index line column)
+                            (nth ast)
+                            nodes
+                            (filter (partial node-at-loc? line column))
+                            first)]
     (set/intersection (->> selected-sexpr :env :locals keys set)
                       (->> selected-sexpr
                            nodes
@@ -30,13 +30,11 @@
                            (map :form)
                            set))))
 
-(defn- find-unbound-reply [{:keys [transport file line column] :as msg}]
+(defn- find-unbound-reply [{:keys [transport] :as msg}]
   (try
-    (let [unbound (find-unbound-vars file line column)]
-      (transport/send transport
-                      (response-for msg
-                                    :unbound (str/join " " unbound)
-                                    :status :done)))
+    (transport/send
+     transport
+     (response-for msg :unbound (into '() (find-unbound-vars msg)) :status :done))
     (catch Exception e
       (transport/send transport (response-for msg (err-info e :find-unbound-error))))))
 
@@ -57,4 +55,4 @@
                "column" "The column number defining the point to find the 'nearest enclosing form'"}
     :returns {"status" "done"
               "error" "an error message, intended to be displayed to the user."
-              "unbound" "space separated list of unbound vars"}}}})
+              "unbound" "list of unbound vars"}}}})
