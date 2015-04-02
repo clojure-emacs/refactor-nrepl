@@ -20,7 +20,8 @@
              [constructor :refer [rebuild-ns-form]]
              [dependencies :refer [extract-dependencies]]
              [helpers :refer [get-ns-component]]
-             [pprint :refer [pprint-ns]]])
+             [pprint :refer [pprint-ns]]]
+            [refactor-nrepl.util :refer [throw-unless-clj-file]])
   (:import [java.io FileReader PushbackReader]))
 
 (defn- assert-no-exclude-clause
@@ -44,6 +45,8 @@
     (throw (IllegalArgumentException. "Malformed ns form!"))))
 
 (defn clean-ns [path]
+  {:pre [(seq path)]}
+  (throw-unless-clj-file path)
   (let [ns-form (read-ns-form path)
         new-ns-form (->> ns-form
                          validate

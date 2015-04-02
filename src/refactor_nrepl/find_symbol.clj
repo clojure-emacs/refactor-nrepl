@@ -80,7 +80,7 @@
          (transport/send transport
                          (response-for msg :value (when (not-empty result) result)
                                        :status :done)))
-    (catch IllegalArgumentException e
+    (catch IllegalStateException e
       (response-for msg :error (.getMessage e) :status :done))
     (catch Exception e
       (transport/send transport
@@ -141,6 +141,7 @@ column is the column of the symbol"
              (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
 
 (defn- find-symbol [{:keys [file ns name dir line column]}]
+  (throw-unless-clj-file file)
   (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name line column)))
       (find-global-symbol file ns name dir)))
 
@@ -164,7 +165,11 @@ column is the column of the symbol"
       (transport/send transport (response-for msg :count (count occurrences)
                                               :status :done)))
     (catch IllegalArgumentException e
-      (response-for msg :error (.getMessage e) :status :done))
+      (transport/send transport
+                      (response-for msg :error (.getMessage e) :status :done)))
+    (catch IllegalStateException e
+      (transport/send transport
+                      (response-for msg :error (.getMessage e) :status :done)))
     (catch Exception e
       (transport/send transport
                       (response-for msg (err-info e :find-symbol-error))))))

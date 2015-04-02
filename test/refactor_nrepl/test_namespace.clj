@@ -14,6 +14,8 @@
 (def ns-with-unused-deps (.getAbsolutePath (File. "test/resources/unused_deps.clj")))
 (def ns-without-unused-deps (read-ns-form
                              (.getAbsolutePath (File. "test/resources/unused_removed.clj"))))
+(def cljs-file (.getAbsolutePath (File. "test/resources/file.cljs")))
+
 (deftest combines-requires
   (let [requires (get-ns-component (clean-ns ns2) :require)
         combined-requires (get-ns-component ns2-cleaned :require)]
@@ -116,6 +118,9 @@
   (let [actual (pprint-ns artifact-ns)
         expected (slurp (.getAbsolutePath (File. "test/resources/artifacts_pprinted_no_indentation")))]
     (is (= expected actual))))
+
+(deftest should-throw-on-cljs
+  (is (thrown? IllegalArgumentException (clean-ns cljs-file))))
 
 (comment
   ;; broken across versions due to difference in ordering of objects

@@ -27,3 +27,8 @@
                                      (some (partial node-at-loc? line column)))))
        (filter #(second %))
        ffirst))
+
+(defn throw-unless-clj-file [file]
+  (when (and file (or (.endsWith file ".cljs") (.endsWith file ".cljx")))
+    (throw (IllegalArgumentException.
+            "Refactor nrepl doesn't work on cljs or cljx files!"))))

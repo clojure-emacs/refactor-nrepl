@@ -207,3 +207,10 @@
            '#{s}))
     (is (= (find-unbound :transport transport :file five-file :line 13 :column 13)
            '#{s sep}))))
+
+(deftest find-unbound-fails-on-cljs
+  (let [tmp-dir (create-test-project)
+        cljs-file (str tmp-dir "/src/com/example/file.cljs")
+        transport (connect :port 7777)]
+    (is (:error (find-unbound :transport transport :file cljs-file
+                              :line 12 :column 6)))))

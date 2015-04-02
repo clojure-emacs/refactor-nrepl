@@ -1,9 +1,7 @@
 (ns refactor-nrepl.find-unbound
-  (:require [clojure
-             [set :as set]
-             [string :as str]]
+  (:require [cider.nrepl.middleware.util.misc :refer [err-info]]
+            [clojure.set :as set]
             [clojure.tools.analyzer.ast :refer [nodes]]
-            [cider.nrepl.middleware.util.misc :refer [err-info]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -16,6 +14,7 @@
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
+  (throw-unless-clj-file file)
   (let [ast (-> file slurp ns-ast)
         selected-sexpr (->> ast
                             (top-level-form-index line column)
@@ -35,6 +34,9 @@
     (transport/send
      transport
      (response-for msg :unbound (into '() (find-unbound-vars msg)) :status :done))
+    (catch IllegalArgumentException e
+      (transport/send transport
+                      (response-for msg :error (.getMessage e) :status :done)))
     (catch Exception e
       (transport/send transport (response-for msg (err-info e :find-unbound-error))))))
 

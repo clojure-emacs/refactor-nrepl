@@ -209,5 +209,5 @@
         unbound (:unbound (first response))
         error (:error (first response))]
     (if error
-      (println "something bad happened: " error)
+      (do (println "something bad happened: " error) (first response))
       (set (map symbol unbound )))))
