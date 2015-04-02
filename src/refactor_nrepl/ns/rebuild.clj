@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.constructor
+(ns refactor-nrepl.ns.rebuild
   (:require [clojure.string :as str]
             [refactor-nrepl.ns.helpers
              :refer

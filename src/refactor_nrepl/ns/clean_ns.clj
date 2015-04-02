@@ -17,7 +17,7 @@
              [misc :refer [response-for]]
              [transport :as transport]]
             [refactor-nrepl.ns
-             [constructor :refer [rebuild-ns-form]]
+             [rebuild :refer [rebuild-ns-form]]
              [dependencies :refer [extract-dependencies]]
              [helpers :refer [get-ns-component]]
              [pprint :refer [pprint-ns]]]
