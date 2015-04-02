@@ -60,9 +60,12 @@
     (let [ns (some-> path clean-ns pprint-ns)]
       (transport/send transport (response-for msg :ns ns :status :done)))
     (catch IllegalArgumentException e
-      (response-for msg :error (.getMessage e) :status :done))
+      (transport/send
+       transport (response-for msg :error (.getMessage e) :status :done)))
     (catch IllegalStateException e
-      (response-for msg :error (.getMessage e) :status :done))
+      (transport/send
+       transport
+       (response-for msg :error (.getMessage e) :status :done)))
     (catch Exception e
       (transport/send transport
                       (response-for msg (err-info e :clean-ns-error))))))
