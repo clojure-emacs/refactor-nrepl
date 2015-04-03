@@ -192,7 +192,7 @@ Return valus `status` of `done` and `unbound` which is a  list of unbound vars, 
 
 To work with `mranderson` the first thing to do is:
 
-`lein do clean, source-deps "{:prefix-exclusions [\"classlojure\"]}"`
+`lein do clean, source-deps :prefix-exclusions "[\"classlojure\"]"`
 
 this creates the munged local dependencies in target/srcdeps directory
 
