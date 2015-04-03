@@ -22,7 +22,7 @@
                             nodes
                             (filter (partial node-at-loc? line column))
                             reverse
-                            (drop-while #(#{:var :const} (:op %)))
+                            (drop-while #(#{:local :var :const} (:op %)))
                             first)]
     (set/intersection (->> selected-sexpr :env :locals keys set)
                       (->> selected-sexpr

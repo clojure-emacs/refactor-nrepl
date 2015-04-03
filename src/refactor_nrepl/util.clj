@@ -15,7 +15,8 @@
 
 (defn node-at-loc? [loc-line loc-column node]
   (let [env (:env node)]
-    (and (= loc-line (:line env))
+    (and (>= loc-line (:line env))
+         (<= loc-line (:end-line env))
          (>= loc-column (:column env))
          (<= loc-column (:end-column env)))))
 
