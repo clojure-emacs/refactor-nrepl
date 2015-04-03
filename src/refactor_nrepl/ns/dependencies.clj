@@ -92,13 +92,13 @@
        (map (partial add-package-prefix-to-class prefix))
        (map parse-import)))
 
-(defn extract-imports
+(defn- extract-imports
   [form]
   (let [parse-tree (rest (second (parse-form form)))]
     (for [import parse-tree]
       (parse-import import))))
 
-(defn extract-used [use-form]
+(defn- extract-used [use-form]
   (some->>  use-form
             extract-libspecs
             (map use-to-refer-all)))
@@ -112,7 +112,7 @@
    (extract-used (get-ns-component ns-form :use))
    (extract-requires (get-ns-component ns-form :require))))
 
-(defn- get-imports [ns-form]
+(defn get-imports [ns-form]
   (some-> (get-ns-component ns-form :import) extract-imports
           flatten))
 
