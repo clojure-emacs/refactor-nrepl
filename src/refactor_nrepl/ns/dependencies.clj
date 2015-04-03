@@ -5,9 +5,10 @@
             [clojure.tools.analyzer.ast :refer [nodes]]
             [instaparse.core :refer [parse parser]]
             [refactor-nrepl.analyzer :refer [ns-ast]]
-            [refactor-nrepl.ns.helpers :refer [get-ns-component suffix]])
-  (:import [java.io PushbackReader StringReader]
-           java.util.regex.Pattern))
+            [refactor-nrepl.ns.helpers
+             :refer
+             [file-content-sans-ns get-ns-component suffix]])
+  (:import java.util.regex.Pattern))
 
 (def qualified-symbol-regex #"[A-Za-z0-9_.?$%!-]+/[A-Za-z0-9_?$%!*-]+")
 
@@ -210,16 +211,6 @@
        (re-matches qualified-symbol-regex)
        (map symbol)
        (filter macro?)))
-
-(defn- file-content-sans-ns [file-content]
-  (let [rdr (PushbackReader. (StringReader. file-content))
-        ns (read rdr false :eof)]
-    (str/join "\n"
-              (loop [form (read rdr false :eof)
-                     contents []]
-                (if (= form :eof)
-                  contents
-                  (recur (read rdr false :eof) (conj contents form)))))))
 
 (defn- macro-in-use? [file-content macro]
   (let [m (Pattern/quote (str macro))
