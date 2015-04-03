@@ -206,7 +206,10 @@
     (is (= (find-unbound :transport transport :file five-file :line 12 :column 6)
            '#{s}))
     (is (= (find-unbound :transport transport :file five-file :line 13 :column 13)
-           '#{s sep}))))
+           '#{s sep}))
+
+    (is (= (find-unbound :transport transport :file five-file :line 20 :column 16)
+           '#{p}))))
 
 (deftest find-unbound-fails-on-cljs
   (let [tmp-dir (create-test-project)
