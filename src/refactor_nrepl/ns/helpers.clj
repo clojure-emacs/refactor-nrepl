@@ -11,6 +11,8 @@
   [v]
   (and (vector? v)
        (symbol? (first v))
+       (not-any? keyword? v)
+       (> (count v) 1)
        (every? libspec? (rest v))))
 
 (defn index-of-component [ns-form type]
