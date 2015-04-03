@@ -13,7 +13,7 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "1.0.0"]]
+:plugins [[refactor-nrepl "1.0.1"]]
 ```
 
 ### Clojure client
@@ -224,6 +224,13 @@ Or alternitavely run
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
 ## Changelog
+
+### 1.0.1
+
+* throw an error for cljs and cljx file: they are not supported (yet)
+* minor refactorings, clean ups
+* readme tweaks
+* fix for find-unbound does not always figure out the right parameters for new function
 
 ### 1.0.0
 
