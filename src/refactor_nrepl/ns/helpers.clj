@@ -1,5 +1,8 @@
 (ns refactor-nrepl.ns.helpers
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.tools.namespace.parse :refer [read-ns-decl]])
+  (:import java.io.PushbackReader
+           java.io.FileReader))
 
 (defn- libspec?
   [thing]
@@ -40,3 +43,10 @@ type is either :require, :use or :import"
   (if (re-find #"/" (str fully-qulified-name))
     (-> fully-qulified-name str (.split "/") last)
     (-> fully-qulified-name str (.split "\\.") last)))
+
+(defn read-ns-form
+  [path]
+  (if-let [ns-form
+           (read-ns-decl (PushbackReader. (FileReader. path)))]
+    ns-form
+    (throw (IllegalArgumentException. "Malformed ns form!"))))

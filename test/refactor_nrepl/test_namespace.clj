@@ -1,8 +1,8 @@
 (ns refactor-nrepl.test-namespace
   (:require [clojure.test :refer :all]
             [refactor-nrepl.ns
-             [clean-ns :refer [clean-ns read-ns-form]]
-             [helpers :refer [get-ns-component]]]
+             [clean-ns :refer [clean-ns]]
+             [helpers :refer [get-ns-component read-ns-form]]]
             [refactor-nrepl.ns.pprint :refer [pprint-ns]])
   (:import java.io.File))
 

@@ -11,18 +11,16 @@
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
   (:require [cider.nrepl.middleware.util.misc :refer [err-info]]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]
             [refactor-nrepl.ns
-             [rebuild :refer [rebuild-ns-form]]
              [dependencies :refer [extract-dependencies]]
-             [helpers :refer [get-ns-component]]
-             [pprint :refer [pprint-ns]]]
-            [refactor-nrepl.util :refer [throw-unless-clj-file]])
-  (:import [java.io FileReader PushbackReader]))
+             [helpers :refer [get-ns-component read-ns-form]]
+             [pprint :refer [pprint-ns]]
+             [rebuild :refer [rebuild-ns-form]]]
+            [refactor-nrepl.util :refer [throw-unless-clj-file]]))
 
 (defn- assert-no-exclude-clause
   [use-form]
@@ -36,13 +34,6 @@
 (defn- validate [ns-form]
   (assert-no-exclude-clause (get-ns-component ns-form :use))
   ns-form)
-
-(defn read-ns-form
-  [path]
-  (if-let [ns-form
-           (read-ns-decl (PushbackReader. (FileReader. path)))]
-    ns-form
-    (throw (IllegalArgumentException. "Malformed ns form!"))))
 
 (defn clean-ns [path]
   {:pre [(seq path)]}
