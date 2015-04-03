@@ -65,4 +65,4 @@ type is either :require, :use or :import"
                                 (when (= c open)
                                   (swap! paren-count inc))
                                 true)))]
-    (apply str (drop-while still-in-ns-form? s))))
+    (str/triml (apply str (drop-while still-in-ns-form? s)))))
