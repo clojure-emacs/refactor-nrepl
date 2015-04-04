@@ -1,8 +1,7 @@
 (ns refactor-nrepl.ns.helpers
   (:require [clojure.string :as str]
             [clojure.tools.namespace.parse :refer [read-ns-decl]])
-  (:import java.io.PushbackReader
-           java.io.FileReader))
+  (:import [java.io FileReader PushbackReader StringReader]))
 
 (defn- libspec?
   [thing]
