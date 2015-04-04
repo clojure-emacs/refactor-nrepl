@@ -9,3 +9,8 @@ jdk:
   - openjdk7
   - oraclejdk7
   - oraclejdk8
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/69f4ae3e4e772d83a1b1
