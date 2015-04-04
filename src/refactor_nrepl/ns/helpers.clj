@@ -52,17 +52,6 @@ type is either :require, :use or :import"
     (throw (IllegalArgumentException. "Malformed ns form!"))))
 
 (defn file-content-sans-ns [file-content]
-  (let [s (second (str/split file-content #"\(\w*ns "))
-        open \(
-        close \)
-        paren-count (atom 1)
-        still-in-ns-form? (fn [c]
-                            (if (zero? @paren-count)
-                              false
-                              (do
-                                (when (= c close)
-                                  (swap! paren-count dec))
-                                (when (= c open)
-                                  (swap! paren-count inc))
-                                true)))]
-    (str/triml (apply str (drop-while still-in-ns-form? s)))))
+  (let [rdr (PushbackReader. (StringReader. file-content))]
+    (read rdr)
+    (str/triml (slurp rdr))))
