@@ -21,8 +21,13 @@
            java.io.PushbackReader
            [java.util Date Date Calendar]))
 
+(defmacro tt [writer]
+  `(do (get-pretty-writer ~writer)
+       (Random.)))
+
+(tt nil)
+
 (defn use-everything []
-  (get-pretty-writer)
   (cl-format)
   (formatter nil)
   (compose-fixtures)
@@ -32,7 +37,6 @@
   (clojure.data/diff)
   (clojure.edn/read-string)
   (clojure.xml/emit "")
-  (Random.)
   (Date.)
   (Calendar/getInstance)
   (PushbackReader. nil))
