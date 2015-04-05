@@ -3,10 +3,15 @@
             [clojure.test :refer :all]
             [clojure.tools.nrepl.server :as nrserver]
             [me.raynes.fs :as fs]
-            [refactor-nrepl find-unbound find_symbol
-             [client :refer [connect find-usages remove-debug-invocations
-                             rename-symbol resolve-missing find-unbound]]]
-            refactor-nrepl.ns.resolve-missing)
+            [refactor-nrepl middleware
+             [client
+              :refer
+              [connect
+               find-unbound
+               find-usages
+               remove-debug-invocations
+               rename-symbol
+               resolve-missing]]])
   (:import java.io.File))
 
 (defn- create-temp-dir
@@ -30,9 +35,7 @@
         (nrserver/start-server
          :port 7777
          :handler (nrserver/default-handler
-                    #'refactor-nrepl.find-symbol/wrap-find-symbol
-                    #'refactor-nrepl.find-unbound/wrap-find-unbound
-                    #'refactor-nrepl.ns.resolve-missing/wrap-resolve-missing))]
+                    #'refactor-nrepl.middleware/wrap-refactor))]
     server))
 
 (defn stop-repl-server [server]

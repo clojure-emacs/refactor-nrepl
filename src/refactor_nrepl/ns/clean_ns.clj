@@ -10,15 +10,9 @@
   * Remove any duplication in the :require and :import form.
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
-  (:require [cider.nrepl.middleware.util.misc :refer [err-info]]
-            [clojure.tools.nrepl
-             [middleware :refer [set-descriptor!]]
-             [misc :refer [response-for]]
-             [transport :as transport]]
-            [refactor-nrepl.ns
+  (:require [refactor-nrepl.ns
              [dependencies :refer [extract-dependencies]]
              [helpers :refer [get-ns-component read-ns-form]]
-             [pprint :refer [pprint-ns]]
              [rebuild :refer [rebuild-ns-form]]]
             [refactor-nrepl.util :refer [throw-unless-clj-file]]))
 
@@ -45,37 +39,3 @@
                          (rebuild-ns-form ns-form))]
     (when-not (= ns-form new-ns-form)
       new-ns-form)))
-
-(defn clean-ns-reply [{:keys [transport path] :as msg}]
-  (try
-    (let [ns (some-> path clean-ns pprint-ns)]
-      (transport/send transport (response-for msg :ns ns :status :done)))
-    (catch IllegalArgumentException e
-      (transport/send
-       transport (response-for msg :error (.getMessage e) :status :done)))
-    (catch IllegalStateException e
-      (transport/send
-       transport
-       (response-for msg :error (.getMessage e) :status :done)))
-    (catch Exception e
-      (transport/send transport
-                      (response-for msg (err-info e :clean-ns-error))))))
-
-(defn wrap-clean-ns
-  [handler]
-  (fn [{:keys [op] :as msg}]
-    (cond
-     (= op "clean-ns") (clean-ns-reply msg)
-     :else
-     (handler msg))))
-
-(set-descriptor!
- #'wrap-clean-ns
- {:handles
-  {"clean-ns"
-   {:doc "Various cleanups on the ns form."
-    :requires {"path" "The absolute path to the file to clean."}
-    :returns {"status" "done"
-              "error" "An error message, intended to be displayed to
-              the user, in case of failure."
-              "ns" "The entire (ns ..) form in pristine condition, or nil if nothing was done."}}}})

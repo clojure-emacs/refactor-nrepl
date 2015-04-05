@@ -1,7 +1,8 @@
 (ns refactor-nrepl.test-artifacts
-  (:require [clojure.edn :as edn]
+  (:require [clojure
+             [edn :as edn]
+             [test :refer :all]]
             [clojure.java.io :as io]
-            [clojure.test :refer :all]
             [refactor-nrepl.artifacts :as artifacts]))
 
 (def clojure-versions (-> (io/resource "resources/clojure-versions.edn")
