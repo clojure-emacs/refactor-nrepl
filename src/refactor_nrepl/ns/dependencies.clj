@@ -145,9 +145,19 @@
              (= op :method))
     {:name (.getName ^Class interface)}))
 
+(defn- normalize-name [n]
+  (cond
+    (.endsWith n ".") (recur (.substring n 0 (dec (.length n))))
+    :else n))
+
+(defn- get-symbol-literal [node]
+  (when (and (:literal? node) (= (:type node) :symbol))
+    {:name (some-> node :form str normalize-name)}))
+
 (defn- node->name-and-alias [node]
   (or (get-class-name node)
       (get-var-name-and-alias node)
+      (get-symbol-literal node)
       (get-interface-name node)))
 
 (defn- used-vars

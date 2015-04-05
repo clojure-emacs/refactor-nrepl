@@ -22,10 +22,8 @@
            [java.util Date Date Calendar]))
 
 (defmacro tt [writer]
-  `(do (get-pretty-writer ~writer)
-       (Random.)))
-
-(tt nil)
+  (Random.)
+  `(get-pretty-writer ~writer))
 
 (defn use-everything []
   (cl-format)
