@@ -126,15 +126,19 @@
                    class))]
     {:name (.getName ^Class c)}))
 
+(defn- get-var-alias [node var-name]
+  (let [alias? (some->>
+                node
+                :form
+                str
+                (re-matches
+                 (re-pattern (str "[A-Za-z0-9_.?$%!-]+/" (suffix var-name)))))]
+    (when (not= alias? var-name) alias?)))
+
 (defn- get-var-name-and-alias [node]
-  (when-let [variable (some-> node :var str (str/replace "#'" ""))]
-    {:name variable
-     :alias (some->>
-             node
-             :form
-             str
-             (re-matches
-              (re-pattern (str "[A-Za-z0-9_.?$%!-]+/" (suffix variable)))))}))
+  (when-let [var-name (some-> node :var str (str/replace "#'" ""))]
+    {:name var-name
+     :alias (get-var-alias node var-name)}))
 
 (defn- get-interface-name [{:keys [op interface]}]
   (when (and interface
@@ -248,7 +252,7 @@
 (defn extract-dependencies [path ns-form]
   (let [libspecs (get-libspecs ns-form)
         file-content (slurp path)
-        symbols-in-use (-> file-content ns-ast used-vars)
+        symbols-in-use (-> file-content ns-ast used-vars set)
         macros-in-use (used-macros file-content libspecs)]
     {:require (->> libspecs
                    (remove-unused-requires (concat macros-in-use symbols-in-use))
