@@ -62,8 +62,8 @@
 (defn- find-unbound-reply [{:keys [transport] :as msg}]
   (reply transport msg :unbound (find-unbound-vars msg) :status :done))
 
-(defn config-reply [{:keys [transport opts] :as msg}]
-  (reply :status (and (configure msg) :done)))
+(defn- config-reply [{:keys [transport] :as msg}]
+  (reply transport msg :status (and (configure msg) :done)))
 
 (def refactor-nrepl-ops
   {"resolve-missing" resolve-missing-reply
@@ -75,8 +75,6 @@
    "clean-ns" clean-ns-reply
    "configure" config-reply
    "find-unbound" find-unbound-reply})
-
-
 
 (defn wrap-refactor
   [handler]
