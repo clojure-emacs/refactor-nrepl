@@ -238,7 +238,7 @@
               not)
       macro)))
 
-(defn- get-referred-macros [file-content libspecs]
+(defn- get-referred-macros-in-use [file-content libspecs]
   (flatten
    (for [libspec libspecs]
      (some->> libspec
@@ -248,11 +248,11 @@
               (map (partial add-prefix (:ns libspec)))))))
 
 (defn- used-macros [file-content libspecs]
-  (let [referred-macros-in-use  (get-referred-macros file-content libspecs)]
+  (let [referred-in-use (get-referred-macros-in-use file-content libspecs)]
     (->> file-content
          find-fully-qualified-macros
          (filter (partial macro-in-use? file-content))
-         (concat referred-macros-in-use)
+         (concat referred-in-use)
          (map str)
          (map #(assoc {} :name %)))))
 
