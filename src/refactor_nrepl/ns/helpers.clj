@@ -38,10 +38,10 @@ type is either :require, :use or :import"
 (defn suffix
   "java.util.Date -> Date
   clojure.core/str -> str"
-  [fully-qulified-name]
-  (if (re-find #"/" (str fully-qulified-name))
-    (-> fully-qulified-name str (.split "/") last)
-    (-> fully-qulified-name str (.split "\\.") last)))
+  [fully-qualified-name]
+  (if (re-find #"/" (str fully-qualified-name))
+    (-> fully-qualified-name str (.split "/") last)
+    (-> fully-qualified-name str (.split "\\.") last)))
 
 (defn read-ns-form
   [path]
