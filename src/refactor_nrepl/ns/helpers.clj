@@ -29,11 +29,15 @@ type is either :require, :use or :import"
   (some->> (index-of-component ns type) (nth ns)))
 
 (defn prefix
-  "java.util.Date -> java.util"
+  "java.util.Date -> java.util
+
+  clojure.walk/walk -> clojure.walk"
   [fully-qualified-name]
-  (let [parts (-> fully-qualified-name str (.split "\\.") butlast)]
-    (when (seq parts)
-      (str/join "." parts))))
+  (if(re-find #"/" (str fully-qualified-name))
+    (-> fully-qualified-name str (.split "/") first)
+    (let [parts (-> fully-qualified-name str (.split "\\.") butlast)]
+      (when (seq parts)
+        (str/join "." parts)))))
 
 (defn suffix
   "java.util.Date -> Date
