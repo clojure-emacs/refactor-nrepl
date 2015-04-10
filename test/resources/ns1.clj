@@ -8,6 +8,7 @@
    :methods [[binomial [int int] double]])
   (:require
    [clojure.instant :as inst :refer [read-instant-date]]
+   [clojure.walk :refer [prewalk postwalk]]
    [clojure data edn]
    [clojure.pprint :refer [get-pretty-writer formatter cl-format]]
    clojure.test.junit
@@ -24,6 +25,12 @@
 (defmacro tt [writer]
   (Random.)
   `(get-pretty-writer ~writer))
+
+(defmacro black-hole [& body])
+
+(black-hole
+ (prewalk identity [1 2 3])
+ (postwalk identity [3 2 1]))
 
 (defn use-everything []
   (cl-format)

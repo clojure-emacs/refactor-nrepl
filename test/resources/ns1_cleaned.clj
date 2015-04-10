@@ -11,6 +11,7 @@
              [pprint :refer [cl-format formatter get-pretty-writer]]
              [string :refer :all :rename {replace foo reverse bar}]
              [test :refer :all]
+             [walk :refer [postwalk prewalk]]
              xml]
             clojure.test.junit)
   (:import java.io.PushbackReader
