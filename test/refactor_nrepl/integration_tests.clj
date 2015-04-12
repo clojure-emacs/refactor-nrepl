@@ -4,14 +4,7 @@
             [clojure.tools.nrepl.server :as nrserver]
             [me.raynes.fs :as fs]
             [refactor-nrepl middleware
-             [client
-              :refer
-              [connect
-               find-unbound
-               find-usages
-               remove-debug-invocations
-               rename-symbol
-               resolve-missing]]])
+             [client :refer :all]])
   (:import java.io.File))
 
 (defn- create-temp-dir
@@ -24,7 +17,7 @@
 
 (defn create-test-project []
   (let [temp-dir (create-temp-dir "refactor-nrepl-test")
-        orig-src (io/file "resources/testproject/src")]
+        orig-src (io/file "test/resources/testproject/src")]
 
     (fs/copy-dir orig-src temp-dir)
 

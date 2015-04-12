@@ -24,5 +24,5 @@
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :dependencies [[me.raynes/fs "1.4.6"]]
                    :resource-paths ["test/resources"
-                                    "resources/testproject/src"]
+                                    "test/resources/testproject/src"]
                    :repositories [["snapshots" "http://oss.sonatype.org/content/repositories/snapshots"]]}})
