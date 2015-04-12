@@ -187,6 +187,13 @@ This op requires `file` which is the name of the file to work on and well as `li
 
 Return valus `status` of `done` and `unbound` which is a  list of unbound vars, or `error` when something went wrong.
 
+### Errors
+
+The middleware returns errors under one of two keys: `:error` or
+`:err`.  The key `:error` contains an error string which is intended
+for the end user.  The key `:err` is used for unexpected failures and
+contains among other things a full stacktrace.
+
 ## Development with `mranderson`
 
 [mranderson](https://github.com/benedekfazekas/mranderson) is used to avoid classpath collisions.
