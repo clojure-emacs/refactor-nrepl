@@ -21,7 +21,7 @@
   (dorun (map
           #(when (= % :exclude)
              (throw (IllegalArgumentException.
-                     "Can't remove :use clause with :exclude clause!")))
+                     "Can't run clean-ns on :use clause containing :exclude!")))
           (tree-seq sequential? identity use-form)))
   use-form)
 
