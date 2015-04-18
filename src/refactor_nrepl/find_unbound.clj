@@ -11,16 +11,17 @@
          (not-empty file)]}
   (throw-unless-clj-file file)
   (let [ast (-> file slurp ns-ast)
-        selected-sexpr (->> ast
-                            (top-level-form-index line column)
-                            (nth ast)
-                            nodes
-                            (filter (partial node-at-loc? line column))
-                            reverse
-                            (drop-while #(#{:local :var :const} (:op %)))
-                            first)]
-    (into '() (set/intersection (->> selected-sexpr :env :locals keys set)
-                                (->> selected-sexpr
+        selected-sexpr-node (->> ast
+                                 (top-level-form-index line column)
+                                 (nth ast)
+                                 nodes
+                                 (filter (partial node-at-loc? line column))
+                                 reverse
+                                 (remove #(#{:local :var :const} (:op %)))
+                                 (sort-by #(- line (-> % :env :line)))
+                                 first)]
+    (into '() (set/intersection (->> selected-sexpr-node :env :locals keys set)
+                                (->> selected-sexpr-node
                                      nodes
                                      (filter #(= :local (:op %)))
                                      (map :form)
