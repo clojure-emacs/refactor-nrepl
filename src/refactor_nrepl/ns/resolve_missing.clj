@@ -1,10 +1,13 @@
 (ns refactor-nrepl.ns.resolve-missing
   "Resolve a missing symbol on the classpath."
   (:require [cider.nrepl.middleware.info :refer [info-clj]]
+            [refactor-nrepl.ns.helpers :refer [prefix suffix]]
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [sym]
-  (seq (concat (slamhound/candidates :import sym [] {})
+  (seq (concat (when-let [p (prefix sym)]
+                 (slamhound/candidates :import (symbol p) [] {}))
+               (slamhound/candidates :import (symbol (suffix sym)) [] {})
                (slamhound/candidates :refer sym [] {}))))
 
 (defn- get-type [sym]
