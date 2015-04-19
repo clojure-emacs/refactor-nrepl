@@ -14,7 +14,7 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "1.0.1"]]
+:plugins [[refactor-nrepl "1.0.2"]]
 ```
 
 ### Clojure client
@@ -232,6 +232,13 @@ Or alternitavely run
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
 ## Changelog
+
+### 1.0.2
+
+* various bugfixes in clean-ns
+* improvements on error messages
+* fix in find unbound in case of s-expression is inside a macro
+* resolve missing works for static method, field and resolve missign will work right after hotload dependency
 
 ### 1.0.1
 
