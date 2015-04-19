@@ -3,13 +3,15 @@
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
 (ns refactor-nrepl.ns.slam.hound.search
   "Search the classpath for vars and classes."
-  (:require [clojure.java.io :refer [file reader]]
+  (:require [clojure.java
+             [classpath :as cp]
+             [io :refer [file]]]
             [clojure.string :as string])
-  (:import (java.io BufferedReader File FilenameFilter InputStreamReader
-                    PushbackReader)
-           (java.util StringTokenizer)
-           java.util.regex.Pattern
-           (java.util.jar JarEntry JarFile)))
+  (:import
+   [java.io BufferedReader File FilenameFilter]
+   [java.util.jar JarFile JarEntry]
+   java.util.regex.Pattern
+   java.util.StringTokenizer))
 
 ;;; Mostly taken from leiningen.util.ns and swank.util.class-browse.
 
@@ -76,7 +78,7 @@
            (filter class-file?
                    (map #(.getName #^JarEntry %)
                         (enumeration-seq (.entries (JarFile. f))))))
-     (catch Exception e []))))          ; fail gracefully if jar is unreadable
+      (catch Exception e []))))          ; fail gracefully if jar is unreadable
 
 (defmethod path-class-files :dir
   ;; Dispatch directories and files (excluding jars) recursively.
@@ -111,13 +113,28 @@
   ([cp & more]
      (reduce #(concat %1 (scan-paths %2)) (scan-paths cp) more)))
 
-(def available-classes
-  (->> (scan-paths (System/getProperty "sun.boot.class.path")
-                   (System/getProperty "java.ext.dirs")
-                   (System/getProperty "java.class.path"))
+(defn- get-available-classes
+  []
+  (->> (apply scan-paths (System/getProperty "sun.boot.class.path")
+              (System/getProperty "java.ext.dirs")
+              (System/getProperty "java.class.path")
+              (map #(.getName %) (cp/classpath-jarfiles)))
        (remove clojure-fn-file?)
        (map symbol)))
 
-(def available-classes-by-last-segment
+(def available-classes
+  (get-available-classes))
+
+(defn- get-available-classes-by-last-segment
+  []
   (delay
-    (group-by #(symbol (peek (string/split (str %) #"\."))) available-classes)))
+   (group-by #(symbol (peek (string/split (str %) #"\."))) available-classes)))
+
+(def available-classes-by-last-segment
+  (get-available-classes-by-last-segment))
+
+(defn reset
+  "Reset the cache of classes"
+  []
+  (alter-var-root #'available-classes (constantly (get-available-classes)))
+  (alter-var-root #'available-classes-by-last-segment (constantly (get-available-classes-by-last-segment))))

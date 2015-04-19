@@ -13,7 +13,8 @@
                  ^:source-dep [instaparse "1.3.6"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.6"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.7"]
-                 ^:source-dep [org.clojure/tools.reader "0.8.12"]]
+                 ^:source-dep [org.clojure/tools.reader "0.8.12"]
+                 ^:source-dep [org.clojure/java.classpath "0.2.2"]]
   :plugins [[thomasa/mranderson "0.4.0"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]]}

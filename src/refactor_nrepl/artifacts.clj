@@ -1,12 +1,15 @@
 (ns refactor-nrepl.artifacts
-  (:require [alembic.still :refer [distill]]
+  (:require [alembic.still :as alembic]
             [cheshire.core :as json]
             [clojure
              [edn :as edn]
              [string :as str]]
             [clojure.java.io :as io]
-            [org.httpkit.client :as http])
-  (:import java.util.Date))
+            [clojure.tools.namespace.find :as find]
+            [org.httpkit.client :as http]
+            [refactor-nrepl.ns.slam.hound.search :as slamhound])
+  (:import java.util.Date
+           java.util.jar.JarFile))
 
 (def artifacts (atom {} :meta {:last-modified nil}))
 (def millis-per-day (* 24 60 60 1000))
@@ -88,6 +91,15 @@
 (defn artifact-versions [{:keys [artifact]}]
   (->> artifact (@artifacts) list*))
 
+(defn- make-resolve-missing-aware-of-new-deps
+  "Once the deps are available on cp we still have to load them and
+  reset slamhound's cache to make resolve-missing work."
+  [coords repos]
+  (let [dep (first (alembic/resolve-dependencies alembic/the-still coords repos nil))
+        jarfile (JarFile. (:jar dep))]
+    (dorun (map require (find/find-namespaces-in-jarfile jarfile)))
+    (slamhound/reset)))
+
 (defn hotload-dependency
   [{:keys [coordinates]}]
   (let [dependency-vector (edn/read-string coordinates)
@@ -97,5 +109,6 @@
     (when-not (= (-> coords first count) 2)
       (throw (IllegalArgumentException. (str "Malformed dependency vector: "
                                              coordinates))))
-    (distill coords :repositories repos)
+    (alembic/distill coords :repositories repos)
+    (make-resolve-missing-aware-of-new-deps coords repos)
     (str/join " " dependency-vector)))
