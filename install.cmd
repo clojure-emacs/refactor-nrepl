@@ -1,1 +1,0 @@
-lein do clean, source-deps :prefix-exclusions "[\"classlojure\"]" && lein with-profile +plugin.mranderson/config install &&lein localrepo install target\refactor-nrepl-1.0.2-SNAPSHOT.jar refactor-nrepl/refactor 1.0.2-SNAPSHOT

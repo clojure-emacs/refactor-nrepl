@@ -130,7 +130,7 @@
   (let [rdr (PushbackReader. (StringReader. (file-content-sans-ns file-content)))
         syms (transient [])
         ns (ns-from-string file-content)
-        conj-symbol (fn [form] (when (symbol? form) (conj! syms form)))
+        conj-symbol (fn [form] (when (symbol? form) (conj! syms form)) form)
         get-symbols-from-macro (fn [form]
                                  (if (and (sequential? form)
                                           (symbol? (first form))
@@ -152,8 +152,8 @@
         referred-in-use (transient [])]
     (filter #(referred (symbol (:suffix %))) symbols-used-in-macros)))
 
-(defn- get-imports-used-in-macros [imports symbols-used-in-macros]
-  (let [used (set (map :suffix symbols-used-in-macros))]
+(defn- filter-imports [imports symbols-used]
+  (let [used (set symbols-used)]
     (map #(conj {} [:name %]) (filter #(used (suffix %)) imports))))
 
 (defn- adorn-with-name-and-alias [ns sym]
@@ -164,6 +164,19 @@
     {:name (str (ns-name (:ns info)) "/" (:name info))
      :alias (when (prefix sym) sym)}))
 
+(defn- get-classes-used-in-typehints [file-content]
+  (let [rdr (PushbackReader. ^StringReader (StringReader. (file-content-sans-ns file-content)))
+        content (file-content-sans-ns file-content)
+        types (transient [])
+        conj-type (fn [form]
+                    (when-let [t (:tag (meta form))] (conj! types (str t)))
+                    form)]
+    (loop [form (read rdr nil :eof)]
+      (when (not= form :eof)
+        (walk/prewalk conj-type form)
+        (recur (read rdr nil :eof))))
+    (set (persistent! types))))
+
 (defn extract-dependencies [path ns-form]
   (let [libspecs (get-libspecs ns-form)
         file-content (slurp path)
@@ -173,10 +186,12 @@
                                                       (second ns-form))
                                              (used-symbols-from-refer libspecs
                                                                       symbols-used-in-macros)))
-        imports-used-in-macros (get-imports-used-in-macros (get-imports ns-form)
-                                                           symbols-used-in-macros)
+        imports (get-imports ns-form)
+        imports-used-in-macros (filter-imports imports (map :suffix symbols-used-in-macros))
         fully-qualified-macros (map #(assoc {} :name %)
-                                    (find-fully-qualified-macros file-content))]
+                                    (find-fully-qualified-macros file-content))
+        imports-used-in-typehints (filter-imports imports
+                                                  (get-classes-used-in-typehints file-content))]
     {:require (->> libspecs
                    (remove-unused-requires
                     (set (concat symbols-from-refer symbols-from-ast
@@ -185,4 +200,5 @@
      :import (->> ns-form
                   get-imports
                   (remove-unused-imports (concat symbols-from-ast
+                                                 imports-used-in-typehints
                                                  imports-used-in-macros)))}))

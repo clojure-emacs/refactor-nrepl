@@ -21,6 +21,7 @@
            java.io.PushbackReader
            java.io.PushbackReader
            java.io.FilenameFilter
+           java.io.Closeable
            [java.util Date Date Calendar]))
 
 (defmacro tt [writer]
@@ -33,7 +34,7 @@
  (prewalk identity [1 2 3])
  (postwalk identity [3 2 1]))
 
-(defn use-everything []
+(defn use-everything [^Closeable whatever]
   (cl-format)
   (formatter nil)
   (compose-fixtures)

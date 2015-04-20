@@ -14,5 +14,5 @@
              [walk :refer [postwalk prewalk]]
              xml]
             clojure.test.junit)
-  (:import [java.io FilenameFilter PushbackReader]
+  (:import [java.io Closeable FilenameFilter PushbackReader]
            [java.util Calendar Date Random]))
