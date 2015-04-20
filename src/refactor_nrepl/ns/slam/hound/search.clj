@@ -3,9 +3,8 @@
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
 (ns refactor-nrepl.ns.slam.hound.search
   "Search the classpath for vars and classes."
-  (:require [clojure.java
-             [classpath :as cp]
-             [io :refer [file]]]
+  (:require [clojure.java.classpath :as cp]
+            [clojure.java.io :refer [file]]
             [clojure.string :as string])
   (:import
    [java.io BufferedReader File FilenameFilter]
