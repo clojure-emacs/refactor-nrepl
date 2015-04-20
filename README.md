@@ -237,7 +237,7 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 * fix problem in clean-ns caused by mranderson (inlining) limitation
 
-### 1.0.2
+### 1.0.2 (this is broken version, please use 1.0.3!)
 
 * various bugfixes in clean-ns
 * improvements on error messages
