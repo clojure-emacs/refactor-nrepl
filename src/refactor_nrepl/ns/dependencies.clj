@@ -147,25 +147,34 @@
 (defn- remove-unused-requires [symbols-in-use libspecs]
   (map (partial remove-unused-syms-and-specs symbols-in-use) libspecs))
 
-(defn- used-symbols-from-refer [libspecs file-content]
+(defn- used-symbols-from-refer [libspecs symbols-used-in-macros]
   (let [referred (set (remove nil? (mapcat get-referred-symbols libspecs)))
         referred-in-use (transient [])]
-    (filter #(referred (symbol (:suffix %)))
-            (get-symbols-used-in-macros file-content))))
+    (filter #(referred (symbol (:suffix %))) symbols-used-in-macros)))
+
+(defn- get-imports-used-in-macros [imports symbols-used-in-macros]
+  (let [used (set (map :suffix symbols-used-in-macros))]
+    (map #(conj {} [:name %]) (filter #(used (suffix %)) imports))))
 
 (defn- adorn-with-name-and-alias [ns sym]
   (when-let [info (info-clj ns (:symbol sym))]
     (when (:candidates info)
-      (throw (IllegalStateException. (str "Multiple candidates returned form symbol: " sym))))
-    (try {:name (str (ns-name (:ns info)) "/" (:name info))
-          :alias (when (prefix sym) sym)})))
+      (throw (IllegalStateException.
+              (str "Multiple candidates returned form symbol: " sym))))
+    {:name (str (ns-name (:ns info)) "/" (:name info))
+     :alias (when (prefix sym) sym)}))
 
 (defn extract-dependencies [path ns-form]
   (let [libspecs (get-libspecs ns-form)
         file-content (slurp path)
         symbols-from-ast (-> file-content ns-ast used-vars set)
-        symbols-from-refer (remove nil? (map (partial adorn-with-name-and-alias (second ns-form))
-                                             (used-symbols-from-refer libspecs file-content)))
+        symbols-used-in-macros (get-symbols-used-in-macros file-content)
+        symbols-from-refer (remove nil? (map (partial adorn-with-name-and-alias
+                                                      (second ns-form))
+                                             (used-symbols-from-refer libspecs
+                                                                      symbols-used-in-macros)))
+        imports-used-in-macros (get-imports-used-in-macros (get-imports ns-form)
+                                                           symbols-used-in-macros)
         fully-qualified-macros (map #(assoc {} :name %)
                                     (find-fully-qualified-macros file-content))]
     {:require (->> libspecs
@@ -175,4 +184,5 @@
                    (filter (complement nil?)))
      :import (->> ns-form
                   get-imports
-                  (remove-unused-imports symbols-from-ast))}))
+                  (remove-unused-imports (concat symbols-from-ast
+                                                 imports-used-in-macros)))}))

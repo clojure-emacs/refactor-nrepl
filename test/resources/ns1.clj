@@ -20,6 +20,7 @@
   (:import java.util.Random
            java.io.PushbackReader
            java.io.PushbackReader
+           java.io.FilenameFilter
            [java.util Date Date Calendar]))
 
 (defmacro tt [writer]
@@ -45,3 +46,6 @@
   (Date.)
   (Calendar/getInstance)
   (PushbackReader. nil))
+
+(proxy [FilenameFilter] []
+  (accept [d n] true))
