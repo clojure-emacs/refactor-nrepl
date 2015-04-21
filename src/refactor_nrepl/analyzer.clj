@@ -54,7 +54,8 @@
 (defn- build-ast
   [ns aliases]
   (when (ns-on-cp? ns)
-    (binding [ana/macroexpand-1 noop-macroexpand-1]
+    (binding [ana/macroexpand-1 noop-macroexpand-1
+              *file* (-> ns ajutils/ns-resource ajutils/source-path)]
       (assoc-in (aj/analyze-ns ns) [0 :alias-info] aliases))))
 
 (defn- cachable-ast [file-content]
