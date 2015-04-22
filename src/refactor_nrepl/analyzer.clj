@@ -45,7 +45,7 @@
 
 (defn- update-ast-cache
   [file-content ns ast]
-  (swap! ast-cache update-in [ns] merge {(hash file-content) ast})
+  (swap! ast-cache assoc ns {(hash file-content) ast})
   ast)
 
 (defn- ns-on-cp? [ns]
