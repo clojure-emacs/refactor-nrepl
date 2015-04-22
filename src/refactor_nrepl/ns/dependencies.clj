@@ -126,7 +126,9 @@
         (recur (read rdr nil :eof))))
     (filter (partial macro? ns) (filter prefix @syms))))
 
-(defn- get-symbols-used-in-macros [file-content]
+(defn- get-symbols-used-in-macros
+  "all symbols found below a macro form"
+  [file-content]
   (let [rdr (PushbackReader. (StringReader. (file-content-sans-ns file-content)))
         syms (atom [])
         ns (ns-from-string file-content)
@@ -176,28 +178,50 @@
         (recur (read rdr nil :eof))))
     (set @types)))
 
+(defn- get-symbols-to-prune-libspecs
+  [ns-form libspecs file-content symbols-from-ast symbols-used-in-macros]
+  (let [fully-qualified-macros (map #(assoc {} :name %)
+                                    (find-fully-qualified-macros file-content))
+        symbols-from-refer (used-symbols-from-refer libspecs symbols-used-in-macros)
+        referred (remove nil? (map (partial adorn-with-name-and-alias
+                                            (second ns-form))
+                                   symbols-from-refer))]
+    (set (concat referred symbols-from-ast fully-qualified-macros))))
+
+(defn get-symbols-to-prune-imports
+  [symbols-from-ast symbols-used-in-macros file-content ns-form]
+  (let [imports (get-imports ns-form)
+        imports-used-in-macros (filter-imports imports
+                                               (map :suffix symbols-used-in-macros))
+        imports-used-in-typehints (filter-imports imports
+                                                  (get-classes-used-in-typehints file-content))]
+    (concat symbols-from-ast imports-used-in-typehints imports-used-in-macros)))
+
+(defn- prune-libspecs
+  [libspecs file-content symbols-from-ast symbols-used-in-macros ns-form]
+  (->> libspecs
+       (remove-unused-requires
+        (get-symbols-to-prune-libspecs ns-form libspecs
+                                       file-content
+                                       symbols-from-ast
+                                       symbols-used-in-macros))
+       (filter (complement nil?))))
+
+(defn- prune-imports
+  [ns-form symbols-from-ast symbols-used-in-macros file-content]
+  (->> ns-form
+       get-imports
+       (remove-unused-imports
+        (get-symbols-to-prune-imports symbols-from-ast
+                                       symbols-used-in-macros
+                                       file-content ns-form))))
+
 (defn extract-dependencies [path ns-form]
   (let [libspecs (get-libspecs ns-form)
         file-content (slurp path)
         symbols-from-ast (-> file-content ns-ast used-vars set)
-        symbols-used-in-macros (get-symbols-used-in-macros file-content)
-        symbols-from-refer (remove nil? (map (partial adorn-with-name-and-alias
-                                                      (second ns-form))
-                                             (used-symbols-from-refer libspecs
-                                                                      symbols-used-in-macros)))
-        imports (get-imports ns-form)
-        imports-used-in-macros (filter-imports imports (map :suffix symbols-used-in-macros))
-        fully-qualified-macros (map #(assoc {} :name %)
-                                    (find-fully-qualified-macros file-content))
-        imports-used-in-typehints (filter-imports imports
-                                                  (get-classes-used-in-typehints file-content))]
-    {:require (->> libspecs
-                   (remove-unused-requires
-                    (set (concat symbols-from-refer symbols-from-ast
-                                 fully-qualified-macros)))
-                   (filter (complement nil?)))
-     :import (->> ns-form
-                  get-imports
-                  (remove-unused-imports (concat symbols-from-ast
-                                                 imports-used-in-typehints
-                                                 imports-used-in-macros)))}))
+        symbols-used-in-macros (get-symbols-used-in-macros file-content)]
+    {:require (prune-libspecs libspecs file-content symbols-from-ast
+                              symbols-used-in-macros ns-form)
+     :import (prune-imports ns-form symbols-from-ast
+                            symbols-used-in-macros file-content)}))
