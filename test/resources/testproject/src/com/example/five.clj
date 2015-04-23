@@ -21,3 +21,14 @@
     (assoc {:s s
             :p p
             :z z} :k "foobar")))
+
+(defn threading-macro [strings]
+  (let [sep ","]
+    (->> strings
+         flatten
+         (join sep))))
+
+(defn repeated-sexp []
+  (map name [:a :b :c])
+  (let [name #(str "myname" %)]
+    (map name [:a :b :c])))

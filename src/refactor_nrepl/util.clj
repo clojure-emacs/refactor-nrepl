@@ -1,7 +1,8 @@
 (ns refactor-nrepl.util
   (:require [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [clojure.tools.analyzer.ast :refer :all]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]])
+            [clojure.tools.namespace.parse :refer [read-ns-decl]]
+            [clojure.string :as str])
   (:import java.io.PushbackReader))
 
 (defn alias-info [full-ast]
@@ -33,3 +34,39 @@
   (when (and file (or (.endsWith file ".cljs") (.endsWith file ".cljx")))
     (throw (IllegalArgumentException.
             "Refactor nrepl doesn't work on cljs or cljx files!"))))
+
+(defn search-backward-start-sexp [s]
+  (let [sexp-start (->> s reverse (drop-while (complement #{\[ \{ \(})))
+        pos (-> sexp-start count dec)]
+    (if (= \# (second sexp-start))
+      (dec pos)
+      pos)))
+
+(defn- read-first-form [form]
+  (let [f-string (str form)]
+    (when (some #{\) \} \]} f-string)
+      (binding [*read-eval* false]
+        (-> f-string
+            read-string
+            str)))))
+
+(defn sexp-at-point [cont line column]
+  (let [lines (str/split-lines cont)
+        line-index (dec line)
+        char-count (->> lines
+                        (take line-index)
+                        (map count)
+                        (reduce + line-index))
+        start (->> line-index
+                   (nth lines)
+                   (take column)
+                   search-backward-start-sexp
+                   (+ char-count))]
+    (-> cont
+        (.substring start)
+        read-first-form)))
+
+(defn node-for-sexp? [sexp node]
+  (if-let [forms (:raw-forms node)]
+    (some #(.contains % sexp) (map read-first-form forms))
+    (= sexp (read-first-form (:form node)))))
