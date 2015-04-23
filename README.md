@@ -233,6 +233,11 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 ## Changelog
 
+* fix for clean-ns removes import only macro
+* fix for clean-ns removes classes used in typehints
+* workaround for analyzer bug (fix not yet released) which results in wrong filename in var meta (messed with source info in cider)
+* fix for find unbound edge cases
+
 ### 1.0.3
 
 * fix problem in clean-ns caused by mranderson (inlining) limitation
