@@ -118,19 +118,19 @@
 (defn- find-fully-qualified-macros [file-content]
   (let [rdr (PushbackReader. (StringReader. (file-content-sans-ns file-content)))
         ns (ns-from-string file-content)
-        syms (transient [])
-        conj-symbol (fn [form] (when (symbol? form) (conj! syms form)))]
+        syms (atom [])
+        conj-symbol (fn [form] (when (symbol? form) (swap! syms conj form)))]
     (loop [form (read rdr nil :eof)]
       (when (not= form :eof)
         (walk/postwalk conj-symbol form)
         (recur (read rdr nil :eof))))
-    (filter (partial macro? ns) (filter prefix (persistent! syms)))))
+    (filter (partial macro? ns) (filter prefix @syms))))
 
 (defn- get-symbols-used-in-macros [file-content]
   (let [rdr (PushbackReader. (StringReader. (file-content-sans-ns file-content)))
-        syms (transient [])
+        syms (atom [])
         ns (ns-from-string file-content)
-        conj-symbol (fn [form] (when (symbol? form) (conj! syms form)) form)
+        conj-symbol (fn [form] (when (symbol? form) (swap! syms conj syms form)) form)
         get-symbols-from-macro (fn [form]
                                  (if (and (sequential? form)
                                           (symbol? (first form))
@@ -142,14 +142,13 @@
         (walk/prewalk get-symbols-from-macro form)
         (recur (read rdr nil :eof))))
     (map #(assoc {} :symbol % :suffix (suffix %) :prefix (prefix %))
-         (set (persistent! syms)))))
+         (set @syms))))
 
 (defn- remove-unused-requires [symbols-in-use libspecs]
   (map (partial remove-unused-syms-and-specs symbols-in-use) libspecs))
 
 (defn- used-symbols-from-refer [libspecs symbols-used-in-macros]
-  (let [referred (set (remove nil? (mapcat get-referred-symbols libspecs)))
-        referred-in-use (transient [])]
+  (let [referred (set (remove nil? (mapcat get-referred-symbols libspecs)))]
     (filter #(referred (symbol (:suffix %))) symbols-used-in-macros)))
 
 (defn- filter-imports [imports symbols-used]
@@ -165,17 +164,17 @@
      :alias (when (prefix sym) sym)}))
 
 (defn- get-classes-used-in-typehints [file-content]
-  (let [rdr (PushbackReader. ^StringReader (StringReader. (file-content-sans-ns file-content)))
+  (let [rdr (PushbackReader. (StringReader. (file-content-sans-ns file-content)))
         content (file-content-sans-ns file-content)
-        types (transient [])
+        types (atom [])
         conj-type (fn [form]
-                    (when-let [t (:tag (meta form))] (conj! types (str t)))
+                    (when-let [t (:tag (meta form))] (swap! types conj (str t)))
                     form)]
     (loop [form (read rdr nil :eof)]
       (when (not= form :eof)
         (walk/prewalk conj-type form)
         (recur (read rdr nil :eof))))
-    (set (persistent! types))))
+    (set @types)))
 
 (defn extract-dependencies [path ns-form]
   (let [libspecs (get-libspecs ns-form)
