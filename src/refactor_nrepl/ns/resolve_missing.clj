@@ -23,8 +23,16 @@
   [candidates]
   (map #(list % (get-type %)) candidates))
 
+(defn- inlined-dependency? [candidate]
+  (-> candidate str (.startsWith "deps.")))
+
 (defn resolve-missing [{sym :symbol}]
   (when-not (and sym (string? sym) (seq sym))
     (throw (IllegalArgumentException.
             (str "Invalid input to resolve missing: '" sym "'"))))
-  (some->> sym symbol candidates collate-type-info pr-str))
+  (some->> sym
+           symbol
+           candidates
+           (remove inlined-dependency?)
+           collate-type-info
+           pr-str))
