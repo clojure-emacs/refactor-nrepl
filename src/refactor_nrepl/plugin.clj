@@ -1,8 +1,9 @@
 (ns refactor-nrepl.plugin
   (:require [clojure.java.io :as io]))
 
-(defn- version []
-  (let [v (-> (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
+(defn version []
+  (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
+                  "project.clj")
               slurp
               read-string
               (nth 2))]

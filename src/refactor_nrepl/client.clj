@@ -174,7 +174,9 @@
     (when-not (empty? invocations)
       (->> ns-string
            str/split-lines
-           (remove-invocations invocations)
+           (remove-invocations
+            (if (string? invocations)
+              (edn/read-string invocations) invocations))
            (remove (partial = "$remove$"))
            (str/join "\n")
            (#(str % "\n"))
@@ -211,3 +213,10 @@
     (if error
       (do (println "something bad happened: " error) (first response))
       (set (map symbol unbound)))))
+
+(defn version
+  "Returns the version of the middleware"
+  [& {:keys [transport]}]
+  (let [tr (or transport @transp (reset! transp (connect)))
+        response (nrepl-message tr {:op :version})]
+    (:version (first response))))

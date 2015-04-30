@@ -8,7 +8,8 @@
              [artifacts :refer [artifact-list artifact-versions hotload-dependency]]
              [config :refer [configure]]
              [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
-             [find-unbound :refer [find-unbound-vars]]]
+             [find-unbound :refer [find-unbound-vars]]
+             [plugin :as plugin]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
              [pprint :refer [pprint-ns]]
@@ -65,6 +66,9 @@
 (defn- config-reply [{:keys [transport] :as msg}]
   (reply transport msg :status (and (configure msg) :done)))
 
+(defn- version-reply [{:keys [transport] :as msg}]
+  (reply transport msg :status :done :version (plugin/version)))
+
 (def refactor-nrepl-ops
   {"resolve-missing" resolve-missing-reply
    "find-debug-fns" find-debug-fns-reply
@@ -74,6 +78,7 @@
    "hotload-dependency" hotload-dependency-reply
    "clean-ns" clean-ns-reply
    "configure" config-reply
+   "version" version-reply
    "find-unbound" find-unbound-reply})
 
 (defn wrap-refactor
