@@ -187,6 +187,10 @@ This op requires `file` which is the name of the file to work on and well as `li
 
 Return valus `status` of `done` and `unbound` which is a  list of unbound vars, or `error` when something went wrong.
 
+### version
+
+This op returns, `version`, which is the current version of this project.
+
 ### Errors
 
 The middleware returns errors under one of two keys: `:error` or
@@ -233,12 +237,14 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 ## Changelog
 
+* add 'version' op, which returns the current version of refactor-nrepl to the client.
+
 ### 1.0.4
 
-* fix for clean-ns removes import only macro
-* fix for clean-ns removes classes used in typehints
-* workaround for analyzer bug (fix not yet released) which results in wrong filename in var meta (messed with source info in cider)
-* fix for find unbound edge cases
+* fix for clean-ns removing import only used in macro
+* fix for clean-ns removes classes used only in typehints
+* workaround for analyzer bug which results in wrong filename in var meta
+* fix for find-unbound edge cases
 
 ### 1.0.3
 

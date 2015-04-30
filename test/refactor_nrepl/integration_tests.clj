@@ -4,7 +4,8 @@
             [clojure.tools.nrepl.server :as nrserver]
             [me.raynes.fs :as fs]
             [refactor-nrepl middleware
-             [client :refer :all]])
+             [client :refer :all]
+             [plugin :as plugin]])
   (:import java.io.File))
 
 (defn- create-temp-dir
@@ -223,3 +224,7 @@
         transport (connect :port 7777)]
     (is (:error (find-unbound :transport transport :file cljs-file
                               :line 12 :column 6)))))
+
+(deftest test-version
+  (is (= (str (plugin/version))
+         (version :transport (connect :port 7777)))))
