@@ -14,7 +14,7 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "1.0.4"]]
+:plugins [[refactor-nrepl "1.0.5"]]
 ```
 
 ### Clojure client
@@ -236,6 +236,8 @@ Or alternitavely run
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
 ## Changelog
+
+### 1.0.5
 
 * add 'version' op, which returns the current version of refactor-nrepl to the client.
 
