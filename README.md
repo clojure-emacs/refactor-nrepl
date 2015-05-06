@@ -191,6 +191,10 @@ Return valus `status` of `done` and `unbound` which is a  list of unbound vars, 
 
 This op returns, `version`, which is the current version of this project.
 
+### warm-ast-cache
+
+This eagerly builds, and caches, ASTs for all clojure files in the project.  Returns `status` `done` on success.
+
 ### Errors
 
 The middleware returns errors under one of two keys: `:error` or
@@ -236,6 +240,8 @@ Or alternitavely run
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
 ## Changelog
+
+* Add `warm-ast-cache` op for eagerly building, and caching, ASTs of project files
 
 ### 1.0.5
 

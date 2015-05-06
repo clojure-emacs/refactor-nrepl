@@ -3,11 +3,9 @@
   (:require [clojure.java.io :as io]
             [clojure.tools.analyzer :as ana]
             [clojure.tools.analyzer.jvm :as aj]
-            [clojure.tools.analyzer.passes :refer [schedule]]
             [clojure.tools.analyzer.jvm.utils :as ajutils]
-            [clojure.tools.analyzer.passes.emit-form :as emit-form]
-            [clojure.tools.analyzer.passes.jvm.validate :refer [validate]]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]])
+            [clojure.tools.namespace.parse :refer [read-ns-decl]]
+            [refactor-nrepl.util :as util])
   (:import java.io.PushbackReader))
 
 ;;; The structure here is {ns {content-hash ast}}
@@ -74,3 +72,7 @@
     (catch Exception ex
       (throw (IllegalStateException.
               (str (first (parse-ns file-content)) " is in a bad state!"))))))
+
+(defn warm-ast-cache []
+  (doseq [f (util/list-project-clj-files ".")]
+    (ns-ast (slurp f))))
