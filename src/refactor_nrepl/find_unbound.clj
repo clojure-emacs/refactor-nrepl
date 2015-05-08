@@ -12,14 +12,14 @@
   (throw-unless-clj-file file)
   (let [content (slurp file)
         ast (ns-ast content)
-        sexp (sexp-at-point content line column)
+        sexp (get-enclosing-sexp content line column)
         selected-sexp-node (->> ast
-                                 (top-level-form-index line column)
-                                 (nth ast)
-                                 nodes
-                                 (filter (partial node-at-loc? line column))
-                                 (filter (partial node-for-sexp? sexp))
-                                 last)]
+                                (top-level-form-index line column)
+                                (nth ast)
+                                nodes
+                                (filter (partial node-at-loc? line column))
+                                (filter (partial node-for-sexp? sexp))
+                                last)]
     (into '() (set/intersection (->> selected-sexp-node :env :locals keys set)
                                 (->> selected-sexp-node
                                      nodes
