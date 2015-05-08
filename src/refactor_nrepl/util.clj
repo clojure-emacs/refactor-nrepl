@@ -3,7 +3,8 @@
             [clojure.tools.analyzer.ast :refer :all]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.string :as str])
-  (:import java.io.PushbackReader))
+  (:import java.io.PushbackReader
+           java.util.regex.Pattern))
 
 (defn alias-info [full-ast]
   (-> full-ast first :alias-info))
@@ -35,42 +36,95 @@
     (throw (IllegalArgumentException.
             "Refactor nrepl doesn't work on cljs or cljx files!"))))
 
-(defn search-backward-start-sexp [s]
-  (let [sexp-start (->> s reverse (drop-while (complement #{\[ \{ \(})))
-        pos (-> sexp-start count dec)]
-    (if (= \# (second sexp-start))
-      (dec pos)
-      pos)))
-
 (defn- read-first-form [form]
   (let [f-string (str form)]
     (when (some #{\) \} \]} f-string)
       (binding [*read-eval* false]
         (-> f-string
-            read-string
-            str)))))
+            read-string)))))
 
-(defn sexp-at-point
-  "Gets the s-expression containing point.
-
-  line is 1 indexed and 0 is column indexed (this is how emacs does things)."
-  [file-content line column]
-  (let [lines (str/split-lines file-content)
-        line-index (dec line)
-        char-count (->> lines
-                        (take line-index)
-                        (map count)
-                        (reduce + line-index))
-        start (->> line-index
-                   (nth lines)
-                   (take column)
-                   search-backward-start-sexp
-                   (+ char-count))]
-    (-> file-content
-        (.substring start)
-        read-first-form)))
-
-(defn node-for-sexp? [sexp node]
+(defn node-for-sexp?
+  "Is NODE the ast node for SEXP?"
+  [sexp node]
   (if-let [forms (:raw-forms node)]
-    (some #(.contains % sexp) (map read-first-form forms))
+    (some #(re-find (re-pattern (Pattern/quote (str sexp))) %)
+          (map (comp str read-first-form) forms))
     (= sexp (read-first-form (:form node)))))
+
+(defn- get-last-sexp
+  "Read and return the last sexp in FILE-CONTENT"
+  [file-content]
+  (let [open #{\( \[ \{}
+        close #{\) \] \}}]
+    ;; Reverse the remaining content of the file
+    ;; Put the last char, which is a closing delimiter, into SEXP and
+    ;; drop it from TOKS.
+    ;; Keep reading into SEXP until depth reaches 0.
+    ;; Finally reverse SEXP, turn it into a string and read the
+    ;; containing sexp.
+    (loop [sexp [(first (reverse file-content))], depth 1,
+           toks (seq (rest (reverse file-content)))]
+      (cond
+        (not (seq toks))(throw (IllegalStateException. "Unbalanced region!"))
+        (= depth 0) (let [next-token (first toks)]
+                      (if (= next-token \#)
+                        (read-string (apply str "#" (reverse sexp)))
+                        (read-string (apply str (reverse sexp)))))
+
+        (get open (first toks))
+        (recur (conj sexp (first toks)) (dec depth) (rest toks))
+
+        (get close (first toks))
+        (recur (conj sexp (first toks)) (inc depth) (rest toks))
+
+        :else
+        (recur (conj sexp (first toks)) depth (rest toks))))))
+
+(defn get-enclosing-sexp
+  "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT.
+
+  A string is not treated as a sexp by this function.
+
+  Line is indexed from 1, and column is indexed from 0 (this is how
+  emacs does it)."
+  [file-content line column]
+  (let [open #{\( \[ \{}
+        close #{\) \] \}}
+        after-point? (fn [current-line current-column]
+                       (or (and (= current-line line)
+                                (> current-column column))
+                           (> current-line line)))]
+    ;; We read everything into read-so-far until we've read up to line
+    ;; and column.
+
+    ;; Then we start keeping track of the depth and read until it reaches 0.
+    ;; Then we get-last-sexp to read out the last sexp in the content
+    ;; we've read so far.
+    (loop [current-line 1, current-column 0, depth-after-point 1
+           read-so-far [], toks (seq file-content)]
+      (cond
+        (not (seq toks)) (throw (IllegalStateException. "Unbalanced region!"))
+        (and (after-point? current-line current-column)
+             (= depth-after-point 0))
+        (get-last-sexp read-so-far)
+
+        (get open (first toks))
+        (if (after-point? current-line current-column)
+          (recur current-line (inc current-column) (inc depth-after-point)
+                 (conj read-so-far (first toks)) (rest toks))
+          (recur current-line (inc current-column) depth-after-point
+                 (conj read-so-far (first toks)) (rest toks)))
+
+        (get close (first toks))
+        (if (after-point? current-line current-column)
+          (recur current-line (inc current-column) (dec depth-after-point)
+                 (conj read-so-far (first toks)) (rest toks))
+          (recur current-line (inc current-column) depth-after-point
+                 (conj read-so-far (first toks)) (rest toks)))
+
+        (= (first toks) \newline)
+        (recur (inc current-line) 0 depth-after-point
+               (conj read-so-far (first toks)) (rest toks))
+
+        :else (recur current-line (inc current-column) depth-after-point
+                     (conj read-so-far (first toks)) (rest toks))))))
