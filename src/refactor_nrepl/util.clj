@@ -50,8 +50,12 @@
             read-string
             str)))))
 
-(defn sexp-at-point [cont line column]
-  (let [lines (str/split-lines cont)
+(defn sexp-at-point
+  "Gets the s-expression containing point.
+
+  line is 1 indexed and 0 is column indexed (this is how emacs does things)."
+  [file-content line column]
+  (let [lines (str/split-lines file-content)
         line-index (dec line)
         char-count (->> lines
                         (take line-index)
@@ -62,7 +66,7 @@
                    (take column)
                    search-backward-start-sexp
                    (+ char-count))]
-    (-> cont
+    (-> file-content
         (.substring start)
         read-first-form)))
 
