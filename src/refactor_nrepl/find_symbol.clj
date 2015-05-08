@@ -75,7 +75,8 @@
          str/split-lines
          (drop line-index)
          (take (- eline line-index))
-         (str/join "\n"))))
+         (str/join "\n")
+         str/trim)))
 
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
