@@ -46,10 +46,11 @@
 (defn node-for-sexp?
   "Is NODE the ast node for SEXP?"
   [sexp node]
-  (if-let [forms (:raw-forms node)]
-    (some #(re-find (re-pattern (Pattern/quote (str sexp))) %)
-          (map (comp str read-first-form) forms))
-    (= sexp (read-first-form (:form node)))))
+  (let [sexp-sans-comments-and-meta (read-string sexp)
+        pattern (re-pattern (Pattern/quote (str sexp-sans-comments-and-meta)))]
+    (if-let [forms (:raw-forms node)]
+      (some #(re-find pattern %) (map (comp str read-first-form) forms))
+      (= sexp-sans-comments-and-meta (read-first-form (:form node))))))
 
 (defn- get-last-sexp
   "Read and return the last sexp in FILE-CONTENT"
@@ -68,8 +69,8 @@
         (not (seq toks))(throw (IllegalStateException. "Unbalanced region!"))
         (= depth 0) (let [next-token (first toks)]
                       (if (= next-token \#)
-                        (read-string (apply str "#" (reverse sexp)))
-                        (read-string (apply str (reverse sexp)))))
+                        (apply str "#" (reverse sexp))
+                        (apply str (reverse sexp))))
 
         (get open (first toks))
         (recur (conj sexp (first toks)) (dec depth) (rest toks))

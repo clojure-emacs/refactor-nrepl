@@ -4,4 +4,5 @@
   (let [some :bindings
         more :bindings]
     (println #{some}
+             ;; helpful comment
              (prn {"foo" {:qux [#{more}]}}))))
