@@ -10,7 +10,8 @@
              [config :refer [configure]]
              [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
              [find-unbound :refer [find-unbound-vars]]
-             [plugin :as plugin]]
+             [plugin :as plugin]
+             [stubs-for-interface :refer [stubs-for-interface]]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
              [pprint :refer [pprint-ns]]
@@ -73,6 +74,10 @@
 (defn- warm-ast-cache-reply [{:keys [transport] :as msg}]
   (reply transport msg :status (do (warm-ast-cache) :done)))
 
+(defn- stubs-for-interface-reply [{:keys [transport] :as msg}]
+  (reply transport msg :status :done
+         :functions (pr-str (stubs-for-interface msg))))
+
 (def refactor-nrepl-ops
   {"resolve-missing" resolve-missing-reply
    "find-debug-fns" find-debug-fns-reply
@@ -84,7 +89,8 @@
    "configure" config-reply
    "version" version-reply
    "warm-ast-cache" warm-ast-cache-reply
-   "find-unbound" find-unbound-reply})
+   "find-unbound" find-unbound-reply
+   "stubs-for-interface" stubs-for-interface-reply})
 
 (defn wrap-refactor
   [handler]

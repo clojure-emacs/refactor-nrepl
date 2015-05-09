@@ -187,6 +187,21 @@ This op requires `file` which is the name of the file to work on and well as `li
 
 Return valus `status` of `done` and `unbound` which is a  list of unbound vars, or `error` when something went wrong.
 
+### stubs-for-interface
+
+`stubs-for-interface` takes a single input `interface` which is a fully qualified symbol which resolves to either an interface or protocol.
+
+The return value is `edn` and looks like this:
+
+```clj
+user> (stubs-for-interface {:interface "java.lang.Iterable"})
+({:parameter-list "[^java.util.function.Consumer arg0]", :name "forEach"}
+ {:parameter-list "[]", :name "iterator"}
+ {:parameter-list "[]", :name "spliterator"})
+```
+
+The intended use-case for `stubs-for-interface` is to provide enough info to create skeleton implementations when implementing e.g. an interface in a defrecord.
+
 ### version
 
 This op returns, `version`, which is the current version of this project.
@@ -231,7 +246,7 @@ to clojars:
 
 `lein with-profile plugin.mranderson/config deploy clojars`
 
-Or alternitavely run
+Or alternatively run
 
 `./build.sh install`
 
@@ -241,6 +256,7 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 ## Changelog
 
+* Add `stubs-for-interface` for creating skeleton interface implementations
 * Add `warm-ast-cache` op for eagerly building, and caching, ASTs of project files
 
 ### 1.0.5
