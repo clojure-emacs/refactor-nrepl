@@ -2,7 +2,8 @@
   (:require [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [clojure.tools.analyzer.ast :refer :all]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [clojure.string :as str])
+            [clojure.string :as str]
+            [clojure.set :as set])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
 
@@ -43,25 +44,27 @@
   ([pred s]
    (let [open #{\[ \{ \(}
          close #{\] \} \)}]
-     (loop [chars s
-            cnt 0
-            op-cl 0
-            ready false]
-       (let [[ch & rest-chars] chars]
-         (cond (and ready (pred op-cl))
-               (if (and (= (nth s cnt) \#)
-                        (= (nth s (dec cnt) \{)))
-                 (inc cnt)
-                 cnt)
+     (if (some (set/union open close) s)
+       (loop [chars s
+              cnt 0
+              op-cl 0
+              ready false]
+         (let [[ch & rest-chars] chars]
+           (cond (and ready (pred op-cl))
+                 (if (and (= (nth s cnt) \#)
+                          (= (nth s (dec cnt) \{)))
+                   (inc cnt)
+                   cnt)
 
-               (open ch)
-               (recur rest-chars (inc cnt) (inc op-cl) true)
+                 (open ch)
+                 (recur rest-chars (inc cnt) (inc op-cl) true)
 
-               (close ch)
-               (recur rest-chars (inc cnt) (dec op-cl) true)
+                 (close ch)
+                 (recur rest-chars (inc cnt) (dec op-cl) true)
 
-               :else
-               (recur rest-chars (inc cnt) op-cl ready)))))))
+                 :else
+                 (recur rest-chars (inc cnt) op-cl ready))))
+       0))))
 
 (defn- read-first-form [form]
   (let [f-string (str form)]
