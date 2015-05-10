@@ -36,50 +36,38 @@
     (throw (IllegalArgumentException.
             "Refactor nrepl doesn't work on cljs or cljx files!"))))
 
+(defn- search-sexp-boundary
+  "Searches sexp open or close of depth depending on the passed in pred.
+
+   If search is to be done backwards pass the string in reversed."
+  ([pred s]
+   (let [open #{\[ \{ \(}
+         close #{\] \} \)}]
+     (loop [chars s
+            cnt 0
+            op-cl 0
+            ready false]
+       (let [[ch & rest-chars] chars]
+         (cond (and ready (pred op-cl))
+               (if (and (= (nth s cnt) \#)
+                        (= (nth s (dec cnt) \{)))
+                 (inc cnt)
+                 cnt)
+
+               (open ch)
+               (recur rest-chars (inc cnt) (inc op-cl) true)
+
+               (close ch)
+               (recur rest-chars (inc cnt) (dec op-cl) true)
+
+               :else
+               (recur rest-chars (inc cnt) op-cl ready)))))))
+
 (defn- read-first-form [form]
   (let [f-string (str form)]
     (when (some #{\) \} \]} f-string)
-      (binding [*read-eval* false]
-        (-> f-string
-            read-string)))))
-
-(defn node-for-sexp?
-  "Is NODE the ast node for SEXP?"
-  [sexp node]
-  (let [sexp-sans-comments-and-meta (read-string sexp)
-        pattern (re-pattern (Pattern/quote (str sexp-sans-comments-and-meta)))]
-    (if-let [forms (:raw-forms node)]
-      (some #(re-find pattern %) (map (comp str read-first-form) forms))
-      (= sexp-sans-comments-and-meta (read-first-form (:form node))))))
-
-(defn- get-last-sexp
-  "Read and return the last sexp in FILE-CONTENT"
-  [file-content]
-  (let [open #{\( \[ \{}
-        close #{\) \] \}}]
-    ;; Reverse the remaining content of the file
-    ;; Put the last char, which is a closing delimiter, into SEXP and
-    ;; drop it from TOKS.
-    ;; Keep reading into SEXP until depth reaches 0.
-    ;; Finally reverse SEXP, turn it into a string and read the
-    ;; containing sexp.
-    (loop [sexp [(first (reverse file-content))], depth 1,
-           toks (seq (rest (reverse file-content)))]
-      (cond
-        (not (seq toks))(throw (IllegalStateException. "Unbalanced region!"))
-        (= depth 0) (let [next-token (first toks)]
-                      (if (= next-token \#)
-                        (apply str "#" (reverse sexp))
-                        (apply str (reverse sexp))))
-
-        (get open (first toks))
-        (recur (conj sexp (first toks)) (dec depth) (rest toks))
-
-        (get close (first toks))
-        (recur (conj sexp (first toks)) (inc depth) (rest toks))
-
-        :else
-        (recur (conj sexp (first toks)) depth (rest toks))))))
+      (-> f-string
+          read-string))))
 
 (defn get-enclosing-sexp
   "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT.
@@ -89,43 +77,31 @@
   Line is indexed from 1, and column is indexed from 0 (this is how
   emacs does it)."
   [file-content line column]
-  (let [open #{\( \[ \{}
-        close #{\) \] \}}
-        after-point? (fn [current-line current-column]
-                       (or (and (= current-line line)
-                                (> current-column column))
-                           (> current-line line)))]
-    ;; We read everything into read-so-far until we've read up to line
-    ;; and column.
+  (let [lines (str/split-lines file-content)
+        line-index (dec line)
+        char-count-for-lines (->> lines
+                                  (take line-index)
+                                  (map count)
+                                  (reduce + line-index))
+        content-to-point (-> char-count-for-lines
+                             (+ column)
+                             (take file-content))
+        sexp-start (->> content-to-point
+                        reverse
+                        (search-sexp-boundary (partial < 0))
+                        (- (count content-to-point)))
+        content-from-sexp (.substring file-content sexp-start)
+        sexp-end (+ sexp-start
+                    (->> content-from-sexp
+                         (search-sexp-boundary (partial = 0))))]
+    (.substring file-content sexp-start sexp-end)))
 
-    ;; Then we start keeping track of the depth and read until it reaches 0.
-    ;; Then we get-last-sexp to read out the last sexp in the content
-    ;; we've read so far.
-    (loop [current-line 1, current-column 0, depth-after-point 1
-           read-so-far [], toks (seq file-content)]
-      (cond
-        (not (seq toks)) (throw (IllegalStateException. "Unbalanced region!"))
-        (and (after-point? current-line current-column)
-             (= depth-after-point 0))
-        (get-last-sexp read-so-far)
-
-        (get open (first toks))
-        (if (after-point? current-line current-column)
-          (recur current-line (inc current-column) (inc depth-after-point)
-                 (conj read-so-far (first toks)) (rest toks))
-          (recur current-line (inc current-column) depth-after-point
-                 (conj read-so-far (first toks)) (rest toks)))
-
-        (get close (first toks))
-        (if (after-point? current-line current-column)
-          (recur current-line (inc current-column) (dec depth-after-point)
-                 (conj read-so-far (first toks)) (rest toks))
-          (recur current-line (inc current-column) depth-after-point
-                 (conj read-so-far (first toks)) (rest toks)))
-
-        (= (first toks) \newline)
-        (recur (inc current-line) 0 depth-after-point
-               (conj read-so-far (first toks)) (rest toks))
-
-        :else (recur current-line (inc current-column) depth-after-point
-                     (conj read-so-far (first toks)) (rest toks))))))
+(defn node-for-sexp?
+  "Is NODE the ast node for SEXP?"
+  [sexp node]
+  (binding [*read-eval* false]
+    (let [sexp-sans-comments-and-meta (read-string sexp)
+          pattern (re-pattern (Pattern/quote (str sexp-sans-comments-and-meta)))]
+      (if-let [forms (:raw-forms node)]
+        (some #(re-find pattern %) (map (comp str read-first-form) forms))
+        (= sexp-sans-comments-and-meta (read-first-form (:form node)))))))
