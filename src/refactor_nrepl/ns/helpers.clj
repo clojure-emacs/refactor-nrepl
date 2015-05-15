@@ -43,9 +43,14 @@ type is either :require, :use or :import"
   "java.util.Date -> Date
   clojure.core/str -> str"
   [fully-qualified-name]
-  (if (re-find #"/" (str fully-qualified-name))
+  (cond
+    (= "/" (str fully-qualified-name))
+    fully-qualified-name
+
+    (re-find #"/" (str fully-qualified-name))
     (-> fully-qualified-name str (.split "/") last)
-    (-> fully-qualified-name str (.split "\\.") last)))
+
+    :else (-> fully-qualified-name str (.split "\\.") last)))
 
 (defn read-ns-form
   [path]

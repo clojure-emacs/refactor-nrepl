@@ -151,7 +151,7 @@
 
 (defn- used-symbols-from-refer [libspecs symbols-used-in-macros]
   (let [referred (set (remove nil? (mapcat get-referred-symbols libspecs)))]
-    (filter #(and (:suffix %) (referred (symbol (:suffix %)))) symbols-used-in-macros)))
+    (filter #(referred (symbol (:suffix %))) symbols-used-in-macros)))
 
 (defn- filter-imports [imports symbols-used]
   (let [used (set symbols-used)]
