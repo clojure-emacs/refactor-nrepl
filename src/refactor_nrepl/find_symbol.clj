@@ -1,9 +1,9 @@
 (ns refactor-nrepl.find-symbol
   (:require [clojure.string :as str]
-            [clojure.tools.analyzer.ast :refer :all]
+            [clojure.tools.analyzer.ast :refer [nodes]]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
-             [util :refer :all]]))
+             [util :as util]]))
 
 (defn- node->var [alias-info node]
   (let [class (or (:class node)
@@ -38,7 +38,7 @@
   "Finds fn invokes in the AST.
   Returns a list of line, end-line, column, end-column and fn name tuples"
   [ast fn-names]
-  (find-nodes ast (partial fns-invoked? (into #{} (str/split fn-names #",")) (alias-info ast))))
+  (find-nodes ast (partial fns-invoked? (into #{} (str/split fn-names #",")) (util/alias-info ast))))
 
 (defn- contains-var [var-name alias-info node]
   (contains-var? #{var-name} alias-info node))
@@ -65,7 +65,7 @@
 
 (defn- find-symbol-in-ast [name ast]
   (when ast
-    (find-nodes ast (partial contains-var-or-const? name (alias-info ast)))))
+    (find-nodes ast (partial contains-var-or-const? name (util/alias-info ast)))))
 
 (defn- match [file-content line end-line]
   (let [line-index (dec line)
@@ -89,12 +89,12 @@
 
 (defn- find-global-symbol [file ns var-name clj-dir]
   (let [dir (or clj-dir ".")
-        namespace (or ns (ns-from-string (slurp file)))
+        namespace (or ns (util/ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
                                var-name
                                (str/join "/" [namespace var-name]))]
     (->> dir
-         list-project-clj-files
+         util/list-project-clj-files
          (mapcat (partial find-symbol-in-file fully-qualified-name))
          (map identity))))
 
@@ -111,19 +111,19 @@
          (not-empty file)]}
   (let [ns-string (slurp file)
         ast (ns-ast ns-string)]
-    (when-let [form-index (top-level-form-index line column ast)]
+    (when-let [form-index (util/top-level-form-index line column ast)]
       (let [top-level-form-ast (nth ast form-index)
             local-var-name (->> top-level-form-ast
                                 nodes
                                 (filter #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))
-                                (filter (partial node-at-loc? line column))
+                                (filter (partial util/node-at-loc? line column))
                                 first
                                 :name)]
         (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
              (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
 
 (defn find-symbol [{:keys [file ns name dir line column]}]
-  (throw-unless-clj-file file)
+  (util/throw-unless-clj-file file)
   (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name line column)))
       (find-global-symbol file ns name dir)))
 
