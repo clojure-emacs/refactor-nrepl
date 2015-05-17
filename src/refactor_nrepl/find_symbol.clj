@@ -99,8 +99,7 @@
         fully-qualified-name (if (= namespace "clojure.core")
                                var-name
                                (str/join "/" [namespace var-name]))]
-    (->> dir
-         util/list-project-clj-files
+    (->> (util/list-project-clj-files dir)
          (mapcat (partial find-symbol-in-file fully-qualified-name))
          (map identity))))
 
