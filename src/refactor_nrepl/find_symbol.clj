@@ -72,7 +72,7 @@
                          name
                          (util/alias-info ast)))))
 
-(defn- match [file-content line end-line]
+(defn- find-context [file-content line end-line]
   (let [line-index (dec line)
         eline (if (number? end-line) end-line line)]
     (->> file-content
@@ -82,14 +82,14 @@
          (str/join "\n")
          str/trim)))
 
-(defn provide-context
+(defn add-context
   [loc-info file content]
   (let [file (if (.isFile file) file (java.io.File. file))]
     (conj loc-info
           (.getCanonicalPath file)
-          (match content
-                 (first loc-info)
-                 (second loc-info)))))
+          (find-context content
+                        (first loc-info)
+                        (second loc-info)))))
 
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
@@ -97,7 +97,7 @@
                   (find-symbol-in-ast fully-qualified-name)
                   (filter first))]
     (when (seq locs)
-      (map #(provide-context % file file-content)
+      (map #(add-context % file file-content)
            locs))))
 
 (defn- find-global-symbol [file ns var-name clj-dir]
@@ -135,7 +135,7 @@
                                 (filter (partial util/node-at-loc? line column))
                                 first
                                 :name)]
-        (map #(provide-context (vec (take 4 %)) file file-content)
+        (map #(add-context (vec (take 4 %)) file file-content)
              (find-nodes [top-level-form-ast]
                          #(local-node-match? % local-var-name :name)))))))
 
