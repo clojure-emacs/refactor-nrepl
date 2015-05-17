@@ -5,7 +5,10 @@
              [analyzer :refer [ns-ast]]
              [util :as util]]))
 
-(defn- node->var [alias-info node]
+(defn- node->var
+  "Returns a fully qualified symbol for vars other those from clojure.core, for
+  which the non-qualified name is returned."
+  [alias-info node]
   (let [class (or (:class node)
                   (-> (str (:var node))
                       (str/replace "#'" "")
