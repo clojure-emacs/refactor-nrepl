@@ -38,7 +38,8 @@
   "Finds fn invokes in the AST.
   Returns a list of line, end-line, column, end-column and fn name tuples"
   [ast fn-names]
-  (find-nodes ast (partial fns-invoked? (into #{} (str/split fn-names #",")) (util/alias-info ast))))
+  (let [fn-set (into #{} (str/split fn-names #","))]
+    (find-nodes ast (partial fns-invoked? fn-set (util/alias-info ast)))))
 
 (defn- contains-var [var-name alias-info node]
   (contains-var? #{var-name} alias-info node))
