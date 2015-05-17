@@ -65,7 +65,10 @@
 
 (defn- find-symbol-in-ast [name ast]
   (when ast
-    (find-nodes ast (partial contains-var-or-const? name (util/alias-info ast)))))
+    (find-nodes ast
+                (partial contains-var-or-const?
+                         name
+                         (util/alias-info ast)))))
 
 (defn- match [file-content line end-line]
   (let [line-index (dec line)
