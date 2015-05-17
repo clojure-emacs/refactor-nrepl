@@ -26,7 +26,11 @@
 (defn- contains-var? [var-name alias-info node]
   (var-name (node->var alias-info node)))
 
-(defn- find-nodes [ast pred]
+(defn- find-nodes
+  "Filters `ast` with `pred` and returns a list of vectors with line-beg, line-end,
+  colum-beg, column-end and the result of applying pred to the node for each
+  node in the AST."
+  [ast pred]
   (->> (mapcat nodes ast)
        (filter pred)
        (map (juxt (comp :line :env)
