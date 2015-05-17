@@ -17,6 +17,7 @@
     (str/join "/" (remove nil? [full-class (:field node)]))))
 
 (defn- fns-invoked?
+  "Checks if `node` is a function-call present in `fn-set`."
   [fn-set alias-info node]
   (and (= :invoke (:op node))
        (contains? fn-set
