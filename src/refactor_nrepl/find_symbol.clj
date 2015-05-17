@@ -13,12 +13,11 @@
         full-class (get alias-info class class)]
     (str/join "/" (remove nil? [full-class (:field node)]))))
 
-(defn- fn-invoked [alias-info node]
-  (node->var alias-info (:fn node)))
-
-(defn- fns-invoked? [fns alias-info node]
+(defn- fns-invoked?
+  [fn-set alias-info node]
   (and (= :invoke (:op node))
-       (fns (fn-invoked alias-info node))))
+       (contains? fn-set
+                  (node->var alias-info (:fn node)))))
 
 (defn- contains-var? [var-name alias-info node]
   (var-name (node->var alias-info node)))
