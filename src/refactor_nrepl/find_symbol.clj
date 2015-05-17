@@ -82,13 +82,16 @@
 
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
-        locs (->> file-content
-                  ns-ast
+        locs (->> (ns-ast file-content)
                   (find-symbol-in-ast fully-qualified-name)
-                  (filter #(first %)))]
-    (when-not (empty? locs)
-      (map #(conj % (.getCanonicalPath file) (match file-content (first %) (second %)))
-           locs))))
+                  (filter first))
+        gather (fn [info]
+                 (into info
+                       [(.getCanonicalName file)
+                        (match file-content
+                               (first info)
+                               (second info))]))]
+    (when (seq locs) (map gather locs))))
 
 (defn- find-global-symbol [file ns var-name clj-dir]
   (let [dir (or clj-dir ".")
