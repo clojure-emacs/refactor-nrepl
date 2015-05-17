@@ -16,13 +16,6 @@
         full-class (get alias-info class class)]
     (str/join "/" (remove nil? [full-class (:field node)]))))
 
-(defn- fns-invoked?
-  "Checks if `node` is a function-call present in `fn-set`."
-  [fn-set alias-info node]
-  (and (= :invoke (:op node))
-       (contains? fn-set
-                  (node->var alias-info (:fn node)))))
-
 (defn- contains-var?
   [var-set alias-info node]
   (contains? var-set (node->var alias-info node)))
@@ -44,8 +37,13 @@
   "Finds fn invokes in the AST.
   Returns a list of line, end-line, column, end-column and fn name tuples"
   [ast fn-names]
-  (let [fn-set (into #{} (str/split fn-names #","))]
-    (find-nodes ast (partial fns-invoked? fn-set (util/alias-info ast)))))
+  (let [fns (into #{} (str/split fn-names #","))
+        fns-invoked? (every-pred
+                      (comp (partial = :invoke) :op)
+                      (partial contains-var?
+                               fns
+                               (util/alias-info ast)))]
+    (find-nodes ast fns-invoked?)))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
 
