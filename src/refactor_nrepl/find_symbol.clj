@@ -47,9 +47,6 @@
   (let [fn-set (into #{} (str/split fn-names #","))]
     (find-nodes ast (partial fns-invoked? fn-set (util/alias-info ast)))))
 
-(defn- contains-var [var-name alias-info node]
-  (contains-var? #{var-name} alias-info node))
-
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
 
 (defn- contains-const?
@@ -66,7 +63,7 @@
          var-name)))
 
 (defn- contains-var-or-const? [var-name alias-info node]
-  (or (contains-var var-name alias-info node)
+  (or (contains-var? #{var-name} alias-info node)
       (contains-const? var-name alias-info node)))
 
 (defn- find-symbol-in-ast [name ast]
