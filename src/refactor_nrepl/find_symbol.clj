@@ -87,7 +87,7 @@
                   (filter first))
         gather (fn [info]
                  (into info
-                       [(.getCanonicalName file)
+                       [(.getCanonicalPath file)
                         (match file-content
                                (first info)
                                (second info))]))]
