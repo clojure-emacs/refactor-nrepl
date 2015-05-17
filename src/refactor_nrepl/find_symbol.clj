@@ -24,9 +24,7 @@
   (var-name (node->var alias-info node)))
 
 (defn- find-nodes [ast pred]
-  (->> ast
-       (map nodes)
-       flatten
+  (->> (mapcat nodes ast)
        (filter pred)
        (map (juxt (comp :line :env)
                   (comp :end-line :env)
