@@ -23,8 +23,9 @@
        (contains? fn-set
                   (node->var alias-info (:fn node)))))
 
-(defn- contains-var? [var-name alias-info node]
-  (var-name (node->var alias-info node)))
+(defn- contains-var?
+  [var-set alias-info node]
+  (contains? var-set (node->var alias-info node)))
 
 (defn- find-nodes
   "Filters `ast` with `pred` and returns a list of vectors with line-beg, line-end,
