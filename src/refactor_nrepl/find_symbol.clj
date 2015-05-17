@@ -112,7 +112,7 @@
 
 (defn- local-node-match? [node var-name kw]
   (and (#{:local :binding} (:op node))
-       (= var-name (str (kw node)))
+       (= var-name (str (get node kw)))
        (:local node)))
 
 (defn- find-local-symbol
