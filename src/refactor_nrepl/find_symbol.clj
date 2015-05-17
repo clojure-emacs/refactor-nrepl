@@ -80,18 +80,23 @@
          (str/join "\n")
          str/trim)))
 
+(defn provide-context
+  [loc-info file content]
+  (let [file (if (.isFile file) file (java.io.File. file))]
+    (conj loc-info
+          (.getCanonicalPath file)
+          (match content
+                 (first loc-info)
+                 (second loc-info)))))
+
 (defn- find-symbol-in-file [fully-qualified-name file]
   (let [file-content (slurp file)
         locs (->> (ns-ast file-content)
                   (find-symbol-in-ast fully-qualified-name)
-                  (filter first))
-        gather (fn [info]
-                 (into info
-                       [(.getCanonicalPath file)
-                        (match file-content
-                               (first info)
-                               (second info))]))]
-    (when (seq locs) (map gather locs))))
+                  (filter first))]
+    (when (seq locs)
+      (map #(provide-context % file file-content)
+           locs))))
 
 (defn- find-global-symbol [file ns var-name clj-dir]
   (let [dir (or clj-dir ".")
@@ -102,6 +107,11 @@
     (->> (util/list-project-clj-files dir)
          (mapcat (partial find-symbol-in-file fully-qualified-name))
          (map identity))))
+
+(defn- local-node-match? [node var-name kw]
+  (and (#{:local :binding} (:op node))
+       (= var-name (str (kw node)))
+       (:local node)))
 
 (defn- find-local-symbol
   "Find local symbol occurrences
@@ -114,18 +124,18 @@
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
-  (let [ns-string (slurp file)
-        ast (ns-ast ns-string)]
+  (let [file-content (slurp file)
+        ast (ns-ast file-content)]
     (when-let [form-index (util/top-level-form-index line column ast)]
       (let [top-level-form-ast (nth ast form-index)
-            local-var-name (->> top-level-form-ast
-                                nodes
-                                (filter #(and (#{:local :binding} (:op %)) (= var-name (-> % :form str)) (:local %)))
+            local-var-name (->> (nodes top-level-form-ast)
+                                (filter #(local-node-match? % var-name :form))
                                 (filter (partial util/node-at-loc? line column))
                                 first
                                 :name)]
-        (->> (find-nodes [top-level-form-ast] #(and (#{:local :binding} (:op %)) (= local-var-name (-> % :name)) (:local %)))
-             (map #(conj (vec (take 4 %)) var-name (.getCanonicalPath (java.io.File. file)) (match ns-string (first %) (second %)))))))))
+        (map #(provide-context (vec (take 4 %)) file file-content)
+             (find-nodes [top-level-form-ast]
+                         #(local-node-match? % local-var-name :name)))))))
 
 (defn find-symbol [{:keys [file ns name dir line column]}]
   (util/throw-unless-clj-file file)
