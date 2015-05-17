@@ -6,11 +6,10 @@
              [util :refer :all]]))
 
 (defn- node->var [alias-info node]
-  (let [class (or (:class node) (-> node
-                                    :var
-                                    str
-                                    (str/replace "#'" "")
-                                    (str/replace "clojure.core/" "")))
+  (let [class (or (:class node)
+                  (-> (str (:var node))
+                      (str/replace "#'" "")
+                      (str/replace "clojure.core/" "")))
         full-class (get alias-info class class)]
     (str/join "/" (remove nil? [full-class (:field node)]))))
 
