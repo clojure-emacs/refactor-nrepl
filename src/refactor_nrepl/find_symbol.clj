@@ -17,6 +17,7 @@
     (str/join "/" (remove nil? [full-class (:field node)]))))
 
 (defn- contains-var?
+  "Checks if the var of `node` is present in the `var-set`."
   [var-set alias-info node]
   (contains? var-set (node->var alias-info node)))
 
