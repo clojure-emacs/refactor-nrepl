@@ -139,7 +139,8 @@
 
 (defn find-symbol [{:keys [file ns name dir line column]}]
   (util/throw-unless-clj-file file)
-  (or (when (and file (not-empty file)) (not-empty (find-local-symbol file name line column)))
+  (or (when (and file (not-empty file))
+        (not-empty (find-local-symbol file name line column)))
       (find-global-symbol file ns name dir)))
 
 (defn create-result-alist
