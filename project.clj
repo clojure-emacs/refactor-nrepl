@@ -20,7 +20,8 @@
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta3"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
-                   :dependencies [[me.raynes/fs "1.4.6"]]
+                   :dependencies [[org.clojure/clojure "1.7.0-beta3"]
+                                  [me.raynes/fs "1.4.6"]]
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
                                     "test/resources/testproject/src"]
