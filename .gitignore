@@ -15,3 +15,5 @@ pom.xml.asc
 \#*\#
 .\#*
 install.cmd
+/install.sh
+/deploy.sh

@@ -202,6 +202,32 @@ user> (stubs-for-interface {:interface "java.lang.Iterable"})
 
 The intended use-case for `stubs-for-interface` is to provide enough info to create skeleton implementations when implementing e.g. an interface in a defrecord.
 
+### extract-definition
+
+`extract-definition` is based on `find-symbol` so it takes the same input values.  The return value, `definition` is a string of edn which looks like this:
+
+```clj
+{:definition {:line-beg 4
+              :line-end 4
+              :col-beg 9
+              :col-end 21
+              :name \"another-val\"
+              :file \"core.clj\"
+              :match \"(let [another-val 321]\"
+                            :definition \"321\"}
+ :occurrences ({:match \"(println my-constant my-constant another-val)))\"
+                :file \"core.clj\"
+                :name \"another-val\"
+                :col-end 50
+                :col-beg 38
+                :line-end 5
+                :line-beg 5})}
+```
+
+The key `:definition` contains information about the defining form, so the client can delete it.
+
+The key `:occurrences` is a seq of all occurrences of the symbol which need to be inlined.  This means the definition itself is excluded to avoid any special handling by the client.
+
 ### version
 
 This op returns, `version`, which is the current version of this project.
@@ -256,6 +282,7 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 ## Changelog
 
+* Add `extract-definition` which returns enough information to the clien to afford inlining of defs defns and let-bound vars.
 * Add `stubs-for-interface` for creating skeleton interface implementations
 * Add `warm-ast-cache` op for eagerly building, and caching, ASTs of project files
 

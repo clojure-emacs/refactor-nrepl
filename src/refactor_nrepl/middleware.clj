@@ -8,6 +8,7 @@
              [analyzer :refer [warm-ast-cache]]
              [artifacts :refer [artifact-list artifact-versions hotload-dependency]]
              [config :refer [configure]]
+             [extract-definition :refer [extract-definition]]
              [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
              [find-unbound :refer [find-unbound-vars]]
              [plugin :as plugin]
@@ -78,6 +79,9 @@
   (reply transport msg :status :done
          :functions (pr-str (stubs-for-interface msg))))
 
+(defn- extract-definition-reply [{:keys [transport] :as msg}]
+  (reply transport msg :status :done :definition (pr-str (extract-definition msg))))
+
 (def refactor-nrepl-ops
   {"resolve-missing" resolve-missing-reply
    "find-debug-fns" find-debug-fns-reply
@@ -90,6 +94,7 @@
    "version" version-reply
    "warm-ast-cache" warm-ast-cache-reply
    "find-unbound" find-unbound-reply
+   "extract-definition" extract-definition-reply
    "stubs-for-interface" stubs-for-interface-reply})
 
 (defn wrap-refactor
