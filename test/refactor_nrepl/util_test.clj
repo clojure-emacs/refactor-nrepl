@@ -6,6 +6,10 @@
   (def weird-file-content ";; some weird file
   ;; not even clojure
 ;; perhaps? no parens!")
+  (def file-content-with-set ";; with set
+  #{foo bar baz}
+  ;; some other stuff
+(foobar baz)")
 (def binding-location [4 10])
 (def funcall-location [7 8])
 (def set-location [8 35])
@@ -21,4 +25,6 @@
              (prn {\"foo\" {:qux [#{more}]}}))"))
   (is (= (apply get-enclosing-sexp file-content set-location) "#{more}"))
   (is (= (apply get-enclosing-sexp file-content map-location) "{:qux [#{more}]}"))
-  (is (= (apply get-enclosing-sexp weird-file-content weird-location) "")))
+  (is (= (apply get-enclosing-sexp weird-file-content weird-location) ""))
+  (is (= (get-next-sexp weird-file-content) ""))
+  (is (= (get-next-sexp file-content-with-set) "#{foo bar baz}")))

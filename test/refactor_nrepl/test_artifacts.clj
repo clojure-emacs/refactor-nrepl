@@ -14,6 +14,7 @@
                            edn/read-string))
 
 (deftest creates-a-map-of-artifacts
+  (reset! artifacts/artifacts {})
   (with-redefs
     [artifacts/get-artifacts-from-clojars! (constantly clojars-artifacts)
      artifacts/get-all-clj-artifacts! (constantly clojure-artifacts)
