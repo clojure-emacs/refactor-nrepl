@@ -214,7 +214,7 @@ The intended use-case for `stubs-for-interface` is to provide enough info to cre
               :name \"another-val\"
               :file \"core.clj\"
               :match \"(let [another-val 321]\"
-                            :definition \"321\"}
+              :definition \"321\"}
  :occurrences ({:match \"(println my-constant my-constant another-val)))\"
                 :file \"core.clj\"
                 :name \"another-val\"
