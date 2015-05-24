@@ -54,12 +54,15 @@
         (= sexp-sans-comments-and-meta (read-first-form (:form node)))))))
 
 (defn- search-sexp-boundary
-  "Searches sexp open or close paren of given depth.
+  "Searches for open or closing delimiter of given depth.
 
    Depth depends on the passed in pred.
-   Searches forward by default if backwards passed in searches backwards.
 
-   If pred is (partial = 0) returns the index of the closing paren of the first s-expression. If pred is (partial < 0) searches for the opening paren of the first sexp."
+   Searches forward by default, if backwards passed in searches backwards.
+
+   If pred is (partial = 0) returns the index of the closing delimiter
+   of the first s-expression. If pred is (partial < 0) searches for
+   the opening paren of the first sexp."
   ([pred s]
    (search-sexp-boundary pred nil s))
   ([pred backwards s]
@@ -104,7 +107,9 @@
 
 (defn get-enclosing-sexp
   "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT.
+
   A string is not treated as a sexp by this function.
+
   Line is indexed from 1, and column is indexed from 0 (this is how
   emacs does it)."
   [file-content line column]
