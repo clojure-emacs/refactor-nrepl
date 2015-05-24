@@ -43,3 +43,8 @@
     (if-let [if-let-bound (+ 11 17)]
       if-let-bound
       :bar)))
+
+(defn public-function []
+  :value)
+
+(public-function)

@@ -87,3 +87,8 @@
 
       (is (= (count def-ks) 8))
       (is (every? (conj (set ks) :definition) def-ks)))))
+
+(deftest extracts-public-function
+  (is (= (-extract-definition "public-function" 50 12)
+         "(fn []
+  :value)")))

@@ -30,7 +30,7 @@
   (let [form (read-string sexp)
         fn-name (str (second form))]
     (-> sexp
-        (.replaceFirst (if (re-matcher #"defn-" sexp) "defn-" "defn") "fn")
+        (.replaceFirst (if (re-find #"defn-" sexp) "defn-" "defn") "fn")
         (.replaceFirst (str "\\s*" (Pattern/quote fn-name)) ""))))
 
 (defn- extract-def-from-binding-vector
