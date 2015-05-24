@@ -94,8 +94,8 @@
                  (conj info
                        (.getCanonicalPath file)
                        (match file-content
-                              (first info)
-                              (second info))))]
+                         (first info)
+                         (second info))))]
     (when (seq locs) (map gather locs))))
 
 (defn- find-global-symbol [file ns var-name clj-dir]
@@ -135,8 +135,8 @@
                     var-name
                     (.getCanonicalPath (java.io.File. file))
                     (match file-content
-                           (first %)
-                           (second %)))
+                      (first %)
+                      (second %)))
              (find-nodes [top-level-form-ast]
                          #(and (#{:local :binding} (:op %))
                                (= local-var-name (-> % :name))
