@@ -1,9 +1,11 @@
 (ns refactor-nrepl.util
-  (:require [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
-            [clojure.tools.analyzer.ast :refer :all]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [clojure.string :as str]
-            [clojure.set :as set])
+  (:require [clojure
+             [set :as set]
+             [string :as str]]
+            [clojure.tools.analyzer.ast :refer [nodes]]
+            [clojure.tools.namespace
+             [find :refer [find-clojure-sources-in-dir]]
+             [parse :refer [read-ns-decl]]])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
 
