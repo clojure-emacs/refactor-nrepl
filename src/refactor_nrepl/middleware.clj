@@ -35,6 +35,13 @@
   `(with-errors-being-passed-on ~transport ~msg
      (transport/send ~transport (response-for ~msg ~(apply hash-map kv)))))
 
+(defn serialize-response [{:keys [serialization-format] :as msg} response]
+  (condp = serialization-format
+    "edn" (pr-str response)
+    "bencode" response
+    (pr-str response) ; edn as default
+    ))
+
 (defn resolve-missing-reply [{:keys [transport] :as msg}]
   (reply transport msg :candidates (resolve-missing msg) :status :done))
 
@@ -42,7 +49,7 @@
   (with-errors-being-passed-on transport msg
     (let [occurrences (find-symbol msg)]
       (doseq [occurrence occurrences
-              :let [response (pr-str (apply create-result-alist occurrence))]]
+              :let [response (serialize-response msg (apply create-result-alist occurrence))]]
         (transport/send transport
                         (response-for msg :occurrence response)))
       (transport/send transport (response-for msg :count (count occurrences)
@@ -77,7 +84,7 @@
 
 (defn- stubs-for-interface-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
-         :functions (pr-str (stubs-for-interface msg))))
+         :functions (serialize-response msg (stubs-for-interface msg))))
 
 (defn- extract-definition-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :definition (pr-str (extract-definition msg))))
