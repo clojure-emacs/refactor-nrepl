@@ -95,10 +95,27 @@
   "Once the deps are available on cp we still have to load them and
   reset slamhound's cache to make resolve-missing work."
   [coords repos]
+  (throw (IllegalStateException. "FUCK!"))
   (let [dep (first (alembic/resolve-dependencies alembic/the-still coords repos nil))
         jarfile (JarFile. (:jar dep))]
     (dorun (map require (find/find-namespaces-in-jarfile jarfile)))
     (slamhound/reset)))
+
+(defn- ensure-quality-coordinates [coordinates]
+  (let [coords (->> coordinates read-string (take 2) vec)]
+    (when-not (= (count coords) 2)
+      (throw (IllegalArgumentException. (str "Malformed dependency vector: "
+                                             coordinates))))
+    (when (stale-cache?)
+      (update-artifact-cache!))
+    (if-let [versions (get-in @artifacts [(first coords)])]
+      (when-not ((set versions) (second coords))
+        (throw (IllegalArgumentException.
+                (str "Version " (second coords)
+                     " does not exist for " (first coords)
+                     ". Available versions are " (pr-str (vec versions))))))
+      (throw (IllegalArgumentException. (str "Can't find artifact '"
+                                             (first coords) "'"))))))
 
 (defn hotload-dependency
   [{:keys [coordinates]}]
@@ -106,9 +123,7 @@
         coords [(->> dependency-vector (take 2) vec)]
         repos {"clojars" "http://clojars.org/repo"
                "central" "http://repo1.maven.org/maven2/"}]
-    (when-not (= (-> coords first count) 2)
-      (throw (IllegalArgumentException. (str "Malformed dependency vector: "
-                                             coordinates))))
+    (ensure-quality-coordinates coordinates)
     (alembic/distill coords :repositories repos)
     (make-resolve-missing-aware-of-new-deps coords repos)
     (str/join " " dependency-vector)))
