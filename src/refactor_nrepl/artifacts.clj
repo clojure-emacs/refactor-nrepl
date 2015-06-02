@@ -95,7 +95,6 @@
   "Once the deps are available on cp we still have to load them and
   reset slamhound's cache to make resolve-missing work."
   [coords repos]
-  (throw (IllegalStateException. "FUCK!"))
   (let [dep (first (alembic/resolve-dependencies alembic/the-still coords repos nil))
         jarfile (JarFile. (:jar dep))]
     (dorun (map require (find/find-namespaces-in-jarfile jarfile)))
