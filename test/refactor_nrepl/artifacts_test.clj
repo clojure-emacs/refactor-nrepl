@@ -1,6 +1,5 @@
 (ns refactor-nrepl.artifacts-test
-  (:require [alembic.still :as alembic]
-            [clojure
+  (:require [clojure
              [edn :as edn]
              [test :refer :all]]
             [clojure.java.io :as io]
@@ -39,14 +38,13 @@
 (deftest hotload-dependency-throws-exceptions
   (reset! artifacts/artifacts {"prismatic/schema" ["0.1"]})
   (with-redefs
-    [alembic/distill (fn [& _])
-     artifacts/make-resolve-missing-aware-of-new-deps (fn [& _])
+    [artifacts/make-resolve-missing-aware-of-new-deps (fn [& _])
      artifacts/stale-cache? (constantly false)]
     (testing "Throws for non existing version"
       (is (thrown? IllegalArgumentException
                    (artifacts/hotload-dependency
                     {:coordinates "[prismatic/schema \"1.0\"]"}))))
     (testing "Throws for non existing artifact"
-        (is (thrown? IllegalArgumentException
-                     (artifacts/hotload-dependency
-                      {:coordinates "[imaginary \"1.0\"]"}))))))
+      (is (thrown? IllegalArgumentException
+                   (artifacts/hotload-dependency
+                    {:coordinates "[imaginary \"1.0\"]"}))))))
