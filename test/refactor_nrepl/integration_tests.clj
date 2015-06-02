@@ -2,11 +2,11 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
             [clojure.tools.nrepl.server :as nrserver]
-            [me.raynes.fs :as fs]
             [refactor-nrepl middleware
              [client :refer :all]
              [plugin :as plugin]])
-  (:import java.io.File))
+  (:import java.io.File
+           org.apache.commons.io.FileUtils))
 
 (defn- create-temp-dir
   "Creates and returns a new temporary directory java.io.File."
@@ -19,9 +19,7 @@
 (defn create-test-project []
   (let [temp-dir (create-temp-dir "refactor-nrepl-test")
         orig-src (io/file "test/resources/testproject/src")]
-
-    (fs/copy-dir orig-src temp-dir)
-
+    (FileUtils/copyDirectoryToDirectory orig-src temp-dir)
     temp-dir))
 
 (defn start-up-repl-server []

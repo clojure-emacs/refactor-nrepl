@@ -236,6 +236,18 @@ This op returns, `version`, which is the current version of this project.
 
 This eagerly builds, and caches, ASTs for all clojure files in the project.  Returns `status` `done` on success.
 
+### rename-file-or-dir
+
+The `rename-file-or-dir` op takes an `old-path` and a `new-path` which are paths to a file or directory.
+
+If `old-path` is a directory, all files, including any non-clj files, are moved to `new-path`.
+
+The op returns `touched` which is a list of all files that were affected by the move, and needs to be visited by the client to indent the updated ns form while we await proper pretty printing support in the middleware.
+
+This op can cause serious havoc if it crashes midway through the
+refactoring.  I recommend not running it without first creating a
+restore point in your version control system.
+
 ### Errors
 
 The middleware returns errors under one of two keys: `:error` or
@@ -282,6 +294,7 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 
 ## Changelog
 
+* Add `rename-file-or-dir` which returns a file or a directory of clj files.
 * Add `extract-definition` which returns enough information to the clien to afford inlining of defs defns and let-bound vars.
 * Add `stubs-for-interface` for creating skeleton interface implementations
 * Add `warm-ast-cache` op for eagerly building, and caching, ASTs of project files

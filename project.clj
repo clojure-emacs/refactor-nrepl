@@ -11,7 +11,8 @@
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.6"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.7"]
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]
-                 ^:source-dep [org.clojure/java.classpath "0.2.2"]]
+                 ^:source-dep [org.clojure/java.classpath "0.2.2"]
+                 ^:source-dep [me.raynes/fs "1.4.6"]]
   :plugins [[thomasa/mranderson "0.4.0"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.8.2"]]}
@@ -21,7 +22,7 @@
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta3"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :dependencies [[org.clojure/clojure "1.7.0-beta3"]
-                                  [me.raynes/fs "1.4.6"]]
+                                  [commons-io/commons-io "2.4"]]
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
                                     "test/resources/testproject/src"]

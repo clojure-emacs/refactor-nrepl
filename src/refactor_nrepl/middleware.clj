@@ -12,6 +12,7 @@
              [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
              [find-unbound :refer [find-unbound-vars]]
              [plugin :as plugin]
+             [rename-file-or-dir :refer [rename-file-or-dir]]
              [stubs-for-interface :refer [stubs-for-interface]]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
@@ -73,7 +74,7 @@
 (defn- find-unbound-reply [{:keys [transport] :as msg}]
   (reply transport msg :unbound (find-unbound-vars msg) :status :done))
 
-(defn- config-reply [{:keys [transport] :as msg}]
+(defn config-reply [{:keys [transport opts] :as msg}]
   (reply transport msg :status (and (configure msg) :done)))
 
 (defn- version-reply [{:keys [transport] :as msg}]
@@ -89,6 +90,10 @@
 (defn- extract-definition-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :definition (pr-str (extract-definition msg))))
 
+(defn- rename-file-or-dir-reply [{:keys [transport old-path new-path] :as msg}]
+  (reply transport msg :touched (rename-file-or-dir old-path new-path)
+         :status :done))
+
 (def refactor-nrepl-ops
   {"resolve-missing" resolve-missing-reply
    "find-debug-fns" find-debug-fns-reply
@@ -102,6 +107,7 @@
    "warm-ast-cache" warm-ast-cache-reply
    "find-unbound" find-unbound-reply
    "extract-definition" extract-definition-reply
+   "rename-file-or-dir" rename-file-or-dir-reply
    "stubs-for-interface" stubs-for-interface-reply})
 
 (defn wrap-refactor
