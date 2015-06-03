@@ -70,7 +70,8 @@
                               :line 11 :column 3
                               :name "thre" :dir (str tmp-dir))
         result (remove keyword? response)]
-    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
+    (.delete tmp-dir)))
 
 (deftest test-find-fn-in-dashed-ns
   (let [tmp-dir (create-test-project)
@@ -80,7 +81,8 @@
                               :line 14 :column 4
                               :name "stuff" :dir (str tmp-dir))
         result (remove keyword? response)]
-    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
+    (.delete tmp-dir)))
 
 (deftest test-find-dashed-fn
   (let [tmp-dir (create-test-project)
@@ -90,7 +92,8 @@
                               :line 16 :column 4
                               :name "more-stuff" :dir (str tmp-dir))
         result (remove keyword? response)]
-    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
+    (.delete tmp-dir)))
 
 (deftest test-rename-foo
   (let [tmp-dir (create-test-project)
@@ -148,7 +151,8 @@
 "]
     (remove-debug-invocations :transport transport :file three-file)
 
-    (is (= new-three (slurp three-file)) "remove println failed")))
+    (is (= new-three (slurp three-file)) "remove println failed")
+    (.delete tmp-dir)))
 
 (defrecord Foo [])
 (deftype Bar [])
@@ -188,7 +192,8 @@
         transport (connect :port 7777)
         response (find-usages :transport transport :name "a" :file three-file :line 3 :column 24)
         result (remove keyword? response)]
-    (is (= 5 (count result)) (format "expected 5 results but got %d" (count result)))))
+    (is (= 5 (count result)) (format "expected 5 results but got %d" (count result)))
+    (.delete tmp-dir)))
 
 (deftest find-local-let
   (let [tmp-dir (create-test-project)
@@ -214,11 +219,10 @@
 
     (is (= (find-unbound :transport transport :file five-file :line 34 :column 8)
            '#{name}))
-    ))
+    (.delete tmp-dir)))
 
 (deftest find-unbound-fails-on-cljs
-  (let [tmp-dir (create-test-project)
-        cljs-file (str tmp-dir "/src/com/example/file.cljs")
+  (let [cljs-file "/tmp/src/com/example/file.cljs"
         transport (connect :port 7777)]
     (is (:error (find-unbound :transport transport :file cljs-file
                               :line 12 :column 6)))))
