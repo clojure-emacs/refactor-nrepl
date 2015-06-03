@@ -44,7 +44,7 @@
 
 (defn- build-tracker []
   (let [tracker (tracker/tracker)]
-    (file/add-files tracker (util/project-clj-files-on-classpath))))
+    (file/add-files tracker (util/find-clojure-sources-in-project))))
 
 (defn- invert-map
   "Creates a new map by turning the vals into keys and vice versa"

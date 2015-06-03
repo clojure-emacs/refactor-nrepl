@@ -32,8 +32,8 @@
        (map #(.getAbsolutePath %))
        (map normalize-to-unix-path)))
 
-(defn project-clj-files-on-classpath
-  "Return all clojure files in the project."
+(defn find-clojure-sources-in-project
+  "Return all clojure files in the project that are on the classpath."
   []
   (let [dirs-on-cp (filter fs/directory? (cp/classpath))]
     (mapcat find-clojure-sources-in-dir dirs-on-cp)))

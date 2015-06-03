@@ -7,7 +7,7 @@
             [clojure.java.io :refer [file]]
             [clojure.string :as string])
   (:import
-   [java.io BufferedReader File FilenameFilter]
+   [java.io File FilenameFilter]
    [java.util.jar JarFile JarEntry]
    java.util.regex.Pattern
    java.util.StringTokenizer))

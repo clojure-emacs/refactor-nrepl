@@ -74,5 +74,5 @@
               (str (first (parse-ns file-content)) " is in a bad state!"))))))
 
 (defn warm-ast-cache []
-  (doseq [f (util/project-clj-files-on-classpath)]
+  (doseq [f (util/find-clojure-sources-in-project)]
     (ns-ast (slurp f))))
