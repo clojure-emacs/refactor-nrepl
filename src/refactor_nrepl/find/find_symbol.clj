@@ -1,10 +1,11 @@
-(ns refactor-nrepl.find-symbol
+(ns refactor-nrepl.find.find-symbol
   (:require [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
-             [util :as util]]))
+             [util :as util]]
+            [refactor-nrepl.find.find-macros :refer [find-macro]]))
 
 (defn- node->var
   "Returns a fully qualified symbol for vars other those from clojure.core, for
@@ -169,13 +170,19 @@
                                (= local-var-name (-> % :name))
                                (:local %))))))))
 
+(defn to-find-symbol-result
+  [{:keys [line-beg line-end col-beg col-end name file match]}]
+  [line-beg line-end col-beg col-end name file match])
+
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (util/throw-unless-clj-file file)
-  (or (when (and file (not-empty file))
-        (not-empty (find-local-symbol file name line column)))
-      (find-global-symbol file ns name dir (and ignore-errors
-                                                (or (not (coll? ignore-errors))
-                                                    (not-empty ignore-errors))))))
+  (or
+   ;; find-macro is first because find-global-symbol returns garb for macros
+   (some->> name find-macro (map to-find-symbol-result))
+   (not-empty (find-local-symbol file name line column))
+   (find-global-symbol file ns name dir (and ignore-errors
+                                             (or (not (coll? ignore-errors))
+                                                 (not-empty ignore-errors))))))
 
 (defn create-result-alist
   [line-beg line-end col-beg col-end name file match]

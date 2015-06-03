@@ -163,3 +163,32 @@
                     (->> content-from-sexp
                          (search-sexp-boundary (partial = 0))))]
     (cut-sexp file-content sexp-start sexp-end)))
+
+(defn get-last-sexp
+  "Read and return the last sexp in FILE-CONTENT"
+  [file-content]
+  (let [open #{\( \[ \{}
+        close #{\) \] \}}]
+    ;; Reverse the remaining content of the file
+    ;; Put the last char, which is a closing delimiter, into SEXP and
+    ;; drop it from TOKS.
+    ;; Keep reading into SEXP until depth reaches 0.
+    ;; Finally reverse SEXP, turn it into a string and read the
+    ;; containing sexp.
+    (loop [sexp [(first (reverse file-content))], depth 1,
+           toks (seq (rest (reverse file-content)))]
+      (cond
+        (not (seq toks))(throw (IllegalStateException. "Unbalanced region!"))
+        (= depth 0) (let [next-token (first toks)]
+                      (if (= next-token \#)
+                        (apply str "#" (reverse sexp))
+                        (apply str (reverse sexp))))
+
+        (get open (first toks))
+        (recur (conj sexp (first toks)) (dec depth) (rest toks))
+
+        (get close (first toks))
+        (recur (conj sexp (first toks)) (inc depth) (rest toks))
+
+        :else
+        (recur (conj sexp (first toks)) depth (rest toks))))))

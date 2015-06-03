@@ -1,4 +1,4 @@
-(ns refactor-nrepl.find-unbound
+(ns refactor-nrepl.find.find-unbound
   (:require [clojure.set :as set]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [refactor-nrepl

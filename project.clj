@@ -8,10 +8,11 @@
                  ^:source-dep [cheshire "5.4.0"]
                  ^:source-dep [alembic "0.3.2"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.6"]
-                 ^:source-dep [org.clojure/tools.namespace "0.2.7"]
+                 ^:source-dep [org.clojure/tools.namespace "0.2.10"]
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]
                  ^:source-dep [org.clojure/java.classpath "0.2.2"]
-                 ^:source-dep [me.raynes/fs "1.4.6"]]
+                 ^:source-dep [me.raynes/fs "1.4.6"]
+                 ^:source-dep [rewrite-clj "0.4.12"]]
   :plugins [[thomasa/mranderson "0.4.5"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.9.0"]]}

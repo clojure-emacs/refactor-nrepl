@@ -9,11 +9,12 @@
              [artifacts :refer [artifact-list artifact-versions hotload-dependency]]
              [config :refer [configure]]
              [extract-definition :refer [extract-definition]]
-             [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
-             [find-unbound :refer [find-unbound-vars]]
              [plugin :as plugin]
              [rename-file-or-dir :refer [rename-file-or-dir]]
              [stubs-for-interface :refer [stubs-for-interface]]]
+            [refactor-nrepl.find
+             [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
+             [find-unbound :refer [find-unbound-vars]]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
              [pprint :refer [pprint-ns]]

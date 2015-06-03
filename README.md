@@ -134,9 +134,7 @@ The return value is a stream of occurrences under the key `occurrence` which is 
 
 `(:line-beg 5 :line-end 5 :col-beg 19 :col-end 26 :name a-name :file \"/aboslute/path/to/file.clj\" :match (fn-name some args))`
 
-When the fine `occurrence` has been send a final message is sent with `count`, indicating the total number of matches, and `status` `done`.
-
-In the event of an error the key `error` will contain a message which is intended for display to the user.
+When the final `occurrence` has been sent a final message is sent with `count`, indicating the total number of matches, and `status` `done`.
 
 Clients are advised to set `ignore-errors` on only for find usages as the rest of the operations built on find-symbol supposed to modify the project as well therefore can be destructive if some namespaces can not be analyzed.
 
@@ -316,6 +314,9 @@ Or alternatively run
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
 ## Changelog
+
+### Unreleased
+* Make `find-symbol` able to handle macros
 
 ### 1.1.0
 
