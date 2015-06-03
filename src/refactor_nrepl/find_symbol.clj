@@ -1,6 +1,7 @@
 (ns refactor-nrepl.find-symbol
   (:require [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes]]
+            [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
              [util :as util]]))
@@ -104,7 +105,9 @@
         fully-qualified-name (if (= namespace "clojure.core")
                                var-name
                                (str/join "/" [namespace var-name]))]
-    (->> (util/list-project-clj-files dir)
+    (->> dir
+         java.io.File.
+         find-clojure-sources-in-dir
          (mapcat (partial find-symbol-in-file fully-qualified-name))
          (map identity))))
 

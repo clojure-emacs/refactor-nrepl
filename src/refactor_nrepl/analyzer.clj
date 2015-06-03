@@ -74,5 +74,5 @@
               (str (first (parse-ns file-content)) " is in a bad state!"))))))
 
 (defn warm-ast-cache []
-  (doseq [f (util/list-project-clj-files ".")]
+  (doseq [f (util/project-clj-files-on-classpath)]
     (ns-ast (slurp f))))

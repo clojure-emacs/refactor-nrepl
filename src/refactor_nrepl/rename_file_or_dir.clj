@@ -1,36 +1,19 @@
 (ns refactor-nrepl.rename-file-or-dir
-  (:require [clojure.java.classpath :as cp]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [clojure.tools.namespace
              [file :as file :refer [clojure-file?]]
-             [find :refer [find-clojure-sources-in-dir]]
              [track :as tracker]]
             [me.raynes.fs :as fs]
             [refactor-nrepl.ns
              [helpers :refer [file-content-sans-ns read-ns-form]]
              [ns-parser :as ns-parser]
              [pprint :refer [pprint-ns]]
-             [rebuild :as builder :refer [rebuild-ns-form]]]
-            [refactor-nrepl.util :refer [ns-from-string]])
+             [rebuild :refer [rebuild-ns-form]]]
+            [refactor-nrepl.util :as util])
   (:import java.io.File
            java.util.regex.Pattern))
 
 (declare -rename-file-or-dir)
-
-(defn- project-clj-files-on-classpath []
-  (let [dirs-on-cp (filter fs/directory? (cp/classpath))]
-    (mapcat find-clojure-sources-in-dir dirs-on-cp)))
-
-(defn- normalize-to-unix-path [path]
-  (.toLowerCase
-   (if (.contains (System/getProperty "os.name") "Windows")
-     (.replaceAll path (Pattern/quote "\\") "/")
-     path)))
-
-(defn- dirs-on-classpath []
-  (->> (cp/classpath) (filter fs/directory?)
-       (map #(.getAbsolutePath %))
-       (map normalize-to-unix-path)))
 
 (defn- chop-src-dir-prefix
   "Given a path cuts away the part matching a dir on classpath.
@@ -44,7 +27,7 @@
                            (str/split path)
                            second))
         shortest (fn [acc val] (if (< (.length acc) (.length val)) acc val))]
-    (let [relative-paths (->> (dirs-on-classpath) (map chop-prefix) (remove nil?))]
+    (let [relative-paths (->> (util/dirs-on-classpath) (map chop-prefix) (remove nil?))]
       (if-let [p (cond
                    (= (count relative-paths) 1) (first relative-paths)
                    (> (count relative-paths) 1) (reduce shortest relative-paths))]
@@ -57,11 +40,11 @@
   "Given an absolute file path to a non-existing file determine the
   name of the ns."
   [new-path]
-  (-> new-path normalize-to-unix-path chop-src-dir-prefix fs/path-ns))
+  (-> new-path util/normalize-to-unix-path chop-src-dir-prefix fs/path-ns))
 
 (defn- build-tracker []
   (let [tracker (tracker/tracker)]
-    (file/add-files tracker (project-clj-files-on-classpath))))
+    (file/add-files tracker (util/project-clj-files-on-classpath))))
 
 (defn- invert-map
   "Creates a new map by turning the vals into keys and vice versa"
@@ -157,7 +140,7 @@
 (defn- rename-clj-file
   "Move file from old to new, updating any dependents."
   [old-path new-path]
-  (let [old-ns (ns-from-string (slurp old-path))
+  (let [old-ns (util/ns-from-string (slurp old-path))
         new-ns (path->ns new-path)
         dependents (get-dependents (build-tracker) old-ns)
         new-dependents (atom {})]
@@ -175,13 +158,13 @@
   (str/replace path old-parent new-parent))
 
 (defn- rename-dir [old-path new-path]
-  (let [old-path (normalize-to-unix-path old-path)
-        new-path (normalize-to-unix-path new-path)
+  (let [old-path (util/normalize-to-unix-path old-path)
+        new-path (util/normalize-to-unix-path new-path)
         old-path (if (.endsWith old-path "/") old-path (str old-path "/"))
         new-path (if (.endsWith new-path "/") new-path (str new-path "/"))]
     (flatten (for [f (file-seq (File. old-path))
                    :when (not (fs/directory? f))
-                   :let [path (normalize-to-unix-path (.getAbsolutePath f))]]
+                   :let [path (util/normalize-to-unix-path (.getAbsolutePath f))]]
                (-rename-file-or-dir path (merge-paths path old-path new-path))))))
 
 (defn- -rename-file-or-dir [old-path new-path]
@@ -193,7 +176,7 @@
     (->> affected-files
          flatten
          distinct
-         (map normalize-to-unix-path)
+         (map util/normalize-to-unix-path)
          (remove fs/directory?)
          (filter fs/exists?)
          doall)))

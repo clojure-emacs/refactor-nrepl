@@ -2,10 +2,12 @@
   (:require [clojure
              [set :as set]
              [string :as str]]
+            [clojure.java.classpath :as cp]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [clojure.tools.namespace
              [find :refer [find-clojure-sources-in-dir]]
-             [parse :refer [read-ns-decl]]])
+             [parse :refer [read-ns-decl]]]
+            [me.raynes.fs :as fs])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
 
@@ -15,8 +17,26 @@
 (defn ns-from-string [ns-string]
   (second (read-ns-decl (PushbackReader. (java.io.StringReader. ns-string)))))
 
-(defn list-project-clj-files [dir]
-  (find-clojure-sources-in-dir (java.io.File. dir)))
+(defn normalize-to-unix-path
+  "Replace use / as separator and lower-case."
+  [path]
+  (.toLowerCase
+   (if (.contains (System/getProperty "os.name") "Windows")
+     (.replaceAll path (Pattern/quote "\\") "/")
+     path)))
+
+(defn dirs-on-classpath
+  "Return all directories on classpath."
+  []
+  (->> (cp/classpath) (filter fs/directory?)
+       (map #(.getAbsolutePath %))
+       (map normalize-to-unix-path)))
+
+(defn project-clj-files-on-classpath
+  "Return all clojure files in the project."
+  []
+  (let [dirs-on-cp (filter fs/directory? (cp/classpath))]
+    (mapcat find-clojure-sources-in-dir dirs-on-cp)))
 
 (defn node-at-loc? [loc-line loc-column node]
   (let [env (:env node)]
