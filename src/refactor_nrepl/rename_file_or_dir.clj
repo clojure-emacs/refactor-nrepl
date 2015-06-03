@@ -22,13 +22,15 @@
     (mapcat find-clojure-sources-in-dir dirs-on-cp)))
 
 (defn- normalize-to-unix-path [path]
-  (if (.contains (System/getProperty "os.name") "Windows")
-    (.replaceAll path (Pattern/quote "\\") "/")
-    path))
+  (.toLowerCase
+   (if (.contains (System/getProperty "os.name") "Windows")
+     (.replaceAll path (Pattern/quote "\\") "/")
+     path)))
 
 (defn- dirs-on-classpath []
   (->> (cp/classpath) (filter fs/directory?)
-       (map #(.toLowerCase (.getAbsolutePath %)))))
+       (map #(.getAbsolutePath %))
+       (map normalize-to-unix-path)))
 
 (defn- chop-src-dir-prefix
   "Given a path cuts away the part matching a dir on classpath.
@@ -37,8 +39,6 @@
   [path]
   (let [chop-prefix (fn [dir]
                       (->> dir
-                           normalize-to-unix-path
-                           .toLowerCase
                            Pattern/quote
                            re-pattern
                            (str/split path)
