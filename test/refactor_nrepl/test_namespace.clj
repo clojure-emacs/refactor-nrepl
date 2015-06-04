@@ -70,7 +70,7 @@
 (deftest preserves-other-elements
   (let [actual (pprint-ns (clean-ns ns1))
         actual-form (read-string actual)]
-    (is (.contains actual "^{:doc \"This is a docstring for the ns\", :author \"Winnie the pooh\"}"))
+    (is (.contains actual "^{:author \"Winnie the pooh\", :doc \"This is a docstring for the ns\"}"))
     (is (not= "This is a docstring for the ns" (nth actual-form 2)))
     (is (not= {:author "Winnie the pooh"} (nth actual-form 3)))))
 

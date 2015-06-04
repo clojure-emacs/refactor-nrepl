@@ -72,6 +72,12 @@
         (println import)))
     imports)))
 
+(defn pprint-meta
+  [m]
+  (if m
+    (str " ^" (into (sorted-map) m) "\n")
+    ""))
+
 (defn pprint-ns
   [[_ name & more :as ns-form]]
   (let [docstring? (when (string? (first more)) (first more))
@@ -81,9 +87,7 @@
                     :else (rest more))
         ns-meta (-> (find-ns name)
                     meta
-                    (#(if %
-                        (str " ^" % "\n")
-                        "")))]
+                    pprint-meta)]
     (-> (with-out-str
           (printf "(ns%s %s" ns-meta name)
           (if forms (println) (print ")"))
