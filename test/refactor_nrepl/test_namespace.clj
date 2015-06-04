@@ -24,9 +24,8 @@
     (is (= combined-requires requires))))
 
 (deftest meta-preserved
-  (let [cleaned (pprint-ns (clean-ns ns2-meta))
-        expected-cleaned (str/replace (slurp "test/resources/ns2_cleaned_meta.clj") "ns2-cleaned-meta" "ns2-meta")]
-    (is (= expected-cleaned cleaned))))
+  (let [cleaned (pprint-ns (clean-ns ns2-meta))]
+    (is (.contains cleaned "^{:author \"Trurl and Klapaucius\", :doc \"test ns with meta\"}"))))
 
 (deftest preserves-removed-use
   (let [requires (get-ns-component (clean-ns ns2) :use)
