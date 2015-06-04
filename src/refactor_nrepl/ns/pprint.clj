@@ -78,14 +78,15 @@
         attrs? (when (map? (second more)) (second more))
         forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
-                    :else (rest more))]
+                    :else (rest more))
+        ns-meta (-> (find-ns name)
+                    meta
+                    (#(if %
+                        (str " ^" % "\n")
+                        "")))]
     (-> (with-out-str
-          (printf "(ns %s" name)
-          (if (or docstring? attrs? forms)
-            (println)
-            (print ")"))
-          (when docstring? (printf "\"%s\"\n" docstring? ))
-          (when attrs? (pprint attrs?))
+          (printf "(ns%s %s" ns-meta name)
+          (if forms (println) (print ")"))
           (dorun
            (map-indexed
             (fn [idx form]

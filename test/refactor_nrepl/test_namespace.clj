@@ -3,13 +3,15 @@
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
              [helpers :refer [get-ns-component read-ns-form]]]
-            [refactor-nrepl.ns.pprint :refer [pprint-ns]])
+            [refactor-nrepl.ns.pprint :refer [pprint-ns]]
+            [clojure.string :as str])
   (:import java.io.File))
 
 (def ns1 (.getAbsolutePath (File. "test/resources/ns1.clj")))
 (def ns1-cleaned (read-ns-form (.getAbsolutePath (File. "test/resources/ns1_cleaned.clj"))))
 (def ns2 (.getAbsolutePath (File. "test/resources/ns2.clj")))
 (def ns2-cleaned (read-ns-form (.getAbsolutePath (File. "test/resources/ns2_cleaned.clj"))))
+(def ns2-meta (.getAbsolutePath (File. "test/resources/ns2_meta.clj")))
 (def ns-with-exclude (read-ns-form (.getAbsolutePath (File. "test/resources/ns_with_exclude.clj"))))
 (def ns-with-unused-deps (.getAbsolutePath (File. "test/resources/unused_deps.clj")))
 (def ns-without-unused-deps (read-ns-form
@@ -20,6 +22,11 @@
   (let [requires (get-ns-component (clean-ns ns2) :require)
         combined-requires (get-ns-component ns2-cleaned :require)]
     (is (= combined-requires requires))))
+
+(deftest meta-preserved
+  (let [cleaned (pprint-ns (clean-ns ns2-meta))
+        expected-cleaned (str/replace (slurp "test/resources/ns2_cleaned_meta.clj") "ns2-cleaned-meta" "ns2-meta")]
+    (is (= expected-cleaned cleaned))))
 
 (deftest preserves-removed-use
   (let [requires (get-ns-component (clean-ns ns2) :use)
@@ -61,15 +68,11 @@
                               (File. "test/resources/clojars-artifacts.edn"))))))
 
 (deftest preserves-other-elements
-  (let [actual (clean-ns ns1)
-        docstring (nthrest actual 2)
-        author (nthrest actual 3)
-        refer-clojure (nthrest actual 4)
-        gen-class (nthrest actual 5)]
-    (is (= (nthrest ns1-cleaned 2) docstring))
-    (is (= (nthrest ns1-cleaned 3) author))
-    (is (= (nthrest ns1-cleaned 4) refer-clojure))
-    (is (= (nthrest ns1-cleaned 5) gen-class))))
+  (let [actual (pprint-ns (clean-ns ns1))
+        actual-form (read-string actual)]
+    (is (.contains actual "^{:doc \"This is a docstring for the ns\", :author \"Winnie the pooh\"}"))
+    (is (not= "This is a docstring for the ns" (nth actual-form 2)))
+    (is (not= {:author "Winnie the pooh"} (nth actual-form 3)))))
 
 (deftest removes-use
   (let [use-clause (get-ns-component ns1-cleaned :use)]
