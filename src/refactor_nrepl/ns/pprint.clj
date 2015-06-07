@@ -87,6 +87,7 @@
                     :else (rest more))
         ns-meta (-> (find-ns name)
                     meta
+                    (dissoc :file :line :end-line :column :end-column)
                     pprint-meta)]
     (-> (with-out-str
           (printf "(ns%s %s" ns-meta name)
