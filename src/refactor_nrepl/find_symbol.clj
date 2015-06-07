@@ -1,6 +1,6 @@
 (ns refactor-nrepl.find-symbol
   (:require [clojure.string :as str]
-            [clojure.tools.analyzer.ast :refer [nodes]]
+            [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
@@ -25,29 +25,48 @@
 
 (defn- contains-var?
   "Checks if the var of `node` is present in the `var-set`."
-  [var-set alias-info node]
-  (var-set (node->var alias-info node)))
+  [vars-set alias-info node]
+  (vars-set (node->var alias-info node)))
+
+(defn present-before-expansion?
+  "returns true if node is not result of macro expansion or if it is and it contains
+  the not qualified var-name before expansion"
+  [var-name node]
+  (if-let [orig-form (-> node :raw-forms first str not-empty)]
+    (.contains orig-form (last (str/split var-name #"/")))
+    true))
+
+(defn- dissoc-macro-nodes
+  "Strips those macro nodes from the ast node which don't contain name before expansion"
+  [name node]
+  (if (present-before-expansion? name node)
+    node
+    (apply dissoc node (:children node))))
 
 (defn- find-nodes
   "Filters `ast` with `pred` and returns a list of vectors with line-beg, line-end,
   colum-beg, column-end and the result of applying pred to the node for each
-  node in the AST."
-  [ast pred]
-  (->> (mapcat nodes ast)
-       (filter pred)
-       (map (juxt (comp :line :env)
-                  (comp :end-line :env)
-                  (comp :column :env)
-                  (comp :end-column :env)
-                  pred))))
+  node in the AST.
+
+  if name present macro call sites are checked if they contained name before macro expansion"
+  ([asts pred]
+   (->> (mapcat nodes asts)
+        (filter pred)
+        (map (juxt (comp :line :env)
+                   (comp :end-line :env)
+                   (comp :column :env)
+                   (comp :end-column :env)
+                   pred))))
+  ([name asts pred]
+   (find-nodes (map #(postwalk % (partial dissoc-macro-nodes name)) asts) pred)))
 
 (defn- find-invokes
   "Finds fn invokes in the AST.
   Returns a list of line, end-line, column, end-column and fn name tuples"
-  [ast fn-names]
-  (find-nodes ast
+  [asts fn-names]
+  (find-nodes asts
               #(fns-invoked? (into #{} (str/split fn-names #","))
-                             (util/alias-info ast)
+                             (util/alias-info asts)
                              %)))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
@@ -69,12 +88,13 @@
   (or (contains-var? #{var-name} alias-info node)
       (contains-const? var-name alias-info node)))
 
-(defn- find-symbol-in-ast [name ast]
-  (when ast
-    (find-nodes ast
+(defn- find-symbol-in-ast [name asts]
+  (when asts
+    (find-nodes name
+                asts
                 (partial contains-var-or-const?
                          name
-                         (util/alias-info ast)))))
+                         (util/alias-info asts)))))
 
 (defn- match [file-content line end-line]
   (let [line-index (dec line)
@@ -140,7 +160,8 @@
                     (match file-content
                       (first %)
                       (second %)))
-             (find-nodes [top-level-form-ast]
+             (find-nodes var-name
+                         [top-level-form-ast]
                          #(and (#{:local :binding} (:op %))
                                (= local-var-name (-> % :name))
                                (:local %))))))))

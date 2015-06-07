@@ -50,6 +50,7 @@
                               :line 6 :column 19
                               :name "foo" :dir (str tmp-dir))
         result (remove keyword? response)]
+
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
     (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
@@ -61,6 +62,30 @@
 
     ;; clean-up
     (.delete tmp-dir)))
+
+(deftest test-shouldnt-find-str-in-assert
+  (let [tmp-dir (create-test-project)
+        transport (connect :port 7777)
+        response (find-usages :transport transport :ns 'clojure.core
+                              :file (str tmp-dir "/src/com/example/macros.clj")
+                              :line 8 :column 4
+                              :name "str" :dir (str tmp-dir))
+        result (remove keyword? response)]
+    ;;(clojure.pprint/pprint result)
+
+    (is (not-any? #(.contains % "(assert (> x 0)") result) "`assert` found when searching for `clojure.core/str`")))
+
+(deftest test-shouldnt-find-expanded-fn-in-place-of-macro
+  (let [tmp-dir (create-test-project)
+        transport (connect :port 7777)
+        response (find-usages :transport transport :ns 'com.example.macros
+                              :file (str tmp-dir "/src/com/example/macros.clj")
+                              :line 7 :column 11
+                              :name "str-nicely" :dir (str tmp-dir))
+        result (remove keyword? response)]
+    ;;(clojure.pprint/pprint result)
+
+    (is (not-any? #(.contains % "(nicely x)") result) "`str-nicely` found at macro call site")))
 
 (deftest test-find-fn-in-similarly-named-ns
   (let [tmp-dir (create-test-project)
@@ -81,6 +106,7 @@
                               :line 14 :column 4
                               :name "stuff" :dir (str tmp-dir))
         result (remove keyword? response)]
+
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
     (.delete tmp-dir)))
 
