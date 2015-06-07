@@ -33,7 +33,7 @@
   the not qualified var-name before expansion"
   [var-name node]
   (if-let [orig-form (-> node :raw-forms first str not-empty)]
-    (.contains orig-form (last (str/split var-name #"/")))
+    (re-find (re-pattern (str "(^|\\W)" (last (str/split var-name #"/")) "\\W")) orig-form)
     true))
 
 (defn- dissoc-macro-nodes
