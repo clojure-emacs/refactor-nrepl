@@ -32,3 +32,7 @@
   (map name [:a :b :c])
   (let [name #(str "myname" %)]
     (map name [:a :b :c])))
+
+(defn sexp-with-anon-fn [n]
+  (let [g 5]
+    (#(+ g %) n)))

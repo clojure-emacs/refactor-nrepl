@@ -1,7 +1,8 @@
 (ns refactor-nrepl.util
   (:require [clojure
              [set :as set]
-             [string :as str]]
+             [string :as str]
+             [walk :as walk]]
             [clojure.java.classpath :as cp]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [clojure.tools.namespace
@@ -59,32 +60,40 @@
     (throw (IllegalArgumentException.
             "Refactor nrepl doesn't work on cljs or cljx files!"))))
 
+(defn- normalize-anon-fn-params
+  "replaces anon fn params in a read form"
+  [form]
+  (walk/postwalk
+   (fn [token] (if (re-matches #"p\d+__\d+#" (str token)) 'p token)) form))
+
 (defn- read-first-form [form]
   (let [f-string (str form)]
     (when (some #{\) \} \]} f-string)
-      (-> f-string
-          read-string))))
+      (read-string f-string))))
 
 (defn node-for-sexp?
   "Is NODE the ast node for SEXP?"
   [sexp node]
   (binding [*read-eval* false]
-    (let [sexp-sans-comments-and-meta (read-string sexp)
+    (let [sexp-sans-comments-and-meta (normalize-anon-fn-params (read-string sexp))
           pattern (re-pattern (Pattern/quote (str sexp-sans-comments-and-meta)))]
       (if-let [forms (:raw-forms node)]
-        (some #(re-find pattern %) (map (comp str read-first-form) forms))
-        (= sexp-sans-comments-and-meta (read-first-form (:form node)))))))
+        (some #(re-find pattern %)
+              (map (comp str normalize-anon-fn-params read-first-form) forms))
+        (= sexp-sans-comments-and-meta (-> (:form node)
+                                           read-first-form
+                                           normalize-anon-fn-params))))))
 
 (defn- search-sexp-boundary
   "Searches for open or closing delimiter of given depth.
 
-   Depth depends on the passed in pred.
+  Depth depends on the passed in pred.
 
-   Searches forward by default, if backwards passed in searches backwards.
+  Searches forward by default, if backwards passed in searches backwards.
 
-   If pred is (partial = 0) returns the index of the closing delimiter
-   of the first s-expression. If pred is (partial < 0) searches for
-   the opening paren of the first sexp."
+  If pred is (partial = 0) returns the index of the closing delimiter
+  of the first s-expression. If pred is (partial < 0) searches for
+  the opening paren of the first sexp."
   ([pred s]
    (search-sexp-boundary pred nil s))
   ([pred backwards s]

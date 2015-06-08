@@ -245,6 +245,9 @@
 
     (is (= (find-unbound :transport transport :file five-file :line 34 :column 8)
            '#{name}))
+
+    (is (= (find-unbound :transport transport :file five-file :line 37 :column 5)
+           '#{n}))
     (.delete tmp-dir)))
 
 (deftest find-unbound-fails-on-cljs
