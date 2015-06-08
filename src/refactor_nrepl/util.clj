@@ -112,6 +112,9 @@
                  (close ch)
                  (recur chars (inc cnt) (dec op-cl) true)
 
+                 (> cnt (count s)) (throw (IllegalArgumentException.
+                                           "Can't find sexp boundary!"))
+
                  :else
                  (recur chars (inc cnt) op-cl ready))))
        0))))
