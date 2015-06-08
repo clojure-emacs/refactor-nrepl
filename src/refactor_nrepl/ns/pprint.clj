@@ -1,6 +1,7 @@
 (ns refactor-nrepl.ns.pprint
-  (:require [clojure.pprint :refer [pprint]]
-            [clojure.string :as str]
+  (:require [clojure
+             [pprint :refer [pprint]]
+             [string :as str]]
             [refactor-nrepl.ns.helpers :refer [prefix-form?]]))
 
 (defn- libspec-vectors-last [libspecs]
@@ -74,9 +75,8 @@
 
 (defn pprint-meta
   [m]
-  (if m
-    (str " ^" (into (sorted-map) m) "\n")
-    ""))
+  (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
+                       ", " "\n")))
 
 (defn pprint-ns
   [[_ name & more :as ns-form]]
@@ -87,11 +87,16 @@
                     :else (rest more))
         ns-meta (-> (find-ns name)
                     meta
-                    (dissoc :file :line :end-line :column :end-column)
-                    pprint-meta)]
+                    (dissoc :file :line :end-line :column :end-column))]
     (-> (with-out-str
-          (printf "(ns%s %s" ns-meta name)
-          (if forms (println) (print ")"))
+          (printf "(ns ")
+          (when (seq ns-meta) (pprint-meta ns-meta))
+          (print name)
+          (if (or docstring? attrs? forms)
+            (println)
+            (print ")"))
+          (when docstring? (printf "\"%s\"\n" docstring? ))
+          (when attrs? (pprint attrs?))
           (dorun
            (map-indexed
             (fn [idx form]

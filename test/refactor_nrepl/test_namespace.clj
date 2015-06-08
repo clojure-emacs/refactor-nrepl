@@ -25,7 +25,8 @@
 
 (deftest meta-preserved
   (let [cleaned (pprint-ns (clean-ns ns2-meta))]
-    (is (.contains cleaned "^{:author \"Trurl and Klapaucius\", :doc \"test ns with meta\"}"))))
+    (is (.contains cleaned "^{:author \"Trurl and Klapaucius\"
+:doc \"test ns with meta\"}"))))
 
 (deftest preserves-removed-use
   (let [requires (get-ns-component (clean-ns ns2) :use)
@@ -76,13 +77,6 @@
     (is (= (nthrest ns1-cleaned 3) author))
     (is (= (nthrest ns1-cleaned 4) refer-clojure))
     (is (= (nthrest ns1-cleaned 5) gen-class))))
-
-(deftest doc-author-moved-to-meta
-  (let [actual (pprint-ns (clean-ns ns1))
-        actual-form (read-string actual)]
-    (is (.contains actual "^{:author \"Winnie the pooh\", :doc \"This is a docstring for the ns\"}"))
-    (is (not= "This is a docstring for the ns" (nth actual-form 2)))
-    (is (not= {:author "Winnie the pooh"} (nth actual-form 3)))))
 
 (deftest removes-use
   (let [use-clause (get-ns-component ns1-cleaned :use)]
