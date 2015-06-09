@@ -15,7 +15,7 @@
           [:definition :definition]))
 
 (deftest extracts-private-function-definitition-with-docstring-and-meta
-  (is (= (-extract-definition "private-function-definition-with-docstring-and-meta" 29 42)
+  (is (= (-extract-definition "private-function-definition-with-docstring-and-meta" 29 43)
          "(fn
   \"docstring\"
   [foo]
@@ -25,7 +25,7 @@
     :return))")))
 
 (deftest extracts-private-function-definitition-with-docstring-no-meta
-  (is (= (-extract-definition "private-function-definition-with-docstring-no-meta" 30 37)
+  (is (= (-extract-definition "private-function-definition-with-docstring-no-meta" 30 38)
          "(fn
   \"docstring\"
   [foo]
@@ -34,7 +34,7 @@
     :value))")))
 
 (deftest extracts-private-function-definitition-without-docstring-and-meta
-  (is (= (-extract-definition "private-function-definition-witout-docstring-and-meta" 31 37)
+  (is (= (-extract-definition "private-function-definition-witout-docstring-and-meta" 31 38)
          "(fn
   [foo]
   (do
@@ -42,33 +42,33 @@
     :val))")))
 
 (deftest extracts-private-var-no-docstring
-  (is (= (-extract-definition "private-var-no-docstring" 34 2)
+  (is (= (-extract-definition "private-var-no-docstring" 34 3)
          ":value")))
 
 (deftest extracts-private-var-no-docstring-no-value
-  (is (= (-extract-definition "private-var-no-docstring-no-value" 35 2)
+  (is (= (-extract-definition "private-var-no-docstring-no-value" 35 3)
          "")))
 
 (deftest extracts-private-var-with-docstring
-  (is (= (-extract-definition "private-var-with-docstring" 36 2)
+  (is (= (-extract-definition "private-var-with-docstring" 36 3)
          ":value")))
 
 (deftest extracts-var-with-docstringand-value
-  (is (= (-extract-definition "var-with-docstring-and-value" 37 2)
+  (is (= (-extract-definition "var-with-docstring-and-value" 37 3)
          ":value")))
 
 (deftest extracts-let-bound
-  (is (= (-extract-definition "let-bound" 42 13)
+  (is (= (-extract-definition "let-bound" 42 14)
          "(+ 1 2)")))
 
 (deftest extracts-let-bound-multi-line
-  (is (= (-extract-definition "let-bound-multi-line" 42 28)
+  (is (= (-extract-definition "let-bound-multi-line" 42 29)
          "(+ 1 (* 3 2)
                                 (- 77 32) ; eol comment
                                 (/ 9 3))")))
 
 (deftest extracts-if-let-bound
-  (is (= (-extract-definition "if-let-bound" 44 13)
+  (is (= (-extract-definition "if-let-bound" 44 14)
          "(+ 11 17)")))
 
 (deftest returns-meta-data
@@ -76,7 +76,7 @@
              {:file (.getAbsolutePath (io/file "test/resources/extract_definition.clj"))
               :ns "resources.extract-definition"
               :line 44
-              :column 13
+              :column 14
               :name "if-let-bound"
               :dir "."})]
     (is (= (count (:occurrences res)) 1))
@@ -94,5 +94,5 @@
   :value)")))
 
 (deftest extracts-single-char-sym
-  (is (= (-extract-definition "a" 52 7)
+  (is (= (-extract-definition "a" 52 8)
          "1")))
