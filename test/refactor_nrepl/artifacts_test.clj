@@ -39,7 +39,8 @@
   (reset! artifacts/artifacts {"prismatic/schema" ["0.1"]})
   (with-redefs
     [artifacts/make-resolve-missing-aware-of-new-deps (fn [& _])
-     artifacts/stale-cache? (constantly false)]
+     artifacts/stale-cache? (constantly false)
+     artifacts/distill (constantly true)]
     (testing "Throws for non existing version"
       (is (thrown? IllegalArgumentException
                    (artifacts/hotload-dependency
@@ -47,4 +48,6 @@
     (testing "Throws for non existing artifact"
       (is (thrown? IllegalArgumentException
                    (artifacts/hotload-dependency
-                    {:coordinates "[imaginary \"1.0\"]"}))))))
+                    {:coordinates "[imaginary \"1.0\"]"}))))
+    (testing "No exception when all is OK"
+      (is (artifacts/hotload-dependency {:coordinates "[prismatic/schema \"0.1\"]"})))))

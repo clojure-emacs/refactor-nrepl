@@ -11,7 +11,7 @@
   (:import java.util.Date
            java.util.jar.JarFile))
 
-(def artifacts (atom {} :meta {:last-modified nil}))
+(defonce artifacts (atom {} :meta {:last-modified nil}))
 (def millis-per-day (* 24 60 60 1000))
 
 (defn get-artifacts-from-clojars!
@@ -107,7 +107,7 @@
                                              coordinates))))
     (when (stale-cache?)
       (update-artifact-cache!))
-    (if-let [versions (get-in @artifacts [(first coords)])]
+    (if-let [versions (get @artifacts (str (first coords)))]
       (when-not ((set versions) (second coords))
         (throw (IllegalArgumentException.
                 (str "Version " (second coords)
@@ -116,6 +116,10 @@
       (throw (IllegalArgumentException. (str "Can't find artifact '"
                                              (first coords) "'"))))))
 
+(defn distill [coords repos]
+  ;; Just so we can mock this out during testing
+  (alembic/distill coords :repositories repos))
+
 (defn hotload-dependency
   [{:keys [coordinates]}]
   (let [dependency-vector (edn/read-string coordinates)
@@ -123,6 +127,6 @@
         repos {"clojars" "http://clojars.org/repo"
                "central" "http://repo1.maven.org/maven2/"}]
     (ensure-quality-coordinates coordinates)
-    (alembic/distill coords :repositories repos)
+    (distill coords repos)
     (make-resolve-missing-aware-of-new-deps coords repos)
     (str/join " " dependency-vector)))
