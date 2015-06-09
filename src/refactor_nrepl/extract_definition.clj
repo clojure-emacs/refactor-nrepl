@@ -69,13 +69,25 @@
 
 (defn- def?
   "Is the OCCURRENCE the defining form?"
-  [{:keys [file name col-beg line-beg] :as msg}]
+  [{:keys [file name col-beg line-beg] :as occurrence}]
   (let [form (read-string (get-enclosing-sexp (slurp file) (dec line-beg) col-beg))
         name (symbol (suffix (read-string name)))]
     (if (def-form? form)
       (= (second form) name)
       (when (vector? form)
         (> (count (drop-while #(not= % name) form)) 1)))))
+
+(defn- sort-by-linum
+  [occurrences]
+  (sort #(- (:line-beg %1) (:line-beg %2)) occurrences))
+
+(defn- find-definition [occurrences]
+  (some->> occurrences
+           (filter def?)
+           ;; When working with let-like bindings we have to sort the
+           ;; occurrences so the ones earlier in the file comes first
+           sort-by-linum
+           first))
 
 (defn extract-definition
   "Returns the definition of SYMBOL to facilitate inlining."
@@ -84,9 +96,7 @@
                              find-symbol
                              (map #(apply create-result-alist %))
                              (map occurrence-to-map))]
-    (when-let [definition-occurrence (some->> occurrences
-                                              (filter def?)
-                                              first)]
+    (when-let [definition-occurrence (find-definition occurrences)]
       {:definition (merge {:definition (-extract-definition definition-occurrence)}
                           definition-occurrence)
        :occurrences (remove #(= % definition-occurrence) occurrences)})))

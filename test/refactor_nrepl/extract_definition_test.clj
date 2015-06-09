@@ -96,3 +96,7 @@
 (deftest extracts-single-char-sym
   (is (= (-extract-definition "a" 52 8)
          "1")))
+
+(deftest handles-muliple-references-in-let
+  (is (= (-extract-definition "a" 55 7)
+         "1")))
