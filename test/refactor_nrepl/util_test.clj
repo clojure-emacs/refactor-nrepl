@@ -10,12 +10,12 @@
   #{foo bar baz}
   ;; some other stuff
 (foobar baz)")
-(def binding-location [4 10])
-(def funcall-location [7 8])
-(def set-location [8 35])
-(def map-location [8 28])
-(def weird-location [2 5])
-(def println-location [6 8])
+(def binding-location [3 8])
+(def funcall-location [6 8])
+(def set-location [7 35])
+(def map-location [7 28])
+(def weird-location [1 5])
+(def println-location [5 8])
 
 (deftest get-enclosing-sexp-test
   (is (= (apply get-enclosing-sexp file-content binding-location)

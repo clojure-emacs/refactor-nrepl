@@ -92,3 +92,7 @@
   (is (= (-extract-definition "public-function" 50 12)
          "(fn []
   :value)")))
+
+(deftest extracts-single-char-sym
+  (is (= (-extract-definition "a" 52 7)
+         "1")))

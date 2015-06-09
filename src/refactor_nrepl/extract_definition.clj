@@ -45,7 +45,7 @@
 
 (defn- -extract-definition
   [{:keys [match file line-beg col-beg name]}]
-  (let [literal-sexp (get-enclosing-sexp (slurp file) line-beg col-beg)
+  (let [literal-sexp (get-enclosing-sexp (slurp file) (dec line-beg) col-beg)
         form (read-string literal-sexp)]
     (.replaceAll
      (case (first form)
@@ -70,7 +70,7 @@
 (defn- def?
   "Is the OCCURRENCE the defining form?"
   [{:keys [file name col-beg line-beg] :as msg}]
-  (let [form (read-string (get-enclosing-sexp (slurp file) line-beg col-beg))
+  (let [form (read-string (get-enclosing-sexp (slurp file) (dec line-beg) col-beg))
         name (symbol (suffix (read-string name)))]
     (if (def-form? form)
       (= (second form) name)

@@ -48,3 +48,6 @@
   :value)
 
 (public-function)
+
+(let [a 1]
+  (inc a))

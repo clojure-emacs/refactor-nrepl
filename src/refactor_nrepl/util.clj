@@ -144,15 +144,13 @@
 
   A string is not treated as a sexp by this function.
 
-  Line is indexed from 1, and column is indexed from 0 (this is how
-  emacs does it)."
+  Both line and column are indexed from 0."
   [file-content line column]
   (let [lines (str/split-lines file-content)
-        line-index (dec line)
         char-count-for-lines (->> lines
-                                  (take line-index)
+                                  (take line)
                                   (map count)
-                                  (reduce + line-index))
+                                  (reduce + line))
         content-to-point (-> char-count-for-lines
                              (+ column)
                              (take file-content))

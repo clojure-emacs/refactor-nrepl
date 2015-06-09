@@ -12,7 +12,7 @@
   (throw-unless-clj-file file)
   (let [content (slurp file)
         ast (ns-ast content)
-        sexp (get-enclosing-sexp content line column)
+        sexp (get-enclosing-sexp content (dec line) column)
         selected-sexp-node (->> ast
                                 (top-level-form-index line column)
                                 (nth ast)
