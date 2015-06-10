@@ -146,7 +146,8 @@
 
   Both line and column are indexed from 0."
   [file-content line column]
-  (let [lines (str/split-lines file-content)
+  (let [file-content (.replaceAll file-content "\r" "") ; \r messes up count
+        lines (str/split-lines file-content)
         char-count-for-lines (->> lines
                                   (take line)
                                   (map count)

@@ -37,7 +37,8 @@
   [^String bindings ^String var-name]
   (let [i (.indexOf bindings var-name)
         next-form-with-trailing-garb (str/trim
-                                      (.substring bindings (+ i (.length var-name))))
+                                      (.substring bindings
+                                                  (+ i (.length var-name))))
         next-form (read-string next-form-with-trailing-garb)]
     (if (re-find #"[\({\[]" (str next-form))
       (get-next-sexp next-form-with-trailing-garb)
@@ -45,7 +46,8 @@
 
 (defn- -extract-definition
   [{:keys [match file line-beg col-beg name]}]
-  (let [literal-sexp (get-enclosing-sexp (slurp file) (dec line-beg) col-beg)
+  (let [literal-sexp (get-enclosing-sexp (slurp file) (dec line-beg)
+                                         col-beg)
         form (read-string literal-sexp)]
     (.replaceAll
      (case (first form)
@@ -70,7 +72,8 @@
 (defn- def?
   "Is the OCCURRENCE the defining form?"
   [{:keys [file name col-beg line-beg] :as occurrence}]
-  (let [form (read-string (get-enclosing-sexp (slurp file) (dec line-beg) col-beg))
+  (let [form (read-string (get-enclosing-sexp (slurp file) (dec line-beg)
+                                              col-beg))
         name (symbol (suffix (read-string name)))]
     (if (def-form? form)
       (= (second form) name)
