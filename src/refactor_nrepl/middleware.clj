@@ -95,20 +95,22 @@
          :status :done))
 
 (def refactor-nrepl-ops
-  {"resolve-missing" resolve-missing-reply
-   "find-debug-fns" find-debug-fns-reply
-   "find-symbol" find-symbol-reply
+  {
    "artifact-list" artifact-list-reply
    "artifact-versions" artifact-versions-reply
-   "hotload-dependency" hotload-dependency-reply
    "clean-ns" clean-ns-reply
    "configure" config-reply
+   "extract-definition" extract-definition-reply
+   "find-debug-fns" find-debug-fns-reply
+   "find-symbol" find-symbol-reply
+   "find-unbound" find-unbound-reply
+   "hotload-dependency" hotload-dependency-reply
+   "rename-file-or-dir" rename-file-or-dir-reply
+   "resolve-missing" resolve-missing-reply
+   "stubs-for-interface" stubs-for-interface-reply
    "version" version-reply
    "warm-ast-cache" warm-ast-cache-reply
-   "find-unbound" find-unbound-reply
-   "extract-definition" extract-definition-reply
-   "rename-file-or-dir" rename-file-or-dir-reply
-   "stubs-for-interface" stubs-for-interface-reply})
+   })
 
 (defn wrap-refactor
   [handler]
