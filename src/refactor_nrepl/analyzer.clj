@@ -5,7 +5,9 @@
             [clojure.tools.analyzer.jvm :as aj]
             [clojure.tools.analyzer.jvm.utils :as ajutils]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [refactor-nrepl.util :as util])
+            [refactor-nrepl
+             [util :as util]
+             [config :as config]])
   (:import java.io.PushbackReader))
 
 ;;; The structure here is {ns {content-hash ast}}
@@ -70,8 +72,10 @@
   (try
     (cachable-ast file-content)
     (catch Exception ex
-      (throw (IllegalStateException.
-              (str (first (parse-ns file-content)) " is in a bad state!"))))))
+      (if #spy/d (config/get-opt :debug)
+          (throw ex)
+          (throw (IllegalStateException.
+                  (str (first (parse-ns file-content)) " is in a bad state!")))))))
 
 (defn warm-ast-cache []
   (doseq [f (util/find-clojure-sources-in-project)]
