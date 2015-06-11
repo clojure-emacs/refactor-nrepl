@@ -72,10 +72,10 @@
   (try
     (cachable-ast file-content)
     (catch Exception ex
-      (if #spy/d (config/get-opt :debug)
-          (throw ex)
-          (throw (IllegalStateException.
-                  (str (first (parse-ns file-content)) " is in a bad state!")))))))
+      (if (config/get-opt :debug)
+        (throw ex)
+        (throw (IllegalStateException.
+                (str (first (parse-ns file-content)) " is in a bad state!")))))))
 
 (defn warm-ast-cache []
   (doseq [f (util/find-clojure-sources-in-project)]
