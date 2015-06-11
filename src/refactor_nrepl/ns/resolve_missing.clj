@@ -24,7 +24,8 @@
   (map #(list % (get-type %)) candidates))
 
 (defn- inlined-dependency? [candidate]
-  (-> candidate str (.startsWith "deps.")))
+  (or (-> candidate str (.startsWith "deps."))
+      (-> candidate str (.startsWith "eastwood.copieddeps"))))
 
 (defn resolve-missing [{sym :symbol}]
   (when-not (and sym (string? sym) (seq sym))
