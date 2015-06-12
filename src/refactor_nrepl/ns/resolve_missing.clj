@@ -5,10 +5,11 @@
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [sym]
-  (seq (concat (when-let [p (prefix sym)]
-                 (slamhound/candidates :import (symbol p) [] {}))
-               (slamhound/candidates :import (symbol (suffix sym)) [] {})
-               (slamhound/candidates :refer sym [] {}))))
+  (->> (when-let [p (prefix sym)]
+         (slamhound/candidates :import (symbol p) [] {}))
+       (into (list))
+       (into (slamhound/candidates :import (symbol (suffix sym)) [] {}))
+       (into (slamhound/candidates :refer sym [] {}))))
 
 (defn- get-type [sym]
   (let [info (info-clj 'user sym)]
