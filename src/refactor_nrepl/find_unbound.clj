@@ -20,11 +20,15 @@
                                 (filter (partial node-at-loc? line column))
                                 (filter (partial node-for-sexp? sexp))
                                 last)
-        avail-locals (->> selected-sexp-node :env :locals keys)
-        locals-in-use (set/intersection (set avail-locals)
-                              (->> selected-sexp-node
-                                   nodes
-                                   (filter #(= :local (:op %)))
-                                   (map :form)
-                                   set))]
-    (filter locals-in-use avail-locals)))
+        sexp-locals (->> selected-sexp-node
+                         nodes
+                         (filter #(= :local (:op %)))
+                         (map :form)
+                         distinct)
+        avail-locals-in-use (set/intersection (->> selected-sexp-node
+                                                   :env
+                                                   :locals
+                                                   keys
+                                                   set)
+                                              (set sexp-locals))]
+    (filter avail-locals-in-use sexp-locals)))

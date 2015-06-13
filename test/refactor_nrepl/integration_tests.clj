@@ -241,7 +241,7 @@
     (is (= (find-unbound :transport transport :file five-file :line 20 :column 16)
            '(p)))
     (is (= (find-unbound :transport transport :file five-file :line 27 :column 8)
-           '(strings sep)))
+           '(sep strings)))
 
     (is (= (find-unbound :transport transport :file five-file :line 34 :column 8)
            '(name)))
