@@ -19,10 +19,12 @@
                                 nodes
                                 (filter (partial node-at-loc? line column))
                                 (filter (partial node-for-sexp? sexp))
-                                last)]
-    (into '() (set/intersection (->> selected-sexp-node :env :locals keys set)
-                                (->> selected-sexp-node
-                                     nodes
-                                     (filter #(= :local (:op %)))
-                                     (map :form)
-                                     set)))))
+                                last)
+        avail-locals (->> selected-sexp-node :env :locals keys)
+        locals-in-use (set/intersection (set avail-locals)
+                              (->> selected-sexp-node
+                                   nodes
+                                   (filter #(= :local (:op %)))
+                                   (map :form)
+                                   set))]
+    (filter locals-in-use avail-locals)))

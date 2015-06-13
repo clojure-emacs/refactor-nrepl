@@ -212,7 +212,7 @@
         error (:error (first response))]
     (if error
       (do (println "something bad happened: " error) (first response))
-      (set (map symbol unbound)))))
+      (map symbol unbound))))
 
 (defn version
   "Returns the version of the middleware"

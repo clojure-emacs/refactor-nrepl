@@ -36,3 +36,6 @@
 (defn sexp-with-anon-fn [n]
   (let [g 5]
     (#(+ g %) n)))
+
+(defn many-params [x y z a b c]
+  (* x y z a b c))

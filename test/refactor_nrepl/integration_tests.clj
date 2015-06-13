@@ -234,20 +234,23 @@
         five-file (str tmp-dir "/src/com/example/five.clj")
         transport (connect :port 7777)]
     (is (= (find-unbound :transport transport :file five-file :line 12 :column 6)
-           '#{s}))
+           '(s)))
     (is (= (find-unbound :transport transport :file five-file :line 13 :column 13)
-           '#{s sep}))
+           '(s sep)))
 
     (is (= (find-unbound :transport transport :file five-file :line 20 :column 16)
-           '#{p}))
+           '(p)))
     (is (= (find-unbound :transport transport :file five-file :line 27 :column 8)
-           '#{strings sep}))
+           '(strings sep)))
 
     (is (= (find-unbound :transport transport :file five-file :line 34 :column 8)
-           '#{name}))
+           '(name)))
 
     (is (= (find-unbound :transport transport :file five-file :line 37 :column 5)
-           '#{n}))
+           '(n)))
+    (is (= (find-unbound :transport transport :file five-file :line 41 :column 4)
+           '(x y z a b c)))
+
     (.delete tmp-dir)))
 
 (deftest find-unbound-fails-on-cljs
