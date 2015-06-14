@@ -181,11 +181,11 @@ The return value is a `status` of `done` and `dependency` which is the coordinat
 
 ### find-unbound
 
-This op finds unbound vars in some ns on the classpath.  In `clj-refactor` we use this as the underlying op for the `extract-function` refactoring: anything unbound in the body of the newly created defn has to be function parameters.
+This op finds available and used local vars in a selected s-expression in a ns on the classpath.  In `clj-refactor` we use this as the underlying op for the `extract-function` refactoring: any locals available and used will be unbound in case the s-expression is extracted into a first level form therefore these vars need to be listed as parameters for the new function both at the function definition and at the call site.
 
-This op requires `file` which is the name of the file to work on and well as `line` and `column` to find the nearest enclosing form to work on.  Both `line` and `column` start counting at 1.
+This op requires `file` which is the name of the file to work on as well as `line` and `column`: the nearest enclosing s-expression will be used to determine the available and used locals. Both `line` and `column` start counting at 1.
 
-Return valus `status` of `done` and `unbound` which is a  list of unbound vars, or `error` when something went wrong.
+Return values `status` of `done` and `unbound` which is a  list of unbound vars, or `error` when something went wrong. The returned vars' order is based on the order of their occurrence in the macro expanded s-expression (that means reversed order for threading macros naturally -- compared to what you actually see).
 
 ### stubs-for-interface
 
