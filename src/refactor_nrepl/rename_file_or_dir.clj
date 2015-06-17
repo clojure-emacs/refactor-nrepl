@@ -184,6 +184,8 @@
 (defn rename-file-or-dir
   "Renames a file or dir updating all dependent files.
 
+  old-path and new-path are expected to be aboslute paths.
+
   Returns a list of all files that were affected."
   [old-path new-path]
   {:pre [(not (str/blank? old-path))

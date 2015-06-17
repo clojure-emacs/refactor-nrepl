@@ -238,7 +238,7 @@ This eagerly builds, and caches, ASTs for all clojure files in the project.  Ret
 
 ### rename-file-or-dir
 
-The `rename-file-or-dir` op takes an `old-path` and a `new-path` which are paths to a file or directory.
+The `rename-file-or-dir` op takes an `old-path` and a `new-path` which are absolute paths to a file or directory.
 
 If `old-path` is a directory, all files, including any non-clj files, are moved to `new-path`.
 
