@@ -5,6 +5,7 @@
             [clojure.tools.analyzer.jvm :as aj]
             [clojure.tools.analyzer.jvm.utils :as ajutils]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
+            [clojure.tools.reader :as reader]
             [refactor-nrepl
              [util :as util]
              [config :as config]])
@@ -55,7 +56,8 @@
   [ns aliases]
   (when (ns-on-cp? ns)
     (binding [ana/macroexpand-1 noop-macroexpand-1
-              *file* (-> ns ajutils/ns-resource ajutils/source-path)]
+              *file* (-> ns ajutils/ns-resource ajutils/source-path)
+              reader/*data-readers* *data-readers*]
       (assoc-in (aj/analyze-ns ns) [0 :alias-info] aliases))))
 
 (defn- cachable-ast [file-content]
