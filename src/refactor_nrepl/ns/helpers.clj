@@ -63,3 +63,9 @@ type is either :require, :use or :import"
   (let [rdr (PushbackReader. (StringReader. file-content))]
     (read rdr)
     (str/triml (slurp rdr))))
+
+(defn ns-form-from-string
+  [file-content]
+  (if-let [ns-form (read-ns-decl (PushbackReader. (StringReader. file-content)))]
+    ns-form
+    (throw (IllegalArgumentException. "Malformed ns form!"))))

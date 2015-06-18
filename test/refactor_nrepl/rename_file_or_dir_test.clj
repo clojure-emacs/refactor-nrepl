@@ -1,10 +1,8 @@
 (ns refactor-nrepl.rename-file-or-dir-test
   (:require [clojure.test :refer :all]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [refactor-nrepl.rename-file-or-dir :refer :all]
             [refactor-nrepl.ns.helpers
-             :refer
-             [file-content-sans-ns get-ns-component]])
+             :refer [get-ns-component ns-form-from-string]]
+            [refactor-nrepl.rename-file-or-dir :refer :all])
   (:import [java.io File PushbackReader StringReader]))
 
 (def from-file-path (.getAbsolutePath (File. "test/resources/testproject/src/com/move/ns_to_be_moved.clj")))
@@ -28,12 +26,6 @@
     (let [res (rename-file-or-dir from-file-path to-file-path)]
       (is (or (list? res) (instance? clojure.lang.Cons res)))
       (is (count res) 3))))
-
-(defn- ns-form-from-string
-  [file-content]
-  (if-let [ns-form (read-ns-decl (PushbackReader. (StringReader. file-content)))]
-    ns-form
-    (throw (IllegalArgumentException. "Malformed ns form!"))))
 
 (deftest replaces-ns-references-in-dependents
   (let [dependents (atom [])]
