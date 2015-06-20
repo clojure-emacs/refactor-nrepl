@@ -17,6 +17,20 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
 :plugins [[refactor-nrepl "1.0.5"]]
 ```
 
+### Adding the middleware via Boot
+
+Add the following in `~/.profile.boot`:
+
+```clojure
+(require 'boot.repl)
+
+(swap! boot.repl/*default-dependencies* conj
+       '[refactor-nrepl "1.1.0-SNAPSHOT"])
+
+(swap! boot.repl/*default-middleware* conj
+       'refactor-nrepl.middleware/wrap-refactor)
+```
+
 ### Clojure client
 
 A clojure client is provided for demonstrative purposes, and to make some refactorings available from the REPL.
