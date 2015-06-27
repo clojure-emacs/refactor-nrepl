@@ -16,6 +16,11 @@
   [key]
   (get @opts key))
 
+(defn contains-opt?
+  "Checks if key is present in the opts map."
+  [key]
+  (contains? @opts key))
+
 (defn- set-opts!
   "Sets the options for the current session."
   [m]
@@ -27,7 +32,7 @@
     (throw (IllegalArgumentException.
             (str "Options must be a map, got '" opts "'"))))
   (doseq [k (keys opts)]
-    (when-not (get-opt k)
+    (when-not (contains-opt? k)
       (throw (IllegalArgumentException.
               (str "Unknown key in config map: " k)))))
   opts)
