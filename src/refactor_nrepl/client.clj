@@ -96,18 +96,21 @@
                              host "localhost"}}]
   (nrepl/connect :port port :host host))
 
-(defn- act-on-occurrences [action & {:keys [transport ns name dir line column file]}]
+(defn- act-on-occurrences [action & {:keys [transport ns name dir line column file ignore-errors]}]
   (let [tr (or transport @transp (reset! transp (connect)))
         req {:op :find-symbol
              :ns ns
              :dir (or dir ".")
              :line line
              :column column
-             :name name}
+             :name name
+             :ignore-errors ignore-errors}
         found-symbols (->> req
                            (#(if file (assoc % :file file) %))
                            (nrepl-message 60000 tr)
-                           (map (juxt :occurrence :count)))]
+                           (map (juxt :occurrence :count :error)))]
+    (if-let [error (some last found-symbols)]
+      (throw (IllegalStateException. (str error))))
     (->> found-symbols
          (map first)
          (remove nil?)
@@ -132,7 +135,7 @@
   [& {:keys [transport ns name dir file line column]}]
   {:pre [(or (and ns name) (and file line column))]}
   (act-on-occurrences prettify-found-symbol-result :transport transport
-                      :ns ns :name name :dir dir :file file :line line :column column))
+                      :ns ns :name name :dir dir :file file :line line :column column :ignore-errors "true"))
 
 (defn rename-symbol
   "Renames symbols (defs and defns) in the project's given dir.

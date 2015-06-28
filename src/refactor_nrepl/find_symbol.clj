@@ -106,11 +106,14 @@
          (str/join "\n")
          str/trim)))
 
-(defn- find-symbol-in-file [fully-qualified-name file]
+(defn- find-symbol-in-file [fully-qualified-name ignore-errors file]
   (let [file-content (slurp file)
-        locs (->> (ns-ast file-content)
-                  (find-symbol-in-ast fully-qualified-name)
-                  (filter first))
+        locs (try (->> (ns-ast file-content)
+                       (find-symbol-in-ast fully-qualified-name)
+                       (filter first))
+                  (catch Throwable th
+                    (when-not ignore-errors
+                      (throw th))))
         gather (fn [info]
                  (conj info
                        (.getCanonicalPath file)
@@ -119,7 +122,7 @@
                          (second info))))]
     (when (seq locs) (map gather locs))))
 
-(defn- find-global-symbol [file ns var-name clj-dir]
+(defn- find-global-symbol [file ns var-name clj-dir ignore-errors]
   (let [dir (or clj-dir ".")
         namespace (or ns (util/ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
@@ -128,7 +131,7 @@
     (->> dir
          java.io.File.
          find-clojure-sources-in-dir
-         (mapcat (partial find-symbol-in-file fully-qualified-name))
+         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors))
          (map identity))))
 
 (defn- find-local-symbol
@@ -166,11 +169,13 @@
                                (= local-var-name (-> % :name))
                                (:local %))))))))
 
-(defn find-symbol [{:keys [file ns name dir line column]}]
+(defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (util/throw-unless-clj-file file)
   (or (when (and file (not-empty file))
         (not-empty (find-local-symbol file name line column)))
-      (find-global-symbol file ns name dir)))
+      (find-global-symbol file ns name dir (and ignore-errors
+                                                (or (not (coll? ignore-errors))
+                                                    (not-empty ignore-errors))))))
 
 (defn create-result-alist
   [line-beg line-end col-beg col-end name file match]

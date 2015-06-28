@@ -63,21 +63,26 @@
 (defn- cachable-ast [file-content]
   (let [[ns aliases] (parse-ns file-content)]
     (when ns
-      (if-let [cached-ast (get-ast-from-cache ns file-content)]
-        cached-ast
-        (when-let [new-ast (build-ast ns aliases)]
-          (update-ast-cache file-content ns new-ast))))))
+      (if-let [cached-ast-or-err (get-ast-from-cache ns file-content)]
+        cached-ast-or-err
+        (when-let [new-ast-or-err (try (build-ast ns aliases) (catch Throwable th th))]
+          (update-ast-cache file-content ns new-ast-or-err))))))
 
 (defn ns-ast
   "Build AST for a namespace"
   [file-content]
-  (try
-    (cachable-ast file-content)
-    (catch Exception ex
-      (if (config/get-opt :debug)
-        (throw ex)
-        (throw (IllegalStateException.
-                (str (first (parse-ns file-content)) " is in a bad state!")))))))
+  (let [ast-or-err (cachable-ast file-content)]
+    (cond
+      (and (instance? Throwable ast-or-err)
+           (config/get-opt :debug))
+      (throw ast-or-err)
+
+      (instance? Throwable ast-or-err)
+      (throw (IllegalStateException.
+              (str (first (parse-ns file-content)) " is in a bad state! Error: " (.getMessage ast-or-err))))
+
+      :default
+      ast-or-err)))
 
 (defn warm-ast-cache []
   (doseq [f (util/find-clojure-sources-in-project)]

@@ -63,6 +63,43 @@
     ;; clean-up
     (.delete tmp-dir)))
 
+(defn ns-ast-throw-error-for-five [content]
+  (if (.contains content "com.example.five")
+    (throw (IllegalThreadStateException. "FAILED!"))
+    (#'refactor-nrepl.analyzer/cachable-ast content)))
+
+(deftest test-find-two-foo-errors-ignored
+  (with-redefs [refactor-nrepl.analyzer/ns-ast ns-ast-throw-error-for-five]
+    (let [tmp-dir (create-test-project)
+          transport (connect :port 7777)
+          response (find-usages :transport transport :ns 'com.example.two
+                                :file (str tmp-dir "/src/com/example/one.clj")
+                                :line 6 :column 19
+                                :name "foo" :dir (str tmp-dir))
+          result (remove keyword? response)]
+
+      (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
+      (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
+
+      (is (re-matches #"(?s).*\[2\].*" (first result)) "call of foo not found in ns com.example.one")
+
+      (is (re-matches #"(?s).*\[6\].*" (second result)) "call of foo not found in ns com.example.one")
+
+      (is (re-matches #"(?s).*\[3\].*" (last result)) "def of foo not found in ns com.example.two")
+
+      ;; clean-up
+      (.delete tmp-dir))))
+
+(deftest test-rename-broken-ns
+  (with-redefs [refactor-nrepl.analyzer/ns-ast ns-ast-throw-error-for-five]
+    (let [tmp-dir (create-test-project)
+          transport (connect :port 7777)]
+      (is (thrown? IllegalStateException
+                   (rename-symbol :transport transport :ns 'com.example.two :name "foo"
+                                  :dir (str tmp-dir) :new-name "baz")))
+
+      (.delete tmp-dir))))
+
 (deftest test-shouldnt-find-str-in-assert
   (let [tmp-dir (create-test-project)
         transport (connect :port 7777)

@@ -53,6 +53,7 @@ The `configure` op takes a single argument `opts` which is an options map to use
 ```clj
 {
 :prefix-rewriting true ; Should clean-ns favor prefix forms in the ns macro?
+:debug false ; verbose setting for debugging.
 }
 ```
 
@@ -127,6 +128,8 @@ This op finds occurrences of a single symbol.
 
 `column` The column number where the symbol occurs.
 
+`ignore-errors` [optional] if set find symbol carries on even if there is broken namespace which we can not build AST for
+
 The return value is a stream of occurrences under the key `occurrence` which is an alist like this:
 
 `(:line-beg 5 :line-end 5 :col-beg 19 :col-end 26 :name a-name :file \"/aboslute/path/to/file.clj\" :match (fn-name some args))`
@@ -134,6 +137,8 @@ The return value is a stream of occurrences under the key `occurrence` which is 
 When the fine `occurrence` has been send a final message is sent with `count`, indicating the total number of matches, and `status` `done`.
 
 In the event of an error the key `error` will contain a message which is intended for display to the user.
+
+Clients are advised to set `ignore-errors` on only for find usages as the rest of the operations built on find-symbol supposed to modify the project as well therefore can be destructive if some namespaces can not be analyzed.
 
 #### find usages (application of find symbols)
 
