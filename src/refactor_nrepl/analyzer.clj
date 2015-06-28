@@ -84,6 +84,25 @@
       :default
       ast-or-err)))
 
+(defn- ast-stats []
+  (let [asts @ast-cache]
+    (interleave (keys asts)
+                (->> (vals asts)
+                     (mapcat vals)
+                     (map #(cond
+                             (and (instance? Throwable %)
+                                  (config/get-opt :debug))
+                             (interleave (keys %) (vals %))
+
+                             (instance? Throwable %)
+                             (.getMessage %)
+
+                             :default
+                             (count %)))))))
+
 (defn warm-ast-cache []
   (doseq [f (util/find-clojure-sources-in-project)]
-    (ns-ast (slurp f))))
+    (try
+      (ns-ast (slurp f))
+      (catch Throwable th))) ;noop, ast-status will be reported separately
+  (ast-stats))

@@ -81,7 +81,8 @@
   (reply transport msg :status :done :version (plugin/version)))
 
 (defn- warm-ast-cache-reply [{:keys [transport] :as msg}]
-  (reply transport msg :status (do (warm-ast-cache) :done)))
+  (reply transport msg :status :done
+         :ast-statuses (serialize-response msg (warm-ast-cache))))
 
 (defn- stubs-for-interface-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
