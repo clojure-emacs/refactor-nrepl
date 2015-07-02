@@ -89,16 +89,9 @@
     (interleave (keys asts)
                 (->> (vals asts)
                      (mapcat vals)
-                     (map #(cond
-                             (and (instance? Throwable %)
-                                  (config/get-opt :debug))
-                             (interleave (keys %) (vals %))
-
-                             (instance? Throwable %)
-                             (.getMessage %)
-
-                             :default
-                             (count %)))))))
+                     (map #(if (instance? Throwable %)
+                             (list "error" (.getMessage %))
+                             "OK"))))))
 
 (defn warm-ast-cache []
   (doseq [f (util/find-clojure-sources-in-project)]
