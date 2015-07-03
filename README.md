@@ -19,7 +19,7 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
 
 ### Adding the middleware via Boot
 
-Add the following in `~/.profile.boot`:
+Add the following in `~/.boot/profile.boot`:
 
 ```clojure
 (require 'boot.repl)
