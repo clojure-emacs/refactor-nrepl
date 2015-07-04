@@ -129,6 +129,7 @@
   - transport optional, however if you don't provide your own repl
   - line optional, line of the symbol to find in the source file
   - column optional, column of the symbol to find in the source file
+  - file to refactor, provide path as you would provide for slurp
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
@@ -144,15 +145,19 @@
   - ns namespace of the symbol to find
   - name of the symbol to find as string
   - new-name to rename to
-  - clj-dir director to search clj files in, defaults to `.`
+  - dir director to search clj files in, defaults to `.`
+  - file to refactor, provide path as you would provide for slurp
+  - line line of the symbol to find in the source file
+  - column column of the symbol to find in the source file
   - transport optional, however if you don't provide your own repl
   transport the client will create and store its own. therefore it is
   preferred that you create, store and manage your own transport by calling
   the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name new-name dir]}]
+  [& {:keys [transport ns name new-name dir file line column]}]
   {:pre [ns name new-name]}
   (act-on-occurrences (partial rename-symbol-occurrence! name new-name)
-                      :transport transport :ns ns :name name :dir dir))
+                      :transport transport :ns ns :file file :name name
+                      :dir dir :line line :column column))
 
 (defn remove-debug-invocations
   "Removes debug function invocations. In reality it could remove any function

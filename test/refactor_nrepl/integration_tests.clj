@@ -96,7 +96,9 @@
           transport (connect :port 7777)]
       (is (thrown? IllegalStateException
                    (rename-symbol :transport transport :ns 'com.example.two :name "foo"
-                                  :dir (str tmp-dir) :new-name "baz")))
+                                  :file (str tmp-dir "/src/com/example/two.clj")
+                                  :dir (str tmp-dir) :new-name "baz"
+                                  :line 3 :column 28)))
 
       (.delete tmp-dir))))
 
@@ -177,6 +179,7 @@
   \"foo\")
 "]
     (rename-symbol :transport transport :ns 'com.example.two :name "foo"
+                   :file (str tmp-dir "/src/com/example/four.clj") :line 3 :column 28
                    :dir (str tmp-dir) :new-name "baz")
 
     (is (= new-one (slurp (str tmp-dir "/src/com/example/one.clj")))
