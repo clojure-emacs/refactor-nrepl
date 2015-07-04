@@ -99,7 +99,9 @@
                              find-symbol
                              (map #(apply create-result-alist %))
                              (map occurrence-to-map))]
-    (when-let [definition-occurrence (find-definition occurrences)]
+    (if-let [definition-occurrence (find-definition occurrences)]
       {:definition (merge {:definition (-extract-definition definition-occurrence)}
                           definition-occurrence)
-       :occurrences (remove #(= % definition-occurrence) occurrences)})))
+       :occurrences (remove #(= % definition-occurrence) occurrences)}
+      (throw (IllegalStateException.
+              (str "Couldn't find definition for " (:name msg)))))))

@@ -100,3 +100,7 @@
 (deftest handles-muliple-references-in-let
   (is (= (-extract-definition "a" 55 7)
          "1")))
+
+(deftest throws-when-it-cannot-find-definition
+  (is (thrown? IllegalStateException
+               (-extract-definition "does not exist" 1 1))))
