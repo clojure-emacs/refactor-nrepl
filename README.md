@@ -253,7 +253,11 @@ This op returns, `version`, which is the current version of this project.
 
 ### warm-ast-cache
 
-This eagerly builds, and caches, ASTs for all clojure files in the project.  Returns `status` `done` on success.
+Eagerly builds, and caches ASTs for all clojure files in the project.  Returns `status` `done` on success and stats for the ASTs built: a list of namespace names as the odd members of the list and either 'OK' as the even member or the error message generated when the given namespace was analyzed. For example
+
+```clojure
+'(com.foo "OK" com.bar "OK" com.baz '("error" "Could not resolve var: keyw"))
+```
 
 ### rename-file-or-dir
 
