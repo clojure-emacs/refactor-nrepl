@@ -55,10 +55,10 @@
        (filter #(second %))
        ffirst))
 
-(defn throw-unless-clj-file [file]
-  (when (and file (not-empty file) (or (.endsWith file ".cljs") (.endsWith file ".cljx")))
+(defn throw-unless-clj-file [file-path]
+  (when-not (re-matches #".+\.clj$" file-path)
     (throw (IllegalArgumentException.
-            "Refactor nrepl doesn't work on cljs or cljx files!"))))
+            "Only .clj files are supported!"))))
 
 (defn- normalize-anon-fn-params
   "replaces anon fn params in a read form"
