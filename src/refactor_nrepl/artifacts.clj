@@ -95,10 +95,16 @@
   "Once the deps are available on cp we still have to load them and
   reset slamhound's cache to make resolve-missing work."
   [coords repos]
-  (let [dep (first (alembic/resolve-dependencies alembic/the-still coords repos nil))
-        jarfile (JarFile. (:jar dep))]
-    (dorun (map require (find/find-namespaces-in-jarfile jarfile)))
-    (slamhound/reset)))
+  (try
+    (let [dep (first (alembic/resolve-dependencies alembic/the-still coords repos nil))
+          jarfile (JarFile. (:jar dep))]
+      (dorun (map require (find/find-namespaces-in-jarfile jarfile)))
+      (slamhound/reset))
+    (catch ClassNotFoundException _
+      ;; I've seen this happen after adding core.async as a dependency.
+      ;; A failure here isn't a big deal, it only means that resolve-missing
+      ;; isn't going to work until the namespace has been loaded manually.
+      )))
 
 (defn- ensure-quality-coordinates [coordinates]
   (let [coords (->> coordinates read-string (take 2) vec)]
