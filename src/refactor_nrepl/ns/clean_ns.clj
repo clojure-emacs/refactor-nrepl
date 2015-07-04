@@ -30,7 +30,7 @@
   ns-form)
 
 (defn clean-ns [path]
-  {:pre [(seq path)]}
+  {:pre [(and (seq path) (string? path))]}
   (throw-unless-clj-file path)
   (let [ns-form (read-ns-form path)
         new-ns-form (->> ns-form
