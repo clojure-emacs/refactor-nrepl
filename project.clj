@@ -19,9 +19,9 @@
              :test {:dependencies [[print-foo "1.0.1"]]}
              :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
              :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0-beta3"]]}
+             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
-                   :dependencies [[org.clojure/clojure "1.7.0-beta3"]
+                   :dependencies [[org.clojure/clojure "1.7.0"]
                                   [commons-io/commons-io "2.4"]]
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
