@@ -14,7 +14,7 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "1.0.5"]]
+:plugins [[refactor-nrepl "1.1.0"]]
 ```
 
 ### Adding the middleware via Boot
@@ -316,6 +316,8 @@ Or alternatively run
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
 ## Changelog
+
+### 1.1.0
 
 * Add `rename-file-or-dir` which returns a file or a directory of clj files.
 * Add `extract-definition` which returns enough information to the clien to afford inlining of defs defns and let-bound vars.
