@@ -129,11 +129,8 @@
 (deftest should-throw-on-cljs
   (is (thrown? IllegalArgumentException (clean-ns cljs-file))))
 
-(comment
-  ;; broken across versions due to difference in ordering of objects
-  ;; in pprinted maps
+(when (= (clojure-version) "1.7.0")
   (deftest test-pprint
-           (let [ns-str (pprint-ns (clean-ns ns1))
-                 ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
-             (is (= ns1-str ns-str))))
-  )
+    (let [ns-str (pprint-ns (clean-ns ns1))
+          ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
+      (is (= ns1-str ns-str)))))

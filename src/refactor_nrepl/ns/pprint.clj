@@ -78,6 +78,19 @@
   (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
                        ", " "\n")))
 
+(defn- get-ns-meta
+  "If there's a docstring in the ns form it will get copied into the
+  meta along with everything in the namespaces' attr map.  In order to
+  avoid duplication we have to remove some of the keys in the metadata
+  map before printing."
+  [name attrs? docstring?]
+  (let [ns-meta (-> (find-ns name)
+                    meta
+                    ;; Metadata added by the compiler
+                    (dissoc :file :line :end-line :column :end-column))
+        ns-meta (if docstring? (dissoc ns-meta :doc) ns-meta)]
+    (apply dissoc ns-meta (keys attrs?))))
+
 (defn pprint-ns
   [[_ name & more :as ns-form]]
   (let [docstring? (when (string? (first more)) (first more))
@@ -85,12 +98,7 @@
         forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
                     :else (rest more))
-        ns-meta (-> (find-ns name)
-                    meta
-                    (dissoc :file :line :end-line :column :end-column))
-        ;; if there's a docstring it is copied into to the metadata
-        ;; for the ns and will get duplicated if we don't remove it
-        ns-meta (if docstring? (dissoc ns-meta :doc) ns-meta)]
+        ns-meta (get-ns-meta name attrs? docstring?)]
     (-> (with-out-str
           (printf "(ns ")
           (when (seq ns-meta) (pprint-meta ns-meta))
@@ -105,7 +113,7 @@
               (print ")")))
           (when attrs?
             (pprint attrs?)
-            (when (empty? (forms))
+            (when (empty? forms)
               (print ")")))
           (dorun
            (map-indexed
