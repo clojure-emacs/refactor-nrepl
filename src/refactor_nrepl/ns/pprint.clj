@@ -87,7 +87,10 @@
                     :else (rest more))
         ns-meta (-> (find-ns name)
                     meta
-                    (dissoc :file :line :end-line :column :end-column))]
+                    (dissoc :file :line :end-line :column :end-column))
+        ;; if there's a docstring it is copied into to the metadata
+        ;; for the ns and will get duplicated if we don't remove it
+        ns-meta (if docstring? (dissoc ns-meta :doc) ns-meta)]
     (-> (with-out-str
           (printf "(ns ")
           (when (seq ns-meta) (pprint-meta ns-meta))
