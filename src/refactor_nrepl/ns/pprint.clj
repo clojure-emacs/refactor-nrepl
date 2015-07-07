@@ -95,8 +95,15 @@
           (if (or docstring? attrs? forms)
             (println)
             (print ")"))
-          (when docstring? (printf "\"%s\"\n" docstring? ))
-          (when attrs? (pprint attrs?))
+          (when docstring?
+            (printf "\"%s\"" docstring?)
+            (if (or (seq attrs?) (seq forms))
+              (print "\n")
+              (print ")")))
+          (when attrs?
+            (pprint attrs?)
+            (when (empty? (forms))
+              (print ")")))
           (dorun
            (map-indexed
             (fn [idx form]
