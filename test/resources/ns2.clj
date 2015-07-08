@@ -12,7 +12,9 @@
         [clojure.string :rename {replace foo
                                  reverse bar}]
         [clojure.edn :rename {read-string rs
-                              read rd}]))
+                              read rd}])
+  (:import java.text.Normalizer))
+
 (defn use-everything []
   (get-pretty-writer)
   (fresh-line)
@@ -20,4 +22,5 @@
   (compose-fixtures)
   (escape)
   (read-instant-date)
-  (rs))
+  (rs)
+  java.text.Normalizer$Form/NFD)

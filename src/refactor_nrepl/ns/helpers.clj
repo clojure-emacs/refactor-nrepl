@@ -41,16 +41,30 @@ type is either :require, :use or :import"
 
 (defn suffix
   "java.util.Date -> Date
+  java.text.Normalizer$Form/NFD => Normalizer
+
   clojure.core/str -> str"
   [fully-qualified-name]
-  (cond
-    (= "/" (str fully-qualified-name))
-    fully-qualified-name
+  (let [fully-qualified-name (str fully-qualified-name)]
+    (cond
+      (= "/" fully-qualified-name)
+      fully-qualified-name
 
-    (re-find #"/" (str fully-qualified-name))
-    (-> fully-qualified-name str (.split "/") last)
+      (re-find #"\$" fully-qualified-name)
+      (-> fully-qualified-name (.split "\\$") first suffix)
 
-    :else (-> fully-qualified-name str (.split "\\.") last)))
+      (re-find #"/" (str fully-qualified-name))
+      (-> fully-qualified-name str (.split "/") last)
+
+      :else (-> fully-qualified-name str (.split "\\.") last))))
+
+(defn ctor-call->str
+  "Date. -> \"Date\""
+  [sym]
+  (let [s (str sym)]
+    (if (.endsWith s ".")
+      (.substring s 0 (dec (.length s)))
+      s)))
 
 (defn read-ns-form
   [path]
