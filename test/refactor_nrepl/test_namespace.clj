@@ -17,6 +17,7 @@
 (def ns-without-unused-deps (read-ns-form
                              (.getAbsolutePath (File. "test/resources/unused_removed.clj"))))
 (def cljs-file (.getAbsolutePath (File. "test/resources/file.cljs")))
+(def ns-referencing-macro (.getAbsolutePath (File. "test/resources/ns_referencing_macro.clj")))
 
 (deftest combines-requires
   (let [requires (get-ns-component (clean-ns ns2) :require)
@@ -126,9 +127,21 @@
         expected (slurp (.getAbsolutePath (File. "test/resources/artifacts_pprinted_no_indentation")))]
     (is (= expected actual))))
 
+(deftest handles-imports-when-only-enum-is-used
+  (let [new-ns (clean-ns ns2)
+        imports (get-ns-component new-ns :import)]
+    (is (some #(= 'java.text.Normalizer %) imports))))
+
+(deftest keeps-referred-macros-around
+  (let [new-ns (clean-ns ns-referencing-macro)]
+    ;; nil means no changes
+    (is (nil? new-ns))))
+
 (deftest should-throw-on-cljs
   (is (thrown? IllegalArgumentException (clean-ns cljs-file))))
 
+;; Order of stuff in maps aren't stable across versions which messes
+;; with pretty-printing
 (when (= (clojure-version) "1.7.0")
   (deftest test-pprint
     (let [ns-str (pprint-ns (clean-ns ns1))
