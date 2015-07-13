@@ -9,7 +9,7 @@
 (:require [clojure data edn xml
 [instant :as inst]
 [pprint :refer [cl-format formatter get-pretty-writer]]
-[string :refer :all :rename {reverse bar, replace foo}]
+[string :refer :all :rename {replace foo, reverse bar}]
 [test :refer :all]
 [walk :refer [postwalk prewalk]]]
 clojure.test.junit)

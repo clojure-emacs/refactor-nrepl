@@ -7,7 +7,6 @@
                  ^:source-dep [http-kit "2.1.19"]
                  ^:source-dep [cheshire "5.4.0"]
                  ^:source-dep [alembic "0.3.2"]
-                 ^:source-dep [instaparse "1.3.6"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.6"]
                  ^:source-dep [org.clojure/tools.namespace "0.2.7"]
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]

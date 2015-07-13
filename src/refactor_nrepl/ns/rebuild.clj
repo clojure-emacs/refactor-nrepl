@@ -121,7 +121,7 @@
                     [:refer (if (sequential? refer)
                               (vec (sort-referred-symbols refer))
                               refer)])
-                  (when rename [:rename (:rename libspec)])
+                  (when rename [:rename (into (sorted-map) (:rename libspec))])
                   flags))))
 
 (defn- create-libspec-vectors-without-prefix
