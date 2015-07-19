@@ -12,7 +12,7 @@
                  ^:source-dep [org.clojure/tools.reader "0.8.12"]
                  ^:source-dep [org.clojure/java.classpath "0.2.2"]
                  ^:source-dep [me.raynes/fs "1.4.6"]]
-  :plugins [[thomasa/mranderson "0.4.4"]]
+  :plugins [[thomasa/mranderson "0.4.5"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.9.0"]]}
              :test {:dependencies [[print-foo "1.0.1"]]
