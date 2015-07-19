@@ -26,6 +26,7 @@
 
 (defn- inlined-dependency? [candidate]
   (or (-> candidate str (.startsWith "deps."))
+      (-> candidate str (.startsWith "mranderson"))
       (-> candidate str (.startsWith "eastwood.copieddeps"))))
 
 (defn resolve-missing [{sym :symbol}]
