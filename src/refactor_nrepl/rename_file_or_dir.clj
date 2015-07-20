@@ -1,15 +1,16 @@
 (ns refactor-nrepl.rename-file-or-dir
   (:require [clojure.string :as str]
-            [me.raynes.fs :as fs]
             [clojure.tools.namespace.file :as file]
+            [me.raynes.fs :as fs]
             [refactor-nrepl.ns
              [helpers :refer [file-content-sans-ns read-ns-form]]
              [ns-parser :as ns-parser]
              [pprint :refer [pprint-ns]]
-             [tracker :as tracker]
-             [rebuild :refer [rebuild-ns-form]]]
+             [rebuild :refer [rebuild-ns-form]]
+             [tracker :as tracker]]
             [refactor-nrepl.util :as util])
   (:import java.io.File
+           java.nio.file.Files
            java.util.regex.Pattern))
 
 (declare -rename-file-or-dir)
@@ -150,6 +151,16 @@
                    :let [path (util/normalize-to-unix-path (.getAbsolutePath f))]]
                (-rename-file-or-dir path (merge-paths path old-path new-path))))))
 
+(defn- file-or-symlink-exists? [path]
+  (let [f (File. path)]
+    (if (.exists f)
+      path
+      (let [p (.toPath f)]
+        (when (Files/isSymbolicLink p)
+          (let [target (Files/readSymbolicLink p)]
+            (when (.. target toFile exists)
+              path)))))))
+
 (defn- -rename-file-or-dir [old-path new-path]
   (let [affected-files  (if (fs/directory? old-path)
                           (rename-dir old-path new-path)
@@ -161,7 +172,7 @@
          distinct
          (map util/normalize-to-unix-path)
          (remove fs/directory?)
-         (filter fs/exists?)
+         (filter file-or-symlink-exists?)
          doall)))
 
 (defn rename-file-or-dir
