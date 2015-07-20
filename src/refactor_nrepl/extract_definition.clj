@@ -1,8 +1,8 @@
 (ns refactor-nrepl.extract-definition
   (:require [clojure.string :as str]
-            [refactor-nrepl
-             [find-symbol :refer [create-result-alist find-symbol]]
-             [util :refer [get-enclosing-sexp]]]
+            [refactor-nrepl.find.find-symbol
+             :refer
+             [create-result-alist find-symbol]]
             [refactor-nrepl.ns.helpers :refer [suffix]]
             [refactor-nrepl.util :refer [get-enclosing-sexp get-next-sexp]])
   (:import [java.io PushbackReader StringReader]

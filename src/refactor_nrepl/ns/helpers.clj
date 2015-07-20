@@ -74,9 +74,11 @@ type is either :require, :use or :import"
     (throw (IllegalArgumentException. "Malformed ns form!"))))
 
 (defn file-content-sans-ns [file-content]
+  ;; NOTE: It's tempting to trim this result but
+  ;; find-macros relies on this not being trimmed
   (let [rdr (PushbackReader. (StringReader. file-content))]
     (read rdr)
-    (str/triml (slurp rdr))))
+    (slurp rdr)))
 
 (defn ns-form-from-string
   [file-content]

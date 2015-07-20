@@ -179,7 +179,7 @@
                                   :ns-string ns-string
                                   :debug-fns debug-fns})
         invocations (-> result first :value)]
-    (when-not (empty? invocations)
+    (when (seq invocations)
       (->> ns-string
            str/split-lines
            (remove-invocations

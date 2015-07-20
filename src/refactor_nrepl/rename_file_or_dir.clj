@@ -1,13 +1,12 @@
 (ns refactor-nrepl.rename-file-or-dir
   (:require [clojure.string :as str]
-            [clojure.tools.namespace
-             [file :as file :refer [clojure-file?]]
-             [track :as tracker]]
             [me.raynes.fs :as fs]
+            [clojure.tools.namespace.file :as file]
             [refactor-nrepl.ns
              [helpers :refer [file-content-sans-ns read-ns-form]]
              [ns-parser :as ns-parser]
              [pprint :refer [pprint-ns]]
+             [tracker :as tracker]
              [rebuild :refer [rebuild-ns-form]]]
             [refactor-nrepl.util :as util])
   (:import java.io.File
@@ -41,22 +40,6 @@
   name of the ns."
   [new-path]
   (-> new-path util/normalize-to-unix-path chop-src-dir-prefix fs/path-ns))
-
-(defn- build-tracker []
-  (let [tracker (tracker/tracker)]
-    (file/add-files tracker (util/find-clojure-sources-in-project))))
-
-(defn- invert-map
-  "Creates a new map by turning the vals into keys and vice versa"
-  [m]
-  (reduce (fn [m kv] (assoc m (second kv) (first kv))) {} m))
-
-(defn- get-dependents
-  "Get the dependent files for ns from tracker."
-  [tracker my-ns]
-  (let [deps (my-ns (:dependents (:clojure.tools.namespace.track/deps tracker)))
-        ns-to-file-map (invert-map (:clojure.tools.namespace.file/filemap (build-tracker)))]
-    (map ns-to-file-map deps)))
 
 (defn update-ns-reference-in-libspec
   [old-ns new-ns libspec]
@@ -142,7 +125,7 @@
   [old-path new-path]
   (let [old-ns (util/ns-from-string (slurp old-path))
         new-ns (path->ns new-path)
-        dependents (get-dependents (build-tracker) old-ns)
+        dependents (tracker/get-dependents (tracker/build-tracker) old-ns)
         new-dependents (atom {})]
     (doseq [f dependents]
       (swap! new-dependents

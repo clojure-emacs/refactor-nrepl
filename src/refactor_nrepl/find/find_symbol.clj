@@ -1,10 +1,11 @@
-(ns refactor-nrepl.find-symbol
+(ns refactor-nrepl.find.find-symbol
   (:require [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
-             [util :as util]]))
+             [util :as util]]
+            [refactor-nrepl.find.find-macros :refer [find-macro]]))
 
 (defn- node->var
   "Returns a fully qualified symbol for vars other those from clojure.core, for
@@ -56,7 +57,8 @@
                    (comp :end-line :env)
                    (comp :column :env)
                    (comp :end-column :env)
-                   pred))))
+                   pred))
+        (map #(zipmap [:line-beg :line-end :col-beg :col-end] %))))
   ([name asts pred]
    (find-nodes (map #(postwalk % (partial dissoc-macro-nodes name)) asts) pred)))
 
@@ -110,17 +112,18 @@
   (let [file-content (slurp file)
         locs (try (->> (ns-ast file-content)
                        (find-symbol-in-ast fully-qualified-name)
-                       (filter first))
-                  (catch Throwable th
+                       (filter :line-beg))
+                  (catch Exception e
                     (when-not ignore-errors
-                      (throw th))))
+                      (throw e))))
         gather (fn [info]
-                 (conj info
-                       (.getCanonicalPath file)
-                       (match file-content
-                         (first info)
-                         (second info))))]
-    (when (seq locs) (map gather locs))))
+                 (merge info
+                        {:file (.getCanonicalPath file)
+                         :name fully-qualified-name
+                         :match (match file-content
+                                  (:line-beg info)
+                                  (:line-end  info))}))]
+    (map gather locs)))
 
 (defn- find-global-symbol [file ns var-name clj-dir ignore-errors]
   (let [dir (or clj-dir ".")
@@ -157,25 +160,32 @@
                                 (filter (partial util/node-at-loc? line column))
                                 first
                                 :name)]
-        (map #(conj (vec (take 4 %))
-                    var-name
-                    (.getCanonicalPath (java.io.File. file))
-                    (match file-content
-                      (first %)
-                      (second %)))
+        (map #(merge %
+                     {:name var-name
+                      :file (.getCanonicalPath (java.io.File. file))
+                      :match (match file-content
+                               (:line-beg %)
+                               (:line-end %))})
              (find-nodes var-name
                          [top-level-form-ast]
                          #(and (#{:local :binding} (:op %))
                                (= local-var-name (-> % :name))
                                (:local %))))))))
 
+(defn- to-find-symbol-result
+  [{:keys [line-beg line-end col-beg col-end name file match]}]
+  [line-beg line-end col-beg col-end name file match])
+
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (util/throw-unless-clj-file file)
-  (or (when (and file (not-empty file))
-        (not-empty (find-local-symbol file name line column)))
-      (find-global-symbol file ns name dir (and ignore-errors
-                                                (or (not (coll? ignore-errors))
-                                                    (not-empty ignore-errors))))))
+  (map to-find-symbol-result
+       (or
+        ;; find-macro is first because find-global-symbol returns garb for macros
+        (some->> name find-macro)
+        (and (seq file) (not-empty (find-local-symbol file name line column)))
+        (find-global-symbol file ns name dir (and ignore-errors
+                                                  (or (not (coll? ignore-errors))
+                                                      (not-empty ignore-errors)))))))
 
 (defn create-result-alist
   [line-beg line-end col-beg col-end name file match]
@@ -188,6 +198,7 @@
         :match match))
 
 (defn find-debug-fns [{:keys [ns-string debug-fns]}]
-  (let [res  (-> ns-string ns-ast (find-invokes debug-fns))]
+  (let [res  (-> ns-string ns-ast (find-invokes debug-fns))
+        res (map to-find-symbol-result res)]
     (when (seq res)
       res)))

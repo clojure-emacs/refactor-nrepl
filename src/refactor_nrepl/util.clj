@@ -26,18 +26,22 @@
      (.replaceAll path (Pattern/quote "\\") "/")
      path)))
 
+(defn dirs-on-classpath* []
+  (->> (cp/classpath)
+       (filter fs/directory?)
+       (remove #(-> % str (.endsWith "target/srcdeps")))))
+
 (defn dirs-on-classpath
   "Return all directories on classpath."
   []
-  (->> (cp/classpath) (filter fs/directory?)
+  (->> (dirs-on-classpath*)
        (map #(.getAbsolutePath %))
        (map normalize-to-unix-path)))
 
 (defn find-clojure-sources-in-project
   "Return all clojure files in the project that are on the classpath."
   []
-  (let [dirs-on-cp (filter fs/directory? (cp/classpath))]
-    (mapcat find-clojure-sources-in-dir dirs-on-cp)))
+  (mapcat find-clojure-sources-in-dir (dirs-on-classpath*)))
 
 (defn node-at-loc? [loc-line loc-column node]
   (let [env (:env node)]
@@ -163,3 +167,9 @@
                     (->> content-from-sexp
                          (search-sexp-boundary (partial = 0))))]
     (cut-sexp file-content sexp-start sexp-end)))
+
+(defn get-last-sexp [file-content]
+  (let [trimmed-content (str/trim file-content)
+        sexp-start (search-sexp-boundary (partial > 0) :backwards trimmed-content)
+        sexp-end (search-sexp-boundary (partial = 0) :backwards trimmed-content)]
+    (cut-sexp trimmed-content sexp-start sexp-end)))
