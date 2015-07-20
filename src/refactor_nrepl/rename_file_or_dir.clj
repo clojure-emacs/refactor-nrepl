@@ -175,9 +175,7 @@
          (not (str/blank? new-path))
          (or (fs/file? old-path) (fs/directory? old-path))]}
   (binding [*print-length* nil]
-    (let [affected-files (-rename-file-or-dir old-path new-path)
-          affected-files (->> affected-files (filter fs/exists?)
-                              (remove fs/directory?))]
+    (let [affected-files (-rename-file-or-dir old-path new-path)]
       (if (fs/directory? new-path)
         affected-files
         (conj affected-files new-path)))))
