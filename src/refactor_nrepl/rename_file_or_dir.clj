@@ -85,6 +85,7 @@
     (-> file
         slurp
         file-content-sans-ns
+        str/trim
         (str/replace old-prefix new-prefix)
         (str/replace old-ns-ref new-ns-ref))))
 
