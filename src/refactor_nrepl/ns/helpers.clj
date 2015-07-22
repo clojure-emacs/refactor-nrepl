@@ -9,13 +9,14 @@
       (symbol? thing)))
 
 (defn prefix-form?
-  "True if the vector is of the form [prefix libspec1 libspec2...]"
-  [v]
-  (and (vector? v)
-       (symbol? (first v))
-       (not-any? keyword? v)
-       (> (count v) 1)
-       (every? libspec? (rest v))))
+  "Does the form represent a libspec using prefix notation
+  like: [prefix libspec1 libspec2 ...] ?"
+  [form]
+  (and (or (list? form) (vector? form))
+       (symbol? (first form))
+       (not-any? keyword? form)
+       (> (count form) 1)
+       (every? libspec? (rest form))))
 
 (defn index-of-component [ns-form type]
   (first (keep-indexed #(when (and (sequential? %2) (= (first %2) type)) %1)

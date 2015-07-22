@@ -18,10 +18,10 @@
     {:ns (symbol libspec)}))
 
 (defn- expand-prefix-specs
-  "Eliminate prefix vectors."
+  "Eliminate prefix lists."
   [libspecs]
-  (let [add-prefix (fn add-prefix [prefix libspec]
-                     (if (vector? libspec)
+  (let [prepend-prefix (fn add-prefix [prefix libspec]
+                     (if (prefix-form? libspec)
                        (apply vector
                          (str prefix "." (first libspec))
                          (rest libspec))
@@ -29,7 +29,7 @@
         normalize-libspec-vector (fn [libspec]
                                    (if (prefix-form? libspec)
                                      (let [prefix (first libspec)]
-                                       (map (partial add-prefix prefix)
+                                       (map (partial prepend-prefix prefix)
                                             (rest libspec)))
                                      [libspec]))]
     (mapcat normalize-libspec-vector libspecs)))

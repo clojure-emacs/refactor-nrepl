@@ -9,7 +9,7 @@
   (:require
    [clojure.instant :as inst :refer [read-instant-date]]
    [clojure.walk :refer [prewalk postwalk]]
-   [clojure data edn]
+   (clojure data edn)
    [clojure.pprint :refer [get-pretty-writer formatter cl-format]]
    clojure.test.junit
    [clojure.xml])
