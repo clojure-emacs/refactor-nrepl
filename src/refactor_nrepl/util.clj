@@ -21,10 +21,9 @@
 (defn normalize-to-unix-path
   "Replace use / as separator and lower-case."
   [path]
-  (.toLowerCase
-   (if (.contains (System/getProperty "os.name") "Windows")
-     (.replaceAll path (Pattern/quote "\\") "/")
-     path)))
+  (if (.contains (System/getProperty "os.name") "Windows")
+    (.replaceAll path (Pattern/quote "\\") "/")
+    path))
 
 (defn dirs-on-classpath* []
   (->> (cp/classpath)
