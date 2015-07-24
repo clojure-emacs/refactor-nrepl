@@ -6,6 +6,9 @@
    [clojure.pprint :refer [get-pretty-writer fresh-line cl-format]]
    [clojure.instant :refer [read-instant-calendar]]
    [clojure.instant :refer :all]
+   [clojure
+    [instant :refer :all]
+    [pprint :refer [cl-format]]]
    [clojure.test.junit :refer [with-junit-output]])
   (:use clojure.test
         clojure.test

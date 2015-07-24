@@ -21,11 +21,11 @@
   "Eliminate prefix lists."
   [libspecs]
   (let [prepend-prefix (fn add-prefix [prefix libspec]
-                     (if (prefix-form? libspec)
-                       (apply vector
-                         (str prefix "." (first libspec))
-                         (rest libspec))
-                       (str prefix "." libspec)))
+                         (if (sequential? libspec)
+                           (apply vector
+                             (symbol (str prefix "." (first libspec)))
+                             (rest libspec))
+                           (symbol (str prefix "." libspec))))
         normalize-libspec-vector (fn [libspec]
                                    (if (prefix-form? libspec)
                                      (let [prefix (first libspec)]
