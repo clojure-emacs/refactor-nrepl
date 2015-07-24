@@ -55,8 +55,8 @@
 
 (defn- replace-package-prefix
   [old-prefix new-prefix class]
-  (if (.startsWith class old-prefix)
-    (str/replace class old-prefix new-prefix)
+  (if (.startsWith (str class) old-prefix)
+    (str/replace (str class) old-prefix new-prefix)
     class))
 
 (defn- update-class-references

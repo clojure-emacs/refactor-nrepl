@@ -56,7 +56,7 @@
                               (if (vector? import-spec)
                                 (let [package (first import-spec)]
                                   (map (fn [class-name]
-                                         (str package "." class-name))
+                                         (symbol (str package "." class-name)))
                                        (rest import-spec)))
                                 import-spec))]
     (some->> (get-ns-component ns-form :import)
