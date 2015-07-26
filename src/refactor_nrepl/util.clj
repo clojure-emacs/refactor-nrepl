@@ -143,32 +143,43 @@
     (cut-sexp trimmed-code sexp-start sexp-end)))
 
 (defn get-enclosing-sexp
-  "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT.
+  "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT and optionally LEVEL.
 
-  A string is not treated as a sexp by this function.
+  A string is not treated as a sexp by this function. If LEVEL is provided finds the enclosing sexp up to level. LEVEL defaults to 1 for the immediate enclising sexp.
 
   Both line and column are indexed from 0."
-  [file-content line column]
-  (let [file-content (.replaceAll file-content "\r" "") ; \r messes up count
-        lines (str/split-lines file-content)
-        char-count-for-lines (->> lines
-                                  (take line)
-                                  (map count)
-                                  (reduce + line))
-        content-to-point (-> char-count-for-lines
-                             (+ column)
-                             (take file-content))
-        sexp-start (->> content-to-point
-                        (search-sexp-boundary (partial < 0) :backwards)
-                        (- (count content-to-point) 1))
-        content-from-sexp (.substring file-content sexp-start)
-        sexp-end (+ sexp-start
-                    (->> content-from-sexp
-                         (search-sexp-boundary (partial = 0))))]
-    (cut-sexp file-content sexp-start sexp-end)))
+  ([file-content line column]
+   (get-enclosing-sexp file-content line column 1))
+  ([file-content line column level]
+   (let [file-content (.replaceAll file-content "\r" "") ; \r messes up count
+         lines (str/split-lines file-content)
+         char-count-for-lines (->> lines
+                                   (take line)
+                                   (map count)
+                                   (reduce + line))
+         content-to-point (-> char-count-for-lines
+                              (+ column)
+                              (take file-content))
+         sexp-start (->> content-to-point
+                         (search-sexp-boundary (partial = level) :backwards)
+                         (- (count content-to-point) 1))
+         content-from-sexp (.substring file-content sexp-start)
+         sexp-end (+ sexp-start
+                     (->> content-from-sexp
+                          (search-sexp-boundary (partial = 0))))]
+     (cut-sexp file-content sexp-start sexp-end))))
 
 (defn get-last-sexp [file-content]
   (let [trimmed-content (str/trim file-content)
         sexp-start (search-sexp-boundary (partial > 0) :backwards trimmed-content)
         sexp-end (search-sexp-boundary (partial = 0) :backwards trimmed-content)]
     (cut-sexp trimmed-content sexp-start sexp-end)))
+
+(defn re-pos
+  "Map of regexp matches and their positions keyed by positions."
+  [re s]
+  (loop [m (re-matcher re s)
+         res (sorted-map)]
+    (if (.find m)
+      (recur m (assoc res (.start m) (.group m)))
+      res)))

@@ -269,6 +269,30 @@
         result (remove keyword? response)]
     (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))
 
+(deftest find-local-in-optmap-default
+  (let [tmp-dir (create-test-project)
+        five-file (str tmp-dir "/src/com/example/five.clj")
+        transport (connect :port 7777)
+        response (find-usages :transport transport :name "foo" :file five-file :line 46 :column 10)
+        result (remove keyword? response)]
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+
+(deftest find-local-in-optmap-default-linebreaks
+  (let [tmp-dir (create-test-project)
+        five-file (str tmp-dir "/src/com/example/five.clj")
+        transport (connect :port 7777)
+        response (find-usages :transport transport :name "foo" :file five-file :line 49 :column 12)
+        result (remove keyword? response)]
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+
+(deftest find-local-in-optmap-default-in-let
+  (let [tmp-dir (create-test-project)
+        five-file (str tmp-dir "/src/com/example/five.clj")
+        transport (connect :port 7777)
+        response (find-usages :transport transport :name "foo" :file five-file :line 59 :column 12)
+        result (remove keyword? response)]
+    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
+
 (deftest test-find-unbound-vars
   (let [tmp-dir (create-test-project)
         five-file (str tmp-dir "/src/com/example/five.clj")

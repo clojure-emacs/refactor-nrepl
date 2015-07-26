@@ -39,3 +39,21 @@
 
 (defn many-params [x y z a b c]
   (* x y z a b c))
+
+(defn fn-with-default-optmap
+  [{:keys [foo bar] :or {foo "foo"}}]
+  [:bar :foo]
+  (count foo))
+
+(defn fn-with-default-optmap-linebreak
+  [{:keys [foo
+           bar]
+    :or {foo
+         "foo"}}]
+  [:bar :foo]
+  (count foo))
+
+(defn fn-with-let-default-optmap []
+  (let [{:keys [foo bar] :or {foo "foo"}} (hash-map)]
+    [:bar :foo]
+    (count foo)))

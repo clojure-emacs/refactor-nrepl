@@ -1,5 +1,6 @@
 (ns refactor-nrepl.find.find-symbol
   (:require [clojure.string :as str]
+            [clojure.set :as set]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
             [refactor-nrepl
@@ -137,6 +138,44 @@
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors))
          (map identity))))
 
+(defn- get&read-enclosing-sexps
+  [file-content {:keys [line-beg col-beg]}]
+  (binding [*read-eval* false]
+    (let [line (dec line-beg)
+          encl-sexp-level1 (util/get-enclosing-sexp file-content line col-beg)
+          encl-sexp-level2 (util/get-enclosing-sexp file-content line col-beg 2)]
+      [encl-sexp-level1 (read-string encl-sexp-level1)
+       encl-sexp-level2 (read-string encl-sexp-level2)])))
+
+(defn- optmap-with-default?
+  [var-name file-content [_ [_ level1-form _ level2-form]]]
+  (and (vector? level1-form)
+       (map? level2-form)
+       (= #{:or :keys} (set/intersection #{:or :keys} (set (keys level2-form))))
+       (some #{var-name} (map str (keys (:or level2-form))))))
+
+(defn- occurrence-for-optmap-default
+  [var-name [{:keys [line-beg col-beg] :as orig-occurrence} [_ _ level2-string _]]]
+  (let [var-positions (util/re-pos (re-pattern (format "\\W%s\\W" var-name)) level2-string)
+        var-default-pos (first (second var-positions))
+        newline-cnt (reduce (fn [cnt char] (if (= char \newline) (inc cnt) cnt)) 0 (.substring level2-string 0 var-default-pos))
+        prev-newline-position (->> (concat (keys (util/re-pos #"\n" level2-string))
+                                      (keys var-positions))
+                                   sort
+                                   (take-while (partial not= var-default-pos))
+                                   last)
+        new-col (if (= 0 newline-cnt)
+                    (- var-default-pos (ffirst var-positions))
+                    (inc (- var-default-pos prev-newline-position)))
+        new-occurrence (-> (update-in orig-occurrence [:line-beg] + newline-cnt)
+                           (update-in [:line-end] + newline-cnt))]
+    (if (= 0 newline-cnt)
+      (-> (update-in new-occurrence [:col-beg] + new-col)
+          (update-in [:col-end] + new-col))
+      (-> (assoc new-occurrence :col-beg new-col)
+          (assoc :col-end (+ new-col (count var-name)))
+          (assoc :match (nth (str/split-lines level2-string) newline-cnt))))))
+
 (defn- find-local-symbol
   "Find local symbol occurrences
 
@@ -159,18 +198,25 @@
                                               (:local %)))
                                 (filter (partial util/node-at-loc? line column))
                                 first
-                                :name)]
-        (map #(merge %
-                     {:name var-name
-                      :file (.getCanonicalPath (java.io.File. file))
-                      :match (match file-content
-                               (:line-beg %)
-                               (:line-end %))})
-             (find-nodes var-name
-                         [top-level-form-ast]
-                         #(and (#{:local :binding} (:op %))
-                               (= local-var-name (-> % :name))
-                               (:local %))))))))
+                                :name)
+            local-occurrences
+            (map #(merge %
+                         {:name var-name
+                          :file (.getCanonicalPath (java.io.File. file))
+                          :match (match file-content
+                                        (:line-beg %)
+                                        (:line-end %))})
+                 (find-nodes var-name
+                             [top-level-form-ast]
+                             #(and (#{:local :binding} (:op %))
+                                   (= local-var-name (-> % :name))
+                                   (:local %))))
+            optmap-def-occurrences
+            (->> local-occurrences
+                 (map (juxt identity (partial get&read-enclosing-sexps file-content)))
+                 (filter (partial optmap-with-default? var-name file-content))
+                 (map (partial occurrence-for-optmap-default var-name)))]
+        (sort-by :line-beg (concat local-occurrences optmap-def-occurrences))))))
 
 (defn- to-find-symbol-result
   [{:keys [line-beg line-end col-beg col-end name file match]}]
