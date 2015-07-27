@@ -124,9 +124,9 @@ This op finds occurrences of a single symbol.
 
 `name` The name of the symbol
 
-`line` The line number where the symbol occurrs.
+`line` The line number where the symbol occurrs, counting from 1.
 
-`column` The column number where the symbol occurs.
+`column` The column number where the symbol occurs, counting from 1.
 
 `ignore-errors` [optional] if set find symbol carries on even if there is broken namespace which we can not build AST for
 

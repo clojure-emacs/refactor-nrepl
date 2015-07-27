@@ -25,7 +25,7 @@
     (testing "has the right meta"
       (is (= "(defmacro my-macro [& body])" match) "match")
       (is (= 3 line-beg) "line-beg")
-      (is (= 10 col-beg) "col-beg")
+      (is (= 11 col-beg) "col-beg")
       (is (.endsWith file "macro_def.clj")))))
 
 (deftest find-regular-symbol-test

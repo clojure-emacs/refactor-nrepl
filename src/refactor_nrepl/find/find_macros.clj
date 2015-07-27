@@ -27,7 +27,7 @@
         content (keep-lines file-content line-end)
         sexp (util/get-last-sexp content)
         macro-name (name (second form))
-        col-beg (.indexOf sexp macro-name)]
+        col-beg (dec (.indexOf sexp macro-name))]
     {:name (str file-ns "/" macro-name)
      :col-beg col-beg
      :col-end (+ col-beg (.length macro-name))
@@ -94,8 +94,8 @@
      :name macro-name
      :line-beg (dec (+ row line-offset))
      :line-end (dec (+ row line-offset))
-     :col-beg (dec col)
-     :col-end (dec (+ col (.length val)))
+     :col-beg col
+     :col-end (+ col (.length val))
      :file path}))
 
 (defn- token-node? [node]
