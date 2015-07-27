@@ -69,10 +69,10 @@ type is either :require, :use or :import"
 
 (defn read-ns-form
   [path]
-  (if-let [ns-form
-           (read-ns-decl (PushbackReader. (FileReader. path)))]
-    ns-form
-    (throw (IllegalArgumentException. "Malformed ns form!"))))
+  (with-open [file-reader (FileReader. path)]
+    (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
+      ns-form
+      (throw (IllegalArgumentException. "Malformed ns form!")))))
 
 (defn file-content-sans-ns [file-content]
   ;; NOTE: It's tempting to trim this result but
