@@ -86,3 +86,14 @@ type is either :require, :use or :import"
   (if-let [ns-form (read-ns-decl (PushbackReader. (StringReader. file-content)))]
     ns-form
     (throw (IllegalArgumentException. "Malformed ns form!"))))
+
+(defn ^String fully-qualify
+  "Create a fully qualified name from name and ns."
+  [name ns]
+  (let [prefix (str ns)
+        suffix (suffix name)]
+    (when-not (and (seq prefix) (seq suffix))
+      (throw (IllegalStateException.
+              (str "Can't create a fully qualified symbol from: '" prefix
+                   "' and  '" suffix "'"))))
+    (str prefix "/" suffix)))

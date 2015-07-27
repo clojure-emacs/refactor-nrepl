@@ -3,6 +3,7 @@
             [clojure.set :as set]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
+            [refactor-nrepl.ns.helpers :as ns-helpers]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
              [util :as util]]
@@ -227,7 +228,7 @@
   (map to-find-symbol-result
        (or
         ;; find-macro is first because find-global-symbol returns garb for macros
-        (some->> name find-macro)
+        (find-macro (ns-helpers/fully-qualify name ns))
         (and (seq file) (not-empty (find-local-symbol file name line column)))
         (find-global-symbol file ns name dir (and ignore-errors
                                                   (or (not (coll? ignore-errors))
