@@ -143,9 +143,12 @@
     (cut-sexp trimmed-code sexp-start sexp-end)))
 
 (defn get-enclosing-sexp
-  "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT and optionally LEVEL.
+  "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT,
+  and optionally LEVEL.
 
-  A string is not treated as a sexp by this function. If LEVEL is provided finds the enclosing sexp up to level. LEVEL defaults to 1 for the immediate enclising sexp.
+  A string is not treated as a sexp by this function. If LEVEL is
+  provided finds the enclosing sexp up to level. LEVEL defaults to 1
+  for the immediate enclising sexp.
 
   Both line and column are indexed from 0."
   ([file-content line column]
