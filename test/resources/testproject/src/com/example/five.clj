@@ -58,4 +58,6 @@
     [:bar :foo]
     (count foo)))
 
+;; This was causing both find-local-symbol and find-macros to blow up, for
+;; different reasons
 ::str/bar

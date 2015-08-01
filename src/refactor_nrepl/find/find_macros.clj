@@ -39,14 +39,15 @@
 (defn- find-macro-definitions-in-file
   [path]
   (with-open [file-rdr (FileReader. path)]
-    (let [rdr (LineNumberingPushbackReader. file-rdr)]
-      (loop [macros [], form (read rdr nil :eof)]
-        (cond
-          (= form :eof) macros
-          (= (first form) 'defmacro)
-          (recur (conj macros (build-macro-meta form (.getLineNumber rdr) path))
-                 (read rdr nil :eof))
-          :else (recur macros (read rdr nil :eof)))))))
+    (binding [*ns* (or (ns-helpers/path->namespace path :no-error) *ns*)]
+      (let [rdr (LineNumberingPushbackReader. file-rdr)]
+        (loop [macros [], form (read rdr nil :eof)]
+          (cond
+            (= form :eof) macros
+            (and (sequential? form) (= (first form) 'defmacro))
+            (recur (conj macros (build-macro-meta form (.getLineNumber rdr) path))
+                   (read rdr nil :eof))
+            :else (recur macros (read rdr nil :eof))))))))
 
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."

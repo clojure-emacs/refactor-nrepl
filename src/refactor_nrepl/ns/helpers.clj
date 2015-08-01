@@ -68,11 +68,25 @@ type is either :require, :use or :import"
       s)))
 
 (defn read-ns-form
-  [path]
-  (with-open [file-reader (FileReader. path)]
-    (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
-      ns-form
-      (throw (IllegalArgumentException. "Malformed ns form!")))))
+  "Read the ns form found at PATH.
+
+  If no ns form can be read, throw an error unless NO-ERROR is passed."
+  ([path] (read-ns-form path nil))
+  ([path no-error]
+   (with-open [file-reader (FileReader. path)]
+     (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
+       ns-form
+       (when-not no-error
+         (throw (IllegalArgumentException. "Malformed ns form!")))))))
+
+(defn path->namespace
+  "Read the ns form found at PATH and return the namespace object for
+  that ns.
+
+  if NO-ERROR is passed just return nil instead of an exception if we
+  can't successfully read an ns form."
+  ([path] (path->namespace path nil))
+  ([path no-error] (some-> path (read-ns-form no-error) second find-ns)))
 
 (defn file-content-sans-ns [file-content]
   ;; NOTE: It's tempting to trim this result but
