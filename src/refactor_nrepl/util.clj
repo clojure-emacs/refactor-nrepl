@@ -43,11 +43,14 @@
   (mapcat find-clojure-sources-in-dir (dirs-on-classpath*)))
 
 (defn node-at-loc? [loc-line loc-column node]
-  (let [env (:env node)]
-    (and (>= loc-line (:line env))
-         (<= loc-line (:end-line env))
-         (>= loc-column (:column env))
-         (<= loc-column (:end-column env)))))
+  (let [{:keys [line end-line column end-column]} (:env node)]
+    ;; The node for ::an-ns-alias/foo, when it appeared as a toplevel form,
+    ;; had nil as position info
+    (and line end-line column end-column
+         (and (>= loc-line line)
+              (<= loc-line end-line)
+              (>= loc-column column)
+              (<= loc-column end-column)))))
 
 (defn top-level-form-index
   [line column ns-ast]

@@ -57,3 +57,5 @@
   (let [{:keys [foo bar] :or {foo "foo"}} (hash-map)]
     [:bar :foo]
     (count foo)))
+
+::str/bar
