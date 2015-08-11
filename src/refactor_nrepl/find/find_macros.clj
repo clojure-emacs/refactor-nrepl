@@ -189,4 +189,5 @@
                (conj dependents)
                (mapcat (partial find-usages-in-file macro-def))
                (into #{})
-               (remove nil?)))))
+               (remove nil?)
+               (sort-by :line-beg)))))
