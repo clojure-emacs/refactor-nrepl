@@ -177,7 +177,12 @@
   "Finds all occurrences of the macro, including the definition, in
   the project."
   [fully-qualified-name]
-  (when (fully-qualified-name? fully-qualified-name)
+  (when (and
+         ;; Fail gracefully instead of blowing up with reader errors
+         ;; when project contains cljc files until we had proper
+         ;; support
+         (empty? (util/find-cljc-files-in-project))
+         (fully-qualified-name? fully-qualified-name))
     (let [all-defs (find-macro-definitions-in-project)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
           tracker (tracker/build-tracker)

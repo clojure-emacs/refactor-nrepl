@@ -9,7 +9,7 @@
              [find :refer [find-clojure-sources-in-dir]]
              [parse :refer [read-ns-decl]]]
             [me.raynes.fs :as fs])
-  (:import java.io.PushbackReader
+  (:import [java.io File PushbackReader]
            java.util.regex.Pattern))
 
 (defn alias-info [full-ast]
@@ -41,6 +41,18 @@
   "Return all clojure files in the project that are on the classpath."
   []
   (mapcat find-clojure-sources-in-dir (dirs-on-classpath*)))
+
+(defn find-in-dir
+  "Searches recursively under dir for files matching (pred ^File file). "
+  [pred ^File dir]
+  (filter pred (file-seq dir)))
+
+(defn cljc-file?
+  [^File f]
+  (.endsWith (.getPath f) ".cljc"))
+
+(defn find-cljc-files-in-project []
+  (mapcat (partial find-in-dir cljc-file?) (dirs-on-classpath*)))
 
 (defn node-at-loc? [loc-line loc-column node]
   (let [{:keys [line end-line column end-column]} (:env node)]
