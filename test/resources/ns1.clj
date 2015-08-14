@@ -21,7 +21,8 @@
            java.io.PushbackReader
            java.io.FilenameFilter
            java.io.Closeable
-           [java.util Date Date Calendar]))
+           [java.util Date Date Calendar]
+           (java.util Date Calendar)))
 
 (defmacro tt [writer]
   (Random.)

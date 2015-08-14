@@ -52,7 +52,7 @@
 
 (defn get-imports [ns-form]
   (let [expand-prefix-specs (fn [import-spec]
-                              (if (vector? import-spec)
+                              (if (sequential? import-spec)
                                 (let [package (first import-spec)]
                                   (map (fn [class-name]
                                          (symbol (str package "." class-name)))
