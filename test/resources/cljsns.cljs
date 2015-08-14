@@ -1,15 +1,26 @@
 (ns resources.cljsns
-  (:require [chord.client :refer [ws-ch]]
-            [cljs.core.async :refer [<!]]
-            [undead.components :refer [render-game]]
-            [clojure.pprint :as pprint :require-macros true]
-            [clojure.set]
-            [clojure.string :as str])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require [cljs.test :refer-macros [is deftest]]
+            [cljs.test :refer-macros [is]]
+            [clojure.string :refer [split-lines join]]
+            [cljs.pprint :as pprint]
+            [clojure.set :as set])
+  (:require-macros [cljs.test :refer [testing]])
+  (:use-macros [cljs.test :only [run-tests]])
+  (:import goog.string))
 
-(defn use-some-of-it
-  (go (<! (ws-ch)))
-  (render-game 'game))
+(defn use-some-of-it []
+  (pprint/pprint {:foo :bar})
+  (set/intersection #{1 2} #{1})
+  (split-lines "ok"))
 
-(defmacro a-macro []
-  (pprint/pprint "string"))
+(deftest tt
+  (testing "whatever"
+      (is (= 1 1))))
+
+(defn foo []
+  `(join "foo bar"))
+
+(fn []
+  (run-tests))
+
+(string/regExpEscape "ok")

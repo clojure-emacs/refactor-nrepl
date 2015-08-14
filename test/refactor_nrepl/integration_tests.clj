@@ -31,7 +31,6 @@
        (finally
          (.delete ~'tmp-dir)))))
 
-
 (defn start-up-repl-server []
   (let [server
         (nrserver/start-server

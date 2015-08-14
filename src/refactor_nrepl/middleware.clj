@@ -1,5 +1,7 @@
 (ns refactor-nrepl.middleware
-  (:require [cider.nrepl.middleware.util.misc :refer [err-info]]
+  (:require [cider.nrepl.middleware.util
+             [cljs :as cljs]
+             [misc :refer [err-info]]]
             [clojure.tools.nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
@@ -20,7 +22,7 @@
              [pprint :refer [pprint-ns]]
              [resolve-missing :refer [resolve-missing]]]))
 
-(defmacro with-errors-being-passed-on [transport msg & body]
+(defmacro ^:private with-errors-being-passed-on [transport msg & body]
   `(try
      ~@body
      (catch IllegalArgumentException e#
@@ -33,11 +35,11 @@
        (transport/send
         ~transport (response-for ~msg (err-info e# :refactor-nrepl-error))))))
 
-(defmacro reply [transport msg & kv]
+(defmacro ^:private reply [transport msg & kv]
   `(with-errors-being-passed-on ~transport ~msg
      (transport/send ~transport (response-for ~msg ~(apply hash-map kv)))))
 
-(defn serialize-response [{:keys [serialization-format] :as msg} response]
+(defn- serialize-response [{:keys [serialization-format] :as msg} response]
   (condp = serialization-format
     "edn" (pr-str response)
     "bencode" response
@@ -121,6 +123,7 @@
 
 (set-descriptor!
  #'wrap-refactor
- {:handles (zipmap (keys refactor-nrepl-ops)
-                   (repeat {:doc "See the refactor-nrepl README"
-                            :returns {} :requires {}}))})
+ (cljs/requires-piggieback
+  {:handles (zipmap (keys refactor-nrepl-ops)
+                    (repeat {:doc "See the refactor-nrepl README"
+                             :returns {} :requires {}}))}))

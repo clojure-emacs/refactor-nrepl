@@ -2,13 +2,15 @@
   (:require [clojure.string :as str]
             [clojure.tools.namespace.file :as file]
             [me.raynes.fs :as fs]
+            [refactor-nrepl
+             [config :as config]
+             [util :as util]]
             [refactor-nrepl.ns
              [helpers :refer [file-content-sans-ns read-ns-form]]
              [ns-parser :as ns-parser]
              [pprint :refer [pprint-ns]]
              [rebuild :refer [rebuild-ns-form]]
-             [tracker :as tracker]]
-            [refactor-nrepl.util :as util])
+             [tracker :as tracker]])
   (:import java.io.File
            java.nio.file.Files
            java.util.regex.Pattern))
@@ -73,7 +75,7 @@
         classes (ns-parser/get-imports ns-form)
         deps {:require (update-libspecs libspecs old-ns new-ns)
               :import (update-class-references classes old-ns new-ns)}]
-    (pprint-ns (rebuild-ns-form ns-form deps) (.getAbsolutePath file))))
+    (pprint-ns (rebuild-ns-form deps ns-form) (.getAbsolutePath file))))
 
 (defn- update-file-content-sans-ns
   "Any fully qualified references to old-ns has to be replaced with new-ns."

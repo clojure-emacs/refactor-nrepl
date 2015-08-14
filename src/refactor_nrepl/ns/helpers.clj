@@ -25,7 +25,7 @@
 (defn get-ns-component
   "Extracts a sub-component from the ns declaration.
 
-type is either :require, :use or :import"
+type is a toplevel keyword in the ns form e.g. :require or :use."
   [ns type]
   (some->> (index-of-component ns type) (nth ns)))
 
