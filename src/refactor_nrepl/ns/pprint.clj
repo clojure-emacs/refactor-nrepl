@@ -21,7 +21,7 @@
                     (if (= idx (dec (count ordered-libspecs)))
                       (printf "%s]\n" libspec)
                       (if (vector? libspec)
-                        (pprint libspec)
+                        (println libspec)
                         (if (zero? idx)
                           (printf " %s " libspec)
                           (if (vector? (get ordered-libspecs (inc idx)))

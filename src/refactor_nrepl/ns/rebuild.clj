@@ -1,9 +1,11 @@
 (ns refactor-nrepl.ns.rebuild
   (:require [clojure.string :as str]
+            [refactor-nrepl
+             [config :refer [get-opt]]
+             [util :as util]]
             [refactor-nrepl.ns.helpers
              :refer
-             [index-of-component prefix prefix-form? suffix]]
-            [refactor-nrepl.config :refer [get-opt]]))
+             [index-of-component prefix prefix-form? suffix]]))
 
 (defn- assert-single-alias
   [libspecs alias]
@@ -32,19 +34,20 @@
       (when (seq referred)
         (-> referred concat flatten distinct)))))
 
-(defn- get-flags [libspecs]
-  (let [flags  (->> libspecs
-                    (mapcat :flags)
-                    distinct)]
-    (if (= (count flags) 3) [:reload-all :verbose] flags)))
+(defn- remove-redundant-flags
+  [{:keys [reload reload-all] :as libspec}]
+  (if (and reload reload-all)
+    (dissoc libspec :reload)
+    libspec))
 
 (defn- merge-libspecs
   [libspecs]
-  {:ns (:ns (first libspecs))
-   :as (get-libspec-alias libspecs)
-   :refer (get-referred-symbols libspecs)
-   :rename (apply merge (map :rename libspecs))
-   :flags (get-flags libspecs)})
+  (->
+   (apply merge libspecs)
+   (merge {:as (get-libspec-alias libspecs)
+           :refer (get-referred-symbols libspecs)
+           :rename (apply merge (map :rename libspecs))})
+   remove-redundant-flags))
 
 (defn- remove-duplicate-libspecs
   [deps]
@@ -90,7 +93,9 @@
        (sort dependency-comparator)))
 
 (defn- sort-referred-symbols [referred]
-  (sort dependency-comparator referred))
+  (if (= referred :all)
+    :all
+    (sort dependency-comparator referred)))
 
 (defn- ns-prefix
   "Extracts the prefix from a libspec."
@@ -112,17 +117,19 @@
     @libspecs-by-prefix))
 
 (defn- create-libspec
-  [{:keys [ns as refer rename flags] :as libspec}]
-  (if (and (not as) (not refer) (empty? flags) (empty? rename))
-    ns
-    (into [ns]
-          (concat (when as [:as as])
-                  (when refer
-                    [:refer (if (sequential? refer)
-                              (vec (sort-referred-symbols refer))
-                              refer)])
-                  (when rename [:rename (into (sorted-map) (:rename libspec))])
-                  flags))))
+  [{:keys [ns as refer rename] :as libspec}]
+  (let [all-flags #{:reload :reload-all :verbose}
+        flags (util/filter-map #(all-flags (first %)) libspec)]
+    (if (and (not as) (not refer) (empty? flags) (empty? rename))
+      ns
+      (into [ns]
+            (concat (when as [:as as])
+                    (when refer
+                      [:refer (if (sequential? refer)
+                                (vec (sort-referred-symbols refer))
+                                refer)])
+                    (when rename [:rename (into (sorted-map) (:rename libspec))])
+                    (flatten (seq flags)))))))
 
 (defn- create-libspec-vectors-without-prefix
   [libspecs]

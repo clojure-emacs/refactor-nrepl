@@ -9,12 +9,11 @@
    :only [only these symbols]}"
   (:require [refactor-nrepl.ns.helpers :refer [get-ns-component prefix-form?]]))
 
-(defn- process-libspec
+(defn- libspec-vector->map
   [libspec]
   (if (vector? libspec)
-    (let [[ns & specs] libspec
-          extract-spec (fn [spec](->> specs (drop-while #(not= % spec)) second))]
-      (into {:ns ns} (map vec (partition 2 specs))))
+    (let [[ns & specs] libspec]
+      (into {:ns ns} (->> specs (partition 2) (map vec))))
     {:ns (symbol libspec)}))
 
 (defn- expand-prefix-specs
@@ -48,7 +47,7 @@
        use-to-refer-all
        (into (rest (get-ns-component ns-form :require)))
        expand-prefix-specs
-       (map process-libspec)
+       (map libspec-vector->map)
        distinct))
 
 (defn get-imports [ns-form]

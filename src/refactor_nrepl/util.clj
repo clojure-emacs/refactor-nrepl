@@ -201,3 +201,8 @@
     (if (.find m)
       (recur m (assoc res (.start m) (.group m)))
       res)))
+
+(defn filter-map
+  "Return a new map where (pred [k v]) is true for every key-value pair."
+  [pred m]
+  (into {} (filter pred m)))

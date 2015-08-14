@@ -3,14 +3,15 @@
             [clojure.test :refer :all]))
 
 (deftest parses-libspecs-with-prefix-vectors-containing-specs
-  (is (= (list {:ns 'compojure.core :refer '[defroutes]}
-               {:ns 'compojure.route :as 'route}
-               {:ns 'website.github-manager :as 'gman})
+  (is (= (list {:ns 'compojure.core :refer '[defroutes] :reload-all true}
+               {:ns 'compojure.route :as 'route :reload true}
+               {:ns 'website.github-manager :as 'gman :verbose true})
          (get-libspecs '(ns refactor-nrepl.test
                           (:require [compojure
-                                     [core :refer [defroutes]]
-                                     [route :as route]]
-                                    [website.github-manager :as gman])
+                                     [core :refer [defroutes] :reload-all true]
+                                     [route :as route :reload true]]
+                                    [website.github-manager :as gman
+                                     :verbose true])
                           (:gen-class))))))
 
 (deftest parses-libspecs-with-prefix-vectors-without-specs

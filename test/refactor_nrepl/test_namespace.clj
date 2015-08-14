@@ -70,14 +70,14 @@
 
 (deftest preserves-other-elements
   (let [actual (clean-ns ns1)
-        docstring (nthrest actual 2)
-        author (nthrest actual 3)
-        refer-clojure (nthrest actual 4)
-        gen-class (nthrest actual 5)]
-    (is (= (nthrest ns1-cleaned 2) docstring))
-    (is (= (nthrest ns1-cleaned 3) author))
-    (is (= (nthrest ns1-cleaned 4) refer-clojure))
-    (is (= (nthrest ns1-cleaned 5) gen-class))))
+        docstring (nth actual 2)
+        author (nth actual 3)
+        refer-clojure (nth actual 4)
+        gen-class (nth actual 5)]
+    (is (= (nth ns1-cleaned 2) docstring))
+    (is (= (nth ns1-cleaned 3) author))
+    (is (= (nth ns1-cleaned 4) refer-clojure))
+    (is (= (nth ns1-cleaned 5) gen-class))))
 
 (deftest removes-use
   (let [use-clause (get-ns-component ns1-cleaned :use)]

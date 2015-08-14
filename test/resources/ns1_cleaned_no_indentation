@@ -7,9 +7,9 @@
 :extends java.lang.Exception
 :methods [[binomial [int int] double]])
 (:require [clojure data edn xml
-[instant :as inst]
+[instant :as inst :reload true]
 [pprint :refer [cl-format formatter get-pretty-writer]]
-[string :refer :all :rename {replace foo, reverse bar}]
+[string :refer :all :rename {replace foo, reverse bar} :reload-all true]
 [test :refer :all]
 [walk :refer [postwalk prewalk]]]
 clojure.test.junit)
