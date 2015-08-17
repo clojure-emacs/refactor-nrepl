@@ -89,7 +89,7 @@
   (->> @artifacts keys list*))
 
 (defn artifact-versions [{:keys [artifact]}]
-  (->> artifact (@artifacts) list*))
+  (->> artifact (@artifacts) distinct list*))
 
 (defn- make-resolve-missing-aware-of-new-deps
   "Once the deps are available on cp we still have to load them and
