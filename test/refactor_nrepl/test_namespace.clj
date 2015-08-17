@@ -4,6 +4,7 @@
              [clean-ns :refer [clean-ns]]
              [helpers :refer [get-ns-component read-ns-form]]]
             [refactor-nrepl.ns.pprint :refer [pprint-ns]]
+            [refactor-nrepl.util :as util]
             [clojure.string :as str])
   (:import java.io.File))
 
@@ -25,7 +26,7 @@
     (is (= combined-requires requires))))
 
 (deftest meta-preserved
-  (let [cleaned (pprint-ns (clean-ns ns2-meta))]
+  (let [cleaned (pprint-ns (clean-ns ns2-meta) ns2-meta)]
     (is (.contains cleaned "^{:author \"Trurl and Klapaucius\"
 :doc \"test ns with meta\"}"))))
 
@@ -123,8 +124,9 @@
                     (:import java.util.Date)))
 
 (deftest test-pprint-artifact-ns
-  (let [actual (pprint-ns artifact-ns)
-        expected (slurp (.getAbsolutePath (File. "test/resources/artifacts_pprinted_no_indentation")))]
+  (let [path (.getAbsolutePath (File. "test/resources/artifacts_pprinted_no_indentation"))
+        actual (pprint-ns artifact-ns path)
+        expected (slurp path)]
     (is (= expected actual))))
 
 (deftest handles-imports-when-only-enum-is-used
@@ -144,6 +146,6 @@
 ;; with pretty-printing
 (when (= (clojure-version) "1.7.0")
   (deftest test-pprint
-    (let [ns-str (pprint-ns (clean-ns ns1))
+    (let [ns-str (pprint-ns (clean-ns ns1) ns1)
           ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
       (is (= ns1-str ns-str)))))

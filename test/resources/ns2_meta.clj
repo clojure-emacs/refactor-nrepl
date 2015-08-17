@@ -23,3 +23,8 @@
   (escape)
   (read-instant-date)
   (rs))
+
+;; Programmatically added metadata should not be printed in the ns form
+;; libs like test.check do this see
+;; https://github.com/clojure-emacs/clj-refactor.el/issues/209
+(alter-meta! *ns* assoc ::invisibru ::metadata)

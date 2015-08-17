@@ -73,7 +73,7 @@
         classes (ns-parser/get-imports ns-form)
         deps {:require (update-libspecs libspecs old-ns new-ns)
               :import (update-class-references classes old-ns new-ns)}]
-    (pprint-ns (rebuild-ns-form ns-form deps))))
+    (pprint-ns (rebuild-ns-form ns-form deps) (.getAbsolutePath file))))
 
 (defn- update-file-content-sans-ns
   "Any fully qualified references to old-ns has to be replaced with new-ns."

@@ -2,7 +2,8 @@
   (:require [clojure
              [pprint :refer [pprint]]
              [string :as str]]
-            [refactor-nrepl.ns.helpers :refer [prefix-form?]]))
+            [refactor-nrepl.ns.helpers :refer [prefix-form?]]
+            [refactor-nrepl.util :as util]))
 
 (defn- libspec-vectors-last [libspecs]
   (vec (concat (remove sequential? libspecs)
@@ -83,22 +84,20 @@
   meta along with everything in the namespaces' attr map.  In order to
   avoid duplication we have to remove some of the keys in the metadata
   map before printing."
-  [name attrs? docstring?]
-  (let [ns-meta (-> (find-ns name)
-                    meta
-                    ;; Metadata added by the compiler
-                    (dissoc :file :line :end-line :column :end-column))
-        ns-meta (if docstring? (dissoc ns-meta :doc) ns-meta)]
-    (apply dissoc ns-meta (keys attrs?))))
+  [path]
+  (let [meta? (-> path slurp util/get-next-sexp (.replaceFirst "\\^\\{" "\\{")
+                  read-string second)]
+    (when (map? meta?)
+      meta?)))
 
 (defn pprint-ns
-  [[_ name & more :as ns-form]]
+  [[_ name & more :as ns-form] path]
   (let [docstring? (when (string? (first more)) (first more))
         attrs? (when (map? (second more)) (second more))
         forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
                     :else (rest more))
-        ns-meta (get-ns-meta name attrs? docstring?)]
+        ns-meta (get-ns-meta path)]
     (-> (with-out-str
           (printf "(ns ")
           (when (seq ns-meta) (pprint-meta ns-meta))
