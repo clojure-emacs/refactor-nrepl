@@ -25,9 +25,9 @@
        first
        (assert-single-alias libspecs)))
 
-(defn- get-referred-symbols [libspecs]
+(defn- merge-referred-symbols [libspecs key]
   (let [referred (->> libspecs
-                      (map :refer)
+                      (map key)
                       (remove nil?))]
     (if (some #{:all} referred)
       :all
@@ -45,7 +45,9 @@
   (->
    (apply merge libspecs)
    (merge {:as (get-libspec-alias libspecs)
-           :refer (get-referred-symbols libspecs)
+           :refer (merge-referred-symbols libspecs :refer)
+           :refer-macros (merge-referred-symbols libspecs :refer-macros)
+           :require-macros (merge-referred-symbols libspecs :require-macros)
            :rename (apply merge (map :rename libspecs))})
    remove-redundant-flags))
 
@@ -117,10 +119,11 @@
     @libspecs-by-prefix))
 
 (defn- create-libspec
-  [{:keys [ns as refer rename] :as libspec}]
-  (let [all-flags #{:reload :reload-all :verbose}
+  [{:keys [ns as refer rename refer-macros] :as libspec}]
+  (let [all-flags #{:reload :reload-all :verbose :include-macros}
         flags (util/filter-map #(all-flags (first %)) libspec)]
-    (if (and (not as) (not refer) (empty? flags) (empty? rename))
+    (if (and (not as) (not refer)
+             (empty? flags) (empty? rename) (empty? refer-macros))
       ns
       (into [ns]
             (concat (when as [:as as])
@@ -128,6 +131,8 @@
                       [:refer (if (sequential? refer)
                                 (vec (sort-referred-symbols refer))
                                 refer)])
+                    (when refer-macros
+                      [:refer-macros (vec (sort-referred-symbols refer-macros))])
                     (when rename [:rename (into (sorted-map) (:rename libspec))])
                     (flatten (seq flags)))))))
 
@@ -151,7 +156,7 @@
 
 (defn- create-prefixed-libspec-vectors
   [[libspec & more :as libspecs]]
-  (if-not (get-opt :prefix-rewriting)
+  (if-not (:prefix-rewriting refactor-nrepl.config/*config*)
     (create-libspec-vectors-with-prefix libspecs)
     (if-not more
       (create-libspec-vectors-with-prefix [libspec])
@@ -167,11 +172,11 @@
 
 (defn- build-require-form
   [libspecs]
-  (let [libspecs (->> libspecs
-                      remove-duplicate-libspecs
-                      by-prefix
-                      create-libspec-vectors
-                      sort-libspecs)]
+  (let [libspecs (-> libspecs
+                     remove-duplicate-libspecs
+                     by-prefix
+                     create-libspec-vectors
+                     sort-libspecs)]
     (when (seq libspecs)
       (cons :require libspecs))))
 
@@ -216,9 +221,9 @@
 (defn- drop-index [col idx]
   (filter identity (map-indexed #(if (not= %1 idx) %2) col)))
 
-(defn- remove-use-clause
-  [ns-form]
-  (if-let [idx (index-of-component ns-form :use)]
+(defn- remove-clause
+  [ns-form key]
+  (if-let [idx (index-of-component ns-form key)]
     (drop-index ns-form idx)
     ns-form))
 
@@ -236,11 +241,28 @@
     (apply list (assoc (vec ns-form) idx new-import-form))
     (drop-index ns-form (index-of-component ns-form :import))))
 
+(defn- update-clause [ns-form new-form & keys]
+  (let [idx (apply #(or %) (map (partial index-of-component ns-form) keys))]
+    (if (and idx new-form)
+      (apply list (assoc (vec ns-form) idx new-form))
+      (drop-index ns-form idx))))
+
+(defn- build-require-macros-form [libspecs]
+  (let [as-require (->> libspecs
+                        (filter :require-macros)
+                        (map (partial util/rename-key :require-macros :refer)))
+        require-form (build-require-form as-require)]
+    (when require-form
+      (cons :require-macros (rest require-form)))))
+
 (defn rebuild-ns-form
-  [ns-form deps]
+  [deps old-ns-form]
   (let [new-require-form (build-require-form (:require deps))
-        new-import-form (build-import-form (:import deps))]
-    (-> ns-form
-        (update-require-clause new-require-form)
-        (update-import-clause new-import-form)
-        remove-use-clause)))
+        new-import-form (build-import-form (:import deps))
+        new-require-macros-form (build-require-macros-form (:require deps))]
+    (-> old-ns-form
+        (update-clause new-require-form :require)
+        (update-clause new-require-macros-form :require-macros)
+        (update-clause new-import-form :import)
+        (remove-clause :use)
+        (remove-clause :use-macros))))

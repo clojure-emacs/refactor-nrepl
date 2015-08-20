@@ -23,7 +23,10 @@
              :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :dependencies [[org.clojure/clojure "1.7.0"]
+                                  [org.clojure/clojurescript "1.7.48"]
+                                  [com.cemerick/piggieback "0.2.1"]
                                   [commons-io/commons-io "2.4"]]
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
                                     "test/resources/testproject/src"]

@@ -1,6 +1,7 @@
 (ns resources.cljsns
-  (:require [chord.client :refer [ws-ch]]
-            [cljs.core.async :refer [<!]]
-            [clojure.pprint :as pprint :require-macros true]
-            [undead.components :refer [render-game]])
-  (:require-macros [cljs.core.async.macros :refer [go]]))
+  (:require [cljs.pprint :as pprint]
+            [cljs.test :refer-macros [deftest is]]
+            [clojure.set :as set]
+            [clojure.string :refer [join split-lines]])
+  (:require-macros [cljs.test :refer [run-tests testing]])
+  (:import goog.string))

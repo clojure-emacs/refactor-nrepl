@@ -8,17 +8,25 @@
             [clojure.string :as str])
   (:import java.io.File))
 
-(def ns1 (.getAbsolutePath (File. "test/resources/ns1.clj")))
-(def ns1-cleaned (read-ns-form (.getAbsolutePath (File. "test/resources/ns1_cleaned.clj"))))
-(def ns2 (.getAbsolutePath (File. "test/resources/ns2.clj")))
-(def ns2-cleaned (read-ns-form (.getAbsolutePath (File. "test/resources/ns2_cleaned.clj"))))
-(def ns2-meta (.getAbsolutePath (File. "test/resources/ns2_meta.clj")))
-(def ns-with-exclude (.getAbsolutePath (File. "test/resources/ns_with_exclude.clj")))
-(def ns-with-unused-deps (.getAbsolutePath (File. "test/resources/unused_deps.clj")))
+(defn- absolute-path [^String path]
+  (.getAbsolutePath (File. path)))
+
+(defn- clean-msg [path]
+  {:path (absolute-path path)})
+
+(def ns1 (clean-msg "test/resources/ns1.clj"))
+(def ns1-cleaned (read-ns-form (absolute-path "test/resources/ns1_cleaned.clj")))
+(def ns2 (clean-msg "test/resources/ns2.clj"))
+(def ns2-cleaned (read-ns-form (absolute-path "test/resources/ns2_cleaned.clj")))
+(def ns2-meta (clean-msg "test/resources/ns2_meta.clj"))
+(def ns-with-exclude (clean-msg "test/resources/ns_with_exclude.clj"))
+(def ns-with-unused-deps (clean-msg "test/resources/unused_deps.clj"))
 (def ns-without-unused-deps (read-ns-form
-                             (.getAbsolutePath (File. "test/resources/unused_removed.clj"))))
-(def cljs-file (.getAbsolutePath (File. "test/resources/file.cljs")))
-(def ns-referencing-macro (.getAbsolutePath (File. "test/resources/ns_referencing_macro.clj")))
+                             (absolute-path "test/resources/unused_removed.clj")))
+(def cljs-file (clean-msg "test/resources/file.cljs"))
+(def ns-referencing-macro (absolute-path "test/resources/ns_referencing_macro.clj"))
+(def cljs-ns (clean-msg "test/resources/cljsns.cljs"))
+(def cljs-ns-cleaned (read-ns-form (absolute-path "test/resources/cljsns_cleaned.cljs")))
 
 (deftest combines-requires
   (let [requires (get-ns-component (clean-ns ns2) :require)
@@ -26,7 +34,7 @@
     (is (= combined-requires requires))))
 
 (deftest meta-preserved
-  (let [cleaned (pprint-ns (clean-ns ns2-meta) ns2-meta)]
+  (let [cleaned (pprint-ns (clean-ns ns2-meta) (:path ns2-meta))]
     (is (.contains cleaned "^{:author \"Trurl and Klapaucius\"
 :doc \"test ns with meta\"}"))))
 
@@ -135,17 +143,18 @@
     (is (some #(= 'java.text.Normalizer %) imports))))
 
 (deftest keeps-referred-macros-around
-  (let [new-ns (clean-ns ns-referencing-macro)]
+  (let [new-ns (clean-ns (clean-msg ns-referencing-macro))]
     ;; nil means no changes
     (is (nil? new-ns))))
 
-(deftest should-throw-on-cljs
-  (is (thrown? IllegalArgumentException (clean-ns cljs-file))))
+(deftest handles-clojurescript-files
+  (let [new-ns (rest (clean-ns cljs-ns))]
+    (is (= (rest cljs-ns-cleaned) new-ns))))
 
 ;; Order of stuff in maps aren't stable across versions which messes
 ;; with pretty-printing
 (when (= (clojure-version) "1.7.0")
   (deftest test-pprint
-    (let [ns-str (pprint-ns (clean-ns ns1) ns1)
+    (let [ns-str (pprint-ns (clean-ns ns1) (:path ns1))
           ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
       (is (= ns1-str ns-str)))))

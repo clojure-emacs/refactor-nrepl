@@ -33,3 +33,10 @@
                          (:require [refactor-nrepl.ns.ns-parser :refer :all]
                                    [clojure.test :refer :all])
                          (:import [java.util Date Calendar]))))))
+
+(deftest parses-require-macros
+  (is (= '({:ns cljs.test :refer-macros [deftest is]}
+           {:ns cljs.test :require-macros [testing run-tests]})
+         (get-libspecs '(ns test
+                          (:require [cljs.test :refer-macros [deftest is]])
+                          (:require-macros [cljs.test :refer [testing run-tests]]))))))

@@ -206,3 +206,17 @@
   "Return a new map where (pred [k v]) is true for every key-value pair."
   [pred m]
   (into {} (filter pred m)))
+
+(defn rename-key
+  "Rename the key in m to new-name."
+  [key new-name m]
+  (-> m
+      (assoc new-name (key m))
+      (dissoc key)))
+
+(defn dissoc-when
+  "Remove the enumerated keys from m on which pred is truthy."
+  [m pred & keys]
+  (if (seq keys)
+    (reduce (fn [m k] (if (pred (get m k)) (dissoc m k) m)) m keys)
+    m))

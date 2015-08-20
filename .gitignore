@@ -17,3 +17,5 @@ pom.xml.asc
 install.cmd
 /install.sh
 /deploy.sh
+/.cljs_nashorn_repl/
+/nashorn_code_cache/
