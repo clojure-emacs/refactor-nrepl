@@ -71,7 +71,7 @@
 (defn- hotload-dependency-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :dependency (hotload-dependency msg)))
 
-(defn- clean-ns-reply [{:keys [transport] :as msg}]
+(defn- clean-ns-reply [{:keys [transport path] :as msg}]
   (reply transport msg :ns (some-> msg clean-ns (pprint-ns path)) :status :done))
 
 (defn- find-unbound-reply [{:keys [transport] :as msg}]
