@@ -220,3 +220,8 @@
   (if (seq keys)
     (reduce (fn [m k] (if (pred (get m k)) (dissoc m k) m)) m keys)
     m))
+
+(defn ex-info-assoc
+  "Assoc kvs onto e's data map."
+  [^clojure.lang.ExceptionInfo e & kvs]
+  (ex-info (.getMessage e) (apply assoc (ex-data e) kvs) (.getCause e)))

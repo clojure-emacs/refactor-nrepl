@@ -25,6 +25,9 @@
 (defmacro ^:private with-errors-being-passed-on [transport msg & body]
   `(try
      ~@body
+     (catch clojure.lang.ExceptionInfo e#
+       (transport/send
+        ~transport (response-for ~msg :error (.toString e#) :status :done)))
      (catch IllegalArgumentException e#
        (transport/send
         ~transport (response-for ~msg :error (.getMessage e#) :status :done)))
