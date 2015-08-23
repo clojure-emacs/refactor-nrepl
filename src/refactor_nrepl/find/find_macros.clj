@@ -2,13 +2,14 @@
   (:import clojure.lang.LineNumberingPushbackReader
            [java.io BufferedReader File FileReader StringReader])
   (:require [clojure.string :as str]
+            [clojure.tools.reader :as reader]
+            [refactor-nrepl.find.bindings :as bindings]
             [refactor-nrepl.ns
              [helpers :as ns-helpers]
              [ns-parser :as ns-parser]
              [tracker :as tracker]]
             [refactor-nrepl.util :as util]
-            [rewrite-clj.zip :as zip]
-            [refactor-nrepl.find.bindings :as bindings]))
+            [rewrite-clj.zip :as zip]))
 
 (defn- keep-lines
   "Keep the first n lines of s."
@@ -21,18 +22,20 @@
        doall
        (str/join "\n")))
 
-(defn- build-macro-meta [form line-end path]
-  (let [file-content (slurp path)
+(defn- build-macro-meta
+  [form path]
+  (let [{:keys [line column end-line end-column]} (meta form)
+        file-content (slurp path)
         file-ns (util/ns-from-string file-content)
-        content (keep-lines file-content line-end)
+        content (keep-lines file-content end-line)
         sexp (util/get-last-sexp content)
         macro-name (name (second form))
         col-beg (dec (.indexOf sexp macro-name))]
     {:name (str file-ns "/" macro-name)
-     :col-beg col-beg
-     :col-end (+ col-beg (.length macro-name))
-     :line-end line-end
-     :line-beg (inc (- line-end (count (str/split-lines sexp))))
+     :col-beg column
+     :col-end end-column
+     :line-beg line
+     :line-end end-line
      :file (.getAbsolutePath path)
      :match sexp}))
 
@@ -41,13 +44,13 @@
   (with-open [file-rdr (FileReader. path)]
     (binding [*ns* (or (ns-helpers/path->namespace path :no-error) *ns*)]
       (let [rdr (LineNumberingPushbackReader. file-rdr)]
-        (loop [macros [], form (read rdr nil :eof)]
+        (loop [macros [], form (reader/read rdr nil :eof)]
           (cond
             (= form :eof) macros
             (and (sequential? form) (= (first form) 'defmacro))
-            (recur (conj macros (build-macro-meta form (.getLineNumber rdr) path))
-                   (read rdr nil :eof))
-            :else (recur macros (read rdr nil :eof))))))))
+            (recur (conj macros (build-macro-meta form path))
+                   (reader/read rdr nil :eof))
+            :else (recur macros (reader/read rdr nil :eof))))))))
 
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
