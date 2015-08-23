@@ -209,10 +209,10 @@
 
 (defn rename-key
   "Rename the key in m to new-name."
-  [key new-name m]
+  [k new-name m]
   (-> m
-      (assoc new-name (key m))
-      (dissoc key)))
+      (assoc new-name (k m))
+      (dissoc k)))
 
 (defn dissoc-when
   "Remove the enumerated keys from m on which pred is truthy."
