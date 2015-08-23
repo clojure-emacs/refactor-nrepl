@@ -1,11 +1,12 @@
 (ns refactor-nrepl.ns.dependencies
   (:require [cider.nrepl.middleware.info :as info]
+            [clojure.tools.reader :as reader]
+            [clojure.tools.reader.reader-types :as readers]
             [clojure.walk :as walk]
             [refactor-nrepl.ns
              [helpers :refer [ctor-call->str file-content-sans-ns prefix suffix]]
              [ns-parser :refer [get-imports get-libspecs]]]
-            [refactor-nrepl.util :as util])
-  (:import [java.io PushbackReader StringReader]))
+            [refactor-nrepl.util :as util]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]
@@ -118,36 +119,37 @@
     sym))
 
 (defn- get-symbols-used-in-file
-  [file-content current-ns libspecs]
-  (binding [*ns* (or (find-ns (symbol current-ns)) *ns*)]
-    (let [rdr (PushbackReader. (StringReader. (file-content-sans-ns file-content)))
-          syms (atom #{})
-          collect-symbol (fn [form]
-                           (when (symbol? form)
-                             (swap! syms conj (ctor-call->str form)))
-                           form)]
-      (loop [form (read rdr nil :eof)]
-        (when (not= form :eof)
-          (walk/prewalk collect-symbol form)
-          (recur (read rdr nil :eof))))
-      (set (map (partial fix-ns-of-backquoted-symbols libspecs) @syms)))))
+  [path current-ns libspecs]
+  (util/with-additional-ex-data [:file path]
+    (binding [*ns* (or (find-ns (symbol current-ns)) *ns*)]
+      (let [rdr (-> path slurp file-content-sans-ns readers/indexing-push-back-reader)
+            syms (atom #{})
+            collect-symbol (fn [form]
+                             (when (symbol? form)
+                               (swap! syms conj (ctor-call->str form)))
+                             form)]
+        (loop [form (reader/read rdr nil :eof)]
+          (when (not= form :eof)
+            (walk/prewalk collect-symbol form)
+            (recur (reader/read rdr nil :eof))))
+        (set (map (partial fix-ns-of-backquoted-symbols libspecs) @syms))))))
 
 (defn- remove-unused-requires [symbols-in-file current-ns libspecs]
   (map (partial remove-unused-syms-and-specs symbols-in-file current-ns)
        libspecs))
 
-(defn- get-classes-used-in-typehints [file-content]
-  (let [rdr (PushbackReader. (StringReader. (file-content-sans-ns file-content)))
-        content (file-content-sans-ns file-content)
-        types (atom [])
-        conj-type (fn [form]
-                    (when-let [t (:tag (meta form))] (swap! types conj (str t)))
-                    form)]
-    (loop [form (read rdr nil :eof)]
-      (when (not= form :eof)
-        (walk/prewalk conj-type form)
-        (recur (read rdr nil :eof))))
-    (set @types)))
+(defn- get-classes-used-in-typehints [path]
+  (util/with-additional-ex-data [:file path]
+    (let [rdr (-> path slurp file-content-sans-ns readers/indexing-push-back-reader)
+          types (atom [])
+          conj-type (fn [form]
+                      (when-let [t (:tag (meta form))] (swap! types conj (str t)))
+                      form)]
+      (loop [form (reader/read rdr nil :eof)]
+        (when (not= form :eof)
+          (walk/prewalk conj-type form)
+          (recur (reader/read rdr nil :eof))))
+      (set @types))))
 
 (defn- prune-libspecs
   [libspecs symbols-in-file current-ns]
@@ -163,10 +165,9 @@
 
 (defn extract-dependencies [ns-form path]
   (let [libspecs (get-libspecs ns-form)
-        file-content (slurp path)
         current-ns (second ns-form)
-        symbols-in-file (into (get-symbols-used-in-file file-content current-ns
+        symbols-in-file (into (get-symbols-used-in-file path current-ns
                                                         libspecs)
-                              (get-classes-used-in-typehints file-content))]
+                              (get-classes-used-in-typehints path))]
     {:require (prune-libspecs libspecs symbols-in-file current-ns)
      :import (prune-imports ns-form symbols-in-file)}))

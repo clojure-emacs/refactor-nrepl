@@ -225,3 +225,12 @@
   "Assoc kvs onto e's data map."
   [^clojure.lang.ExceptionInfo e & kvs]
   (ex-info (.getMessage e) (apply assoc (ex-data e) kvs) (.getCause e)))
+
+(defmacro with-additional-ex-data
+  "Execute body and if an ex-info is thrown, assoc kvs onto the data
+  map and rethrow."
+  [kvs & body]
+  `(try
+     ~@body
+     (catch clojure.lang.ExceptionInfo e#
+       (throw (ex-info-assoc e# ~kvs)))))

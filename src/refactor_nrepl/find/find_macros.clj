@@ -41,7 +41,7 @@
 
 (defn- find-macro-definitions-in-file
   [path]
-  (try
+  (util/with-additional-ex-data [:file path]
     (with-open [file-rdr (FileReader. path)]
       (binding [*ns* (or (ns-helpers/path->namespace path :no-error) *ns*)]
         (let [rdr (LineNumberingPushbackReader. file-rdr)]
@@ -51,9 +51,7 @@
               (and (sequential? form) (= (first form) 'defmacro))
               (recur (conj macros (build-macro-meta form path))
                      (reader/read rdr nil :eof))
-              :else (recur macros (reader/read rdr nil :eof)))))))
-    (catch clojure.lang.ExceptionInfo e
-      (throw (util/ex-info-assoc e :file path)))))
+              :else (recur macros (reader/read rdr nil :eof)))))))))
 
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
