@@ -1,6 +1,6 @@
 (ns refactor-nrepl.util-test
-  (:require [refactor-nrepl.util :refer :all]
-            [clojure.test :refer :all]))
+  (:require [clojure.test :refer :all]
+            [refactor-nrepl.util :refer :all]))
 
 (def file-content (slurp "test/resources/testproject/src/com/example/sexp_test.clj"))
   (def weird-file-content ";; some weird file
@@ -30,3 +30,11 @@
   (is (= (apply get-enclosing-sexp weird-file-content weird-location) ""))
   (is (= (get-next-sexp weird-file-content) ""))
   (is (= (get-next-sexp file-content-with-set) "#{foo bar baz}")))
+
+(deftest with-additional-ex-data-test
+  (try
+    (with-additional-ex-data [:foo :bar]
+      (throw (ex-info "ok" {})))
+    (catch clojure.lang.ExceptionInfo e
+      (let [{:keys [foo]} (ex-data e)]
+        (is (= foo :bar))))))

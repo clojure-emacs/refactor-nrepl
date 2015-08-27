@@ -233,4 +233,4 @@
   `(try
      ~@body
      (catch clojure.lang.ExceptionInfo e#
-       (throw (ex-info-assoc e# ~kvs)))))
+       (throw (apply ex-info-assoc e# ~kvs)))))
