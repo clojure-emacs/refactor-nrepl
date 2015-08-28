@@ -188,7 +188,12 @@ The goal of the op is to provide intelligent suggestions when the user wants to 
 
 The op requires `symbol` which represents a name to look up on the classpath.
 
-The return value `candidates` is an alist of `((candidate1 . type1) (candidate2 . type2) ...)` where type is in `#{:type :class :ns}` so we can branch on the 3 various way to import.  `:type` means the symbol resolved to a var created by `defrecord` or `deftype`, `:class` also includes interfaces.
+The return value `candidates` is an alist of `((candidate1 . type1)
+(candidate2 . type2) ...)` where type is in `#{:type :class :ns
+:macro}` so we can branch on the various ways to make the symbol
+available.  `:type` means the symbol resolved to a var created by
+`defrecord` or `deftype`, `:class` also includes interfaces.  `:macro`
+is only used if the op is called in a cljs context.
 
 ### hotload-dependency
 
@@ -271,6 +276,20 @@ This op can cause serious havoc if it crashes midway through the
 refactoring.  I recommend not running it without first creating a
 restore point in your version control system.
 
+### namespace-aliases
+
+Returns `namespace-aliases` which is a list of all the namespace aliases that are in use in the
+project. The reply looks like this:
+
+```clj
+{:clj
+ {t (clojure.test),
+  set (clojure.set),
+  tracker (refactor-nrepl.ns.tracker clojure.tools.namespace.track)},
+ :cljs {set (clojure.set), pprint (cljs.pprint)}}
+```
+The list of suggestions is sorted by frequency in decreasing order, so the first element is always the best suggestion.
+
 ### Errors
 
 The middleware returns errors under one of two keys: `:error` or
@@ -318,7 +337,8 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 ## Changelog
 
 ### Unreleased
-* Make `find-symbol` able to handle macros
+* Add `namespace-aliases` which provides a mapping of the namespace aliases that are in use in the project.
+* Make `find-symbol` able to handle macros.
 
 ### 1.1.0
 

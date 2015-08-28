@@ -12,7 +12,9 @@
    :refer-macros [referred macros here]
    :require-macros true}"
   (:require [refactor-nrepl.ns.helpers :refer [get-ns-component prefix-form?]]
-            [refactor-nrepl.util :as util]))
+            [refactor-nrepl.util :as util]
+            [refactor-nrepl.ns.helpers :refer [read-ns-form]])
+  (:import java.io.File))
 
 (defn- libspec-vector->map
   [libspec]
@@ -77,9 +79,9 @@
                   (map (partial util/rename-key :only :require-macros))))]))
 
 (defn get-libspecs [ns-form]
-  (->> ns-form
-       extract-libspecs
-       distinct))
+  (some->> ns-form
+           extract-libspecs
+           distinct))
 
 (defn get-imports [ns-form]
   (let [expand-prefix-specs (fn [import-spec]
@@ -94,3 +96,10 @@
              (map expand-prefix-specs)
              flatten
              distinct)))
+
+(defn get-libspecs-from-file
+  [^File f]
+  (some->> f
+           .getAbsolutePath
+           (read-ns-form :no-error)
+           get-libspecs))

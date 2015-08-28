@@ -71,13 +71,13 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
   "Read the ns form found at PATH.
 
   If no ns form can be read, throw an error unless NO-ERROR is passed."
-  ([path] (read-ns-form path nil))
-  ([path no-error]
+  ([path] (read-ns-form nil path))
+  ([no-error path]
    (with-open [file-reader (FileReader. path)]
      (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
        ns-form
        (when-not no-error
-         (throw (IllegalArgumentException. "Malformed ns form!")))))))
+         (throw (IllegalArgumentException. (str "Malformed ns form in " path))))))))
 
 (defn path->namespace
   "Read the ns form found at PATH and return the namespace object for
@@ -85,8 +85,8 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
 
   if NO-ERROR is passed just return nil instead of an exception if we
   can't successfully read an ns form."
-  ([path] (path->namespace path nil))
-  ([path no-error] (some-> path (read-ns-form no-error) second find-ns)))
+  ([path] (path->namespace nil path))
+  ([no-error path] (some->> path (read-ns-form no-error) second find-ns)))
 
 (defn file-content-sans-ns [file-content]
   ;; NOTE: It's tempting to trim this result but

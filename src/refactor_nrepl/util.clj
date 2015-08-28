@@ -51,8 +51,24 @@
   [^File f]
   (.endsWith (.getPath f) ".cljc"))
 
-(defn find-cljc-files-in-project []
-  (mapcat (partial find-in-dir cljc-file?) (dirs-on-classpath*)))
+(defn cljs-file?
+  [^File f]
+  (.endsWith (.getPath f) ".cljs"))
+
+(defn clj-file?
+  [^File f]
+  (.endsWith (.getPath f) ".clj"))
+
+(defn source-file?
+  "True for clj or cljs files."
+  [^File f]
+  (or (.endsWith (.getPath f) ".clj")
+      (.endsWith (.getPath f) ".cljs")))
+
+(defn filter-project-files
+  "Return the files in the project satisfying (pred ^File file)."
+  [pred]
+  (mapcat (partial find-in-dir pred) (dirs-on-classpath*)))
 
 (defn node-at-loc? [loc-line loc-column node]
   (let [{:keys [line end-line column end-column]} (:env node)]

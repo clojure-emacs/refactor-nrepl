@@ -19,6 +19,7 @@
              [find-unbound :refer [find-unbound-vars]]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
+             [namespace-aliases :refer [namespace-aliases]]
              [pprint :refer [pprint-ns]]
              [resolve-missing :refer [resolve-missing]]]))
 
@@ -101,6 +102,11 @@
   (reply transport msg :touched (rename-file-or-dir old-path new-path)
          :status :done))
 
+(defn- namespace-aliases-reply [{:keys [transport] :as msg}]
+  (reply transport msg
+         :namespace-aliases (serialize-response msg (namespace-aliases))
+         :status :done))
+
 (def refactor-nrepl-ops
   {
    "artifact-list" artifact-list-reply
@@ -112,6 +118,7 @@
    "find-symbol" find-symbol-reply
    "find-unbound" find-unbound-reply
    "hotload-dependency" hotload-dependency-reply
+   "namespace-aliases" namespace-aliases-reply
    "rename-file-or-dir" rename-file-or-dir-reply
    "resolve-missing" resolve-missing-reply
    "stubs-for-interface" stubs-for-interface-reply
