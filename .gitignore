@@ -20,3 +20,5 @@ install.cmd
 /.cljs_nashorn_repl/
 /.cljs_rhino_repl/
 /nashorn_code_cache/
+/.cljs_rhino_repl/
+/.cljs_node_repl/
