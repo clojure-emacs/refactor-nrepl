@@ -18,4 +18,5 @@ install.cmd
 /install.sh
 /deploy.sh
 /.cljs_nashorn_repl/
+/.cljs_rhino_repl/
 /nashorn_code_cache/
