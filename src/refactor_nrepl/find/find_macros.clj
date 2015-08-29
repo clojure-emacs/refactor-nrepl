@@ -43,7 +43,7 @@
   [path]
   (util/with-additional-ex-data [:file path]
     (with-open [file-rdr (FileReader. path)]
-      (binding [*ns* (or (ns-helpers/path->namespace path :no-error) *ns*)]
+      (binding [*ns* (or (ns-helpers/path->namespace :no-error path) *ns*)]
         (let [rdr (LineNumberingPushbackReader. file-rdr)]
           (loop [macros [], form (reader/read rdr nil :eof)]
             (cond
@@ -185,7 +185,7 @@
          ;; Fail gracefully instead of blowing up with reader errors
          ;; when project contains cljc files until we had proper
          ;; support
-         (empty? (util/find-cljc-files-in-project))
+         (empty? (util/filter-project-files util/cljc-file?))
          (fully-qualified-name? fully-qualified-name))
     (let [all-defs (find-macro-definitions-in-project)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
