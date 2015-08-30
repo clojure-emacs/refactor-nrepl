@@ -44,19 +44,21 @@
   (util/with-additional-ex-data [:file path]
     (with-open [file-rdr (FileReader. path)]
       (binding [*ns* (or (ns-helpers/path->namespace :no-error path) *ns*)]
-        (let [rdr (LineNumberingPushbackReader. file-rdr)]
-          (loop [macros [], form (reader/read rdr nil :eof)]
+        (let [rdr (LineNumberingPushbackReader. file-rdr)
+              opts {:read-cond :allow :features #{:clj} :eof :eof}]
+          (loop [macros [], form (reader/read opts rdr)]
             (cond
               (= form :eof) macros
               (and (sequential? form) (= (first form) 'defmacro))
               (recur (conj macros (build-macro-meta form path))
-                     (reader/read rdr nil :eof))
-              :else (recur macros (reader/read rdr nil :eof)))))))))
+                     (reader/read opts rdr))
+              :else
+              (recur macros (reader/read opts rdr)))))))))
 
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
   []
-  (->> (util/find-clojure-sources-in-project)
+  (->> (util/filter-project-files (some-fn util/cljc-file? util/clj-file?))
        (mapcat find-macro-definitions-in-file)))
 
 (defn- get-ns-aliases
@@ -181,12 +183,7 @@
   "Finds all occurrences of the macro, including the definition, in
   the project."
   [fully-qualified-name]
-  (when (and
-         ;; Fail gracefully instead of blowing up with reader errors
-         ;; when project contains cljc files until we had proper
-         ;; support
-         (empty? (util/filter-project-files util/cljc-file?))
-         (fully-qualified-name? fully-qualified-name))
+  (when (fully-qualified-name? fully-qualified-name)
     (let [all-defs (find-macro-definitions-in-project)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
           tracker (tracker/build-tracker)

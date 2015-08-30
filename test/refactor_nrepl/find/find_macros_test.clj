@@ -36,3 +36,11 @@
 
 (deftest find-fully-qualified-fn
   (is (nil? (find-macro "refactor-nrepl.find.find-macros/find-macro"))))
+
+(deftest finds-macro-defined-in-cljc-file
+  (is (found? #"defmacro cljc-macro"
+              (find-macro "com.example.macro-def-cljc/cljc-macro"))))
+
+(deftest finds-macro-defined-in-cljc-file-and-used-in-clj-file
+  (is (found? #"(com.example.macro-def-cljc/cljc-macro :fully-qualified)"
+              (find-macro "com.example.macro-def-cljc/cljc-macro"))))
