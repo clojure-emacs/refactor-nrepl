@@ -19,6 +19,18 @@
                       (= (first (second %)) 'cljs.pprint))
                 aliases))))
 
+(t/deftest finds-the-clj-aliases-in-namespace-aliases
+  (let [aliases (:clj (sut/namespace-aliases))]
+    (t/is (some #(and (= (first %) 'clojure-string)
+                      (= (first (second %)) 'clojure.string))
+                aliases))))
+
+(t/deftest finds-the-cljs-aliases-in-namespace-aliases
+  (let [aliases (:cljs (sut/namespace-aliases))]
+    (t/is (some #(and (= (first %) 'gstr)
+                      (= (first (second %)) 'goog.string))
+                aliases))))
+
 (t/deftest sorts-by-frequencies
   (let [aliases (:clj (sut/namespace-aliases))
         _ (util/ns-form-from-string "(ns foo)")

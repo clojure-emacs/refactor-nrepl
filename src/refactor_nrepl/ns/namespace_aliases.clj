@@ -28,9 +28,11 @@
   {:clj {util com.acme.util str clojure.string
    :cljs {gstr goog.str}}}"
   []
-  {:clj (->> (util/filter-project-files util/clj-file?)
-             (map ns-parser/get-libspecs-from-file)
+  {:clj (->> (util/filter-project-files (some-fn util/clj-file? util/cljc-file?))
+             (map (partial ns-parser/get-libspecs-from-file
+                           {:features #{:clj} :read-cond :allow}))
              aliases-by-frequencies)
-   :cljs (->> (util/filter-project-files util/cljs-file?)
-              (map ns-parser/get-libspecs-from-file)
+   :cljs (->> (util/filter-project-files (some-fn util/cljs-file? util/cljc-file?))
+              (map (partial ns-parser/get-libspecs-from-file
+                            {:features #{:cljs} :read-cond :allow}))
               aliases-by-frequencies)})
