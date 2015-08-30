@@ -1,9 +1,7 @@
 language: clojure
 script:
   - lein2 source-deps :prefix-exclusions "[\"classlojure\"]"
-  - lein2 with-profile +1.5,+plugin.mranderson/config test
-  - lein2 with-profile +1.6,+plugin.mranderson/config test
-  - lein2 with-profile +1.7,+plugin.mranderson/config test
+  - lein2 with-profile +plugin.mranderson/config test
 jdk:
   - openjdk7
   - oraclejdk7

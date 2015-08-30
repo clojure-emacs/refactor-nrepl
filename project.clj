@@ -18,9 +18,6 @@
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.9.0"]]}
              :test {:dependencies [[print-foo "1.0.1"]]
                     :src-paths ["test/resources"]}
-             :1.5 {:dependencies [[org.clojure/clojure "1.5.1"]]}
-             :1.6 {:dependencies [[org.clojure/clojure "1.6.0"]]}
-             :1.7 {:dependencies [[org.clojure/clojure "1.7.0"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :dependencies [[org.clojure/clojure "1.7.0"]
                                   [org.clojure/clojurescript "1.7.48"]
