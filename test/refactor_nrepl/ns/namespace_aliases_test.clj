@@ -7,11 +7,13 @@
 
 (t/deftest finds-the-aliases-in-this-ns
   (let [aliases (:clj (sut/namespace-aliases))]
-    (t/is (some #(and (= (first %) 'sut)
-                      (= (first (second %)) 'refactor-nrepl.ns.namespace-aliases))
+    (t/is (some (fn [alias]
+                  (and (= (first alias) 'sut)
+                       (= (some #(= % 'refactor-nrepl.ns.namespace-aliases)
+                                (second alias)))))
                 aliases))))
 
-(t/deftest finds-the-cljs-alises-in-cljsns
+(t/deftest finds-the-cljs-aliases-in-cljsns
   (let [aliases (:cljs (sut/namespace-aliases))]
     (t/is (some #(and (= (first %) 'pprint)
                       (= (first (second %)) 'cljs.pprint))

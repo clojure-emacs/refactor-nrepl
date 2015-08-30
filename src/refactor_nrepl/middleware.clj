@@ -9,7 +9,7 @@
             [refactor-nrepl
              [analyzer :refer [warm-ast-cache]]
              [artifacts :refer [artifact-list artifact-versions hotload-dependency]]
-             [config :refer [configure]]
+             [config :as config]
              [extract-definition :refer [extract-definition]]
              [plugin :as plugin]
              [rename-file-or-dir :refer [rename-file-or-dir]]
@@ -39,9 +39,11 @@
        (transport/send
         ~transport (response-for ~msg (err-info e# :refactor-nrepl-error))))))
 
-(defmacro ^:private reply [transport msg & kv]
+(defmacro ^:private reply [transport msg & kvs]
   `(with-errors-being-passed-on ~transport ~msg
-     (transport/send ~transport (response-for ~msg ~(apply hash-map kv)))))
+     (config/with-config ~msg
+       (transport/send ~transport
+                       (response-for ~msg ~(apply hash-map :status :done kvs))))))
 
 (defn- serialize-response [{:keys [serialization-format] :as msg} response]
   (condp = serialization-format
@@ -81,9 +83,6 @@
 (defn- find-unbound-reply [{:keys [transport] :as msg}]
   (reply transport msg :unbound (find-unbound-vars msg) :status :done))
 
-(defn config-reply [{:keys [transport opts] :as msg}]
-  (reply transport msg :status (and (configure msg) :done)))
-
 (defn- version-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :version (plugin/version)))
 
@@ -112,7 +111,6 @@
    "artifact-list" artifact-list-reply
    "artifact-versions" artifact-versions-reply
    "clean-ns" clean-ns-reply
-   "configure" config-reply
    "extract-definition" extract-definition-reply
    "find-debug-fns" find-debug-fns-reply
    "find-symbol" find-symbol-reply

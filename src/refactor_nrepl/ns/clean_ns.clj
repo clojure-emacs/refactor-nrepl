@@ -29,22 +29,12 @@
   (assert-no-exclude-clause (get-ns-component ns-form :use))
   ns-form)
 
-(defn- prefix-rewriting?
-  "Cljs doesn't support prefix rewriting.
-
-  If the user passes down an explicit option we use that, otherwise
-  rely on the default."
-  [path prefix-rewriting]
-  (if (.endsWith path "cljs")
-    false
-    (cond
-      (= prefix-rewriting "true") true
-      (= prefix-rewriting "false") false
-      :else (config/get-opt :prefix-rewriting))))
-
-(defn clean-ns [{:keys [path prefix-rewriting]}]
+(defn clean-ns [{:keys [path]}]
   {:pre [(and (seq path) (string? path))]}
-  (config/with-config {:prefix-rewriting (prefix-rewriting? path prefix-rewriting)}
+  ;; prefix notation not supported in cljs
+  (config/with-config {:prefix-rewriting (if (.endsWith path "cljs")
+                                           false
+                                           (:prefix-rewriting config/*config*))}
     (let [ns-form (read-ns-form path)
           new-ns-form (-> ns-form
                           validate
