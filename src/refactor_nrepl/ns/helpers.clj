@@ -70,14 +70,17 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
 (defn read-ns-form
   "Read the ns form found at PATH.
 
-  If no ns form can be read, throw an error unless NO-ERROR is passed."
-  ([path] (read-ns-form nil path))
-  ([no-error path]
+  Opts are the same as those taken by tools.namespace's read-ns-decl"
+  ([path]
    (with-open [file-reader (FileReader. path)]
      (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
        ns-form
-       (when-not no-error
-         (throw (IllegalArgumentException. (str "Malformed ns form in " path))))))))
+       (throw (IllegalStateException. (str "No ns form at " path))))))
+  ([opts path]
+   (with-open [file-reader (FileReader. path)]
+     (if-let [ns-form (read-ns-decl (PushbackReader. file-reader) opts)]
+       ns-form
+       (throw (IllegalStateException. (str "No ns form at " path)))))))
 
 (defn path->namespace
   "Read the ns form found at PATH and return the namespace object for
@@ -86,7 +89,11 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
   if NO-ERROR is passed just return nil instead of an exception if we
   can't successfully read an ns form."
   ([path] (path->namespace nil path))
-  ([no-error path] (some->> path (read-ns-form no-error) second find-ns)))
+  ([no-error path] (try
+                     (some->> path (read-ns-form) second find-ns)
+                     (catch Exception e
+                       (when-not no-error
+                         (throw e))))))
 
 (defn file-content-sans-ns [file-content]
   ;; NOTE: It's tempting to trim this result but
@@ -96,10 +103,16 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
     (slurp rdr)))
 
 (defn ns-form-from-string
-  [file-content]
-  (if-let [ns-form (read-ns-decl (PushbackReader. (StringReader. file-content)))]
-    ns-form
-    (throw (IllegalArgumentException. "Malformed ns form!"))))
+  ([file-content]
+   (try
+     (read-ns-decl (PushbackReader. (StringReader. file-content)))
+     (catch Exception e
+       (throw (IllegalArgumentException. "Malformed ns form!")))))
+  ([opts file-content]
+   (try
+     (read-ns-decl (PushbackReader. (StringReader. file-content)) opts)
+     (catch Exception e
+       (throw (IllegalArgumentException. "Malformed ns form!"))))))
 
 (defn ^String fully-qualify
   "Create a fully qualified name from name and ns."

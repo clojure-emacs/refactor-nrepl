@@ -73,7 +73,7 @@
                (clean-ns ns-with-exclude))))
 
 (deftest throws-on-malformed-ns
-  (is (thrown? IllegalArgumentException
+  (is (thrown? IllegalStateException
                (read-ns-form (.getAbsolutePath
                               (File. "test/resources/clojars-artifacts.edn"))))))
 

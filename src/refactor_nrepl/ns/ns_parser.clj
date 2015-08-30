@@ -98,8 +98,14 @@
              distinct)))
 
 (defn get-libspecs-from-file
-  [^File f]
-  (some->> f
-           .getAbsolutePath
-           (read-ns-form :no-error)
-           get-libspecs))
+  "Opts are passed to "
+  ([^File f]
+   (some->> f
+            .getAbsolutePath
+            (read-ns-form)
+            get-libspecs))
+  ([opts ^File f]
+   (some->> f
+            .getAbsolutePath
+            (read-ns-form opts)
+            get-libspecs)))
