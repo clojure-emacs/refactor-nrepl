@@ -48,9 +48,9 @@ You also need to pass in the path to the file you want to refactor. Pass in a pa
 
 ## Available features
 
-### Configure
+### Configuration
 
-The `configure` op takes a single argument `opts` which is an options map to use for the current session.  At present this settings map looks like this:
+Configuration settings are passed along with each msg, currently the recognized options are as follows:
 
 ```clj
 {
@@ -59,7 +59,7 @@ The `configure` op takes a single argument `opts` which is an options map to use
 }
 ```
 
-The op returns a `status` of `done` on success and an `error` with a message intended for the user in the event of failure.
+Any configuration settings passed along with the message will replace the defaults above.
 
 ### Find (debug) function invocations
 
@@ -180,7 +180,7 @@ In the event of an error `clean-ns` will return `error` which is an error messag
 
 **Warning**: The `clean -ns` op dependes on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
 
-This op can be [configured](#configure).
+This op can be [configured](#configuration).
 
 ### resolve-missing
 
@@ -337,6 +337,7 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 ## Changelog
 
 ### Unreleased
+* Drop the `configure` op, and receive settings in each message.
 * Add `namespace-aliases` which provides a mapping of the namespace aliases that are in use in the project.
 * Make `find-symbol` able to handle macros.
 

@@ -74,7 +74,7 @@
   (let [ast-or-err (cachable-ast file-content)]
     (cond
       (and (instance? Throwable ast-or-err)
-           (config/get-opt :debug))
+           (:debug config/*config*))
       (throw ast-or-err)
 
       (instance? Throwable ast-or-err)

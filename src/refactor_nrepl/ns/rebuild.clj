@@ -1,7 +1,7 @@
 (ns refactor-nrepl.ns.rebuild
   (:require [clojure.string :as str]
             [refactor-nrepl
-             [config :refer [get-opt]]
+             [config :as config]
              [util :as util]]
             [refactor-nrepl.ns.helpers
              :refer
@@ -156,7 +156,7 @@
 
 (defn- create-prefixed-libspec-vectors
   [[libspec & more :as libspecs]]
-  (if-not (:prefix-rewriting refactor-nrepl.config/*config*)
+  (if-not (:prefix-rewriting config/*config*)
     (create-libspec-vectors-with-prefix libspecs)
     (if-not more
       (create-libspec-vectors-with-prefix [libspec])

@@ -1,18 +1,15 @@
 (ns refactor-nrepl.config-test
-  (:require [refactor-nrepl
+  (:require [clojure.set :as set]
+            [clojure.test :refer :all]
+            [refactor-nrepl
              [analyzer :as analyzer]
-             [config :refer :all]]
-            [clojure.test :refer :all]))
-
-(deftest throws-on-bad-config
-  (is (thrown? IllegalArgumentException (configure "invalid")))
-  (is (thrown? IllegalArgumentException (configure {:invalid-key 1}))))
+             [config :as sut]]))
 
 (deftest error-from-ast-is-sent-to-user-with-debug-setting
   (with-redefs [refactor-nrepl.analyzer/cachable-ast (fn [& _] (IllegalThreadStateException. "NO!"))]
     (testing "Throws pretty error with :debug false"
-      (set-opt! :debug false)
-      (is (thrown? IllegalStateException (analyzer/ns-ast "my-file"))))
+      (sut/with-config {:debug false}
+        (is (thrown? IllegalStateException (analyzer/ns-ast "my-file")))))
     (testing "Throws original exception with :debug true"
-      (set-opt! :debug true)
-      (is (thrown? IllegalThreadStateException (analyzer/ns-ast "my-file"))))))
+      (sut/with-config {:debug true}
+        (is (thrown? IllegalThreadStateException (analyzer/ns-ast "my-file")))))))
