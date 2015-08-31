@@ -37,3 +37,14 @@
         utils (get (rutil/filter-map #(= (first %) 'util) aliases) 'util)]
     (t/is (= (first utils) 'refactor-nrepl.util))
     (t/is (some #(= % 'refactor-nrepl.ns.helpers) utils))))
+
+(t/deftest libspecs-are-cached
+  (sut/namespace-aliases)
+  (with-redefs [refactor-nrepl.ns.namespace-aliases/put-cached-libspec
+                (fn [& _] (throw (ex-info "Cache miss!" {})))]
+    (t/is (sut/namespace-aliases)))
+  (reset! @#'sut/cache {})
+  (with-redefs [refactor-nrepl.ns.namespace-aliases/put-cached-libspec
+                (fn [& _] (throw (Exception. "Expected!")))]
+    (t/is (thrown-with-msg? Exception #"Expected!"
+                            (sut/namespace-aliases)))))
