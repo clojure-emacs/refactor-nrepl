@@ -11,6 +11,9 @@
             [refactor-nrepl.util :as util]
             [rewrite-clj.zip :as zip]))
 
+;; The structure here is {path [timestamp macros]}
+(def ^:private cache (atom {}))
+
 (defn- keep-lines
   "Keep the first n lines of s."
   [s n]
@@ -23,9 +26,9 @@
        (str/join "\n")))
 
 (defn- build-macro-meta
-  [form path]
+  [form f]
   (let [{:keys [line column end-line end-column]} (meta form)
-        file-content (slurp path)
+        file-content (slurp f)
         file-ns (util/ns-from-string file-content)
         content (keep-lines file-content end-line)
         sexp (util/get-last-sexp content)
@@ -36,30 +39,46 @@
      :col-end end-column
      :line-beg line
      :line-end end-line
-     :file (.getAbsolutePath path)
+     :file (.getAbsolutePath f)
      :match sexp}))
 
 (defn- find-macro-definitions-in-file
-  [path]
-  (util/with-additional-ex-data [:file path]
-    (with-open [file-rdr (FileReader. path)]
-      (binding [*ns* (or (ns-helpers/path->namespace :no-error path) *ns*)]
+  [f]
+  (util/with-additional-ex-data [:file (.getAbsolutePath f)]
+    (with-open [file-rdr (FileReader. f)]
+      (binding [*ns* (or (ns-helpers/path->namespace :no-error f) *ns*)]
         (let [rdr (LineNumberingPushbackReader. file-rdr)
               opts {:read-cond :allow :features #{:clj} :eof :eof}]
           (loop [macros [], form (reader/read opts rdr)]
             (cond
               (= form :eof) macros
               (and (sequential? form) (= (first form) 'defmacro))
-              (recur (conj macros (build-macro-meta form path))
+              (recur (conj macros (build-macro-meta form f))
                      (reader/read opts rdr))
               :else
               (recur macros (reader/read opts rdr)))))))))
+
+(defn- get-cached-macro-definitions [f]
+  (when-let [[ts v] (get @cache (.getAbsolutePath f))]
+    (when (= ts (.lastModified f))
+      v)))
+
+(defn- put-cached-macro-definitions [f]
+  (let [defs (find-macro-definitions-in-file f)
+        ts (.lastModified f)]
+    (swap! cache assoc-in [(.getAbsolutePath f)] [ts defs])
+    defs))
+
+(defn- get-macro-definitions-in-file-with-caching [f]
+  (if-let [v (get-cached-macro-definitions f)]
+    v
+    (put-cached-macro-definitions f)))
 
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
   []
   (->> (util/filter-project-files (some-fn util/cljc-file? util/clj-file?))
-       (mapcat find-macro-definitions-in-file)))
+       (mapcat get-macro-definitions-in-file-with-caching)))
 
 (defn- get-ns-aliases
   "Create a map of ns-aliases to namespaces."

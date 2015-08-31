@@ -44,3 +44,14 @@
 (deftest finds-macro-defined-in-cljc-file-and-used-in-clj-file
   (is (found? #"(com.example.macro-def-cljc/cljc-macro :fully-qualified)"
               (find-macro "com.example.macro-def-cljc/cljc-macro"))))
+
+(deftest macro-definitions-are-cached
+  (find-macro "com.example.macro-def/my-macro")
+  (with-redefs [refactor-nrepl.find.find-macros/put-cached-macro-definitions
+                (fn [& _] (throw (ex-info "Cache miss!" {})))]
+    (is (found? #"defmacro my-macro" (find-macro "com.example.macro-def/my-macro"))))
+  (reset! @#'refactor-nrepl.find.find-macros/cache {})
+  (with-redefs [refactor-nrepl.find.find-macros/put-cached-macro-definitions
+                (fn [& _] (throw (Exception. "Expected!")))]
+    (is (thrown-with-msg? Exception #"Expected!"
+                          (find-macro "com.example.macro-def/my-macro")))))
