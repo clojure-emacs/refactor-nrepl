@@ -337,6 +337,7 @@ build.sh cleans, runs source-deps with the right parameters, runs the tests and 
 ## Changelog
 
 ### Unreleased
+* Add cljs support to `resolve-missing`.
 * Drop the `configure` op, and receive settings in each message.
 * Add `namespace-aliases` which provides a mapping of the namespace aliases that are in use in the project.
 * Make `find-symbol` able to handle macros.
