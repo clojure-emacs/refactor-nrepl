@@ -2,8 +2,7 @@
   (:require [clojure
              [pprint :refer [pprint]]
              [string :as str]]
-            [refactor-nrepl.ns.helpers :refer [prefix-form?]]
-            [refactor-nrepl.util :as util]))
+            [refactor-nrepl.ns.helpers :as helpers :refer [prefix-form?]]))
 
 (defn- libspec-vectors-last [libspecs]
   (vec (concat (remove sequential? libspecs)
@@ -85,8 +84,8 @@
   avoid duplication we have to remove some of the keys in the metadata
   map before printing."
   [path]
-  (let [meta? (-> path slurp util/get-next-sexp (.replaceFirst "\\^\\{" "\\{")
-                  read-string second)]
+  (let [meta? (-> path slurp (.replaceFirst "\\^\\{" "\\{")
+                  helpers/ns-form-from-string second)]
     (when (map? meta?)
       meta?)))
 

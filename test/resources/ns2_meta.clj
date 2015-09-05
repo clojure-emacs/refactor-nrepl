@@ -1,3 +1,10 @@
+;; ===========================================================================
+;;
+;; Copyright (c) Example Inc. All rights reserved.
+;;
+;; https://github.com/clojure-emacs/clj-refactor.el/issues/223
+;;
+;; ===========================================================================
 (ns ^{:author "Trurl and Klapaucius"
       :doc "test ns with meta"}
   resources.ns2-meta
