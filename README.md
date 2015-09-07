@@ -340,6 +340,6 @@ An extensive changelog is available [here](CHANGELOG.md).
 
 ## License
 
-Copyright © 2013-2014 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen
+Copyright © 2013-2015 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen
 
 Distributed under the Eclipse Public License, the same as Clojure.
