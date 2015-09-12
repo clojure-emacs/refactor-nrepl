@@ -232,9 +232,9 @@
 
 (defn dissoc-when
   "Remove the enumerated keys from m on which pred is truthy."
-  [m pred & keys]
-  (if (seq keys)
-    (reduce (fn [m k] (if (pred (get m k)) (dissoc m k) m)) m keys)
+  [m pred & ks]
+  (if (seq ks)
+    (reduce (fn [m k] (if (pred (get m k)) (dissoc m k) m)) m ks)
     m))
 
 (defn ex-info-assoc

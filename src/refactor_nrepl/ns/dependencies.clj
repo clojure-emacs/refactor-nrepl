@@ -57,7 +57,7 @@
 (defn- prune-key [libspec k used-syms]
   (let [val (k libspec)]
     (if (and val (not (keyword val)))
-      (assoc libspec key
+      (assoc libspec k
              (filter (partial referred-symbol-in-use? (:ns libspec) used-syms)
                      (k libspec)))
       libspec)))
