@@ -54,12 +54,12 @@
            sym-from-file))
         used-syms))
 
-(defn- prune-key [libspec key used-syms]
-  (let [val (key libspec)]
+(defn- prune-key [libspec k used-syms]
+  (let [val (k libspec)]
     (if (and val (not (keyword val)))
       (assoc libspec key
              (filter (partial referred-symbol-in-use? (:ns libspec) used-syms)
-                     (key libspec)))
+                     (k libspec)))
       libspec)))
 
 (defn- remove-unused-syms-and-specs
