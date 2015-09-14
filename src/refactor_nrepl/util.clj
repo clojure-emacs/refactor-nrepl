@@ -142,24 +142,25 @@
               ready false]
          (let [[ch & chars] chars
                char-index (dec cnt)]
-           (cond (and ready (pred op-cl))
-                 (if (and (= (nth s char-index) \{)
-                          (not= 0 char-index)
-                          (= (nth s (prev-char-fn char-index)) \#))
-                   (prev-char-fn char-index)
-                   char-index)
+           (cond
+             (> cnt (count s)) (throw (IllegalArgumentException.
+                                       "Can't find sexp boundary!"))
 
-                 (open ch)
-                 (recur chars (inc cnt) (inc op-cl) true)
+             (and ready (pred op-cl))
+             (if (and (= (nth s char-index) \{)
+                      (not= 0 char-index)
+                      (= (nth s (prev-char-fn char-index)) \#))
+               (prev-char-fn char-index)
+               char-index)
 
-                 (close ch)
-                 (recur chars (inc cnt) (dec op-cl) true)
+             (open ch)
+             (recur chars (inc cnt) (inc op-cl) true)
 
-                 (> cnt (count s)) (throw (IllegalArgumentException.
-                                           "Can't find sexp boundary!"))
+             (close ch)
+             (recur chars (inc cnt) (dec op-cl) true)
 
-                 :else
-                 (recur chars (inc cnt) op-cl ready))))
+             :else
+             (recur chars (inc cnt) op-cl ready))))
        0))))
 
 (defn- cut-sexp [code sexp-start sexp-end]
