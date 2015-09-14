@@ -4,10 +4,10 @@ install:
   - chmod 755 latest-lein
   - ./latest-lein
 before_script:
-  - lein --version
+  - ./latest-lein --version
 script:
-  - lein source-deps :prefix-exclusions "[\"classlojure\"]"
-  - lein with-profile +plugin.mranderson/config test
+  - ./latest-lein source-deps :prefix-exclusions "[\"classlojure\"]"
+  - ./latest-lein with-profile +plugin.mranderson/config test
 jdk:
   - openjdk7
   - oraclejdk7
