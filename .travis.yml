@@ -2,7 +2,7 @@ language: clojure
 install:
   - wget -c https://raw.githubusercontent.com/technomancy/leiningen/stable/bin/lein -O latest-lein
   - chmod 755 latest-lein
-  - latest-lein
+  - ./latest-lein
 before_script:
   - lein --version
 script:
