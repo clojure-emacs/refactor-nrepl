@@ -180,7 +180,7 @@
 
   A string is not treated as a sexp by this function. If LEVEL is
   provided finds the enclosing sexp up to level. LEVEL defaults to 1
-  for the immediate enclising sexp.
+  for the immediate enclosing sexp.
 
   Both line and column are indexed from 0."
   ([file-content line column]
