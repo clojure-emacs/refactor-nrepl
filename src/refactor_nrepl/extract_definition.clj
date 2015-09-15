@@ -16,7 +16,6 @@
   [^String sexp]
   (let [def-form (read-string sexp)
         docstring? (string? (nth def-form 2 :not-found))
-        def-of-literal? ()
         sexp-sans-delimiters (.substring (str/trim sexp) 1 (dec (.length sexp)))
         rdr (PushbackReader. (StringReader. sexp-sans-delimiters))]
     (read rdr) ; discard def
