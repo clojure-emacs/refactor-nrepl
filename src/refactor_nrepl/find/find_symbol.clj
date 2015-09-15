@@ -1,13 +1,13 @@
 (ns refactor-nrepl.find.find-symbol
-  (:require [clojure.string :as str]
-            [clojure.set :as set]
+  (:require [clojure.set :as set]
+            [clojure.string :as str]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
-            [clojure.tools.namespace.find :refer [find-clojure-sources-in-dir]]
-            [refactor-nrepl.ns.helpers :as ns-helpers]
+            [clojure.tools.namespace.find :as find]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
              [util :as util]]
-            [refactor-nrepl.find.find-macros :refer [find-macro]]))
+            [refactor-nrepl.find.find-macros :refer [find-macro]]
+            [refactor-nrepl.ns.helpers :as ns-helpers]))
 
 (defn- node->var
   "Returns a fully qualified symbol for vars other those from clojure.core, for
@@ -135,7 +135,7 @@
                                (str/join "/" [namespace var-name]))]
     (->> dir
          java.io.File.
-         find-clojure-sources-in-dir
+         find/find-sources-in-dir
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors))
          (map identity))))
 

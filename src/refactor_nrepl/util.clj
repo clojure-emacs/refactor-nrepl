@@ -1,12 +1,12 @@
 (ns refactor-nrepl.util
-  (:require [clojure
+  (:require [clojure.java.classpath :as cp]
+            [clojure
              [set :as set]
              [string :as str]
              [walk :as walk]]
-            [clojure.java.classpath :as cp]
             [clojure.tools.analyzer.ast :refer [nodes]]
+            [clojure.tools.namespace.find :as find]
             [clojure.tools.namespace
-             [find :refer [find-clojure-sources-in-dir]]
              [parse :refer [read-ns-decl]]]
             [me.raynes.fs :as fs])
   (:import [java.io File PushbackReader]
@@ -40,7 +40,7 @@
 (defn find-clojure-sources-in-project
   "Return all clojure files in the project that are on the classpath."
   []
-  (mapcat find-clojure-sources-in-dir (dirs-on-classpath*)))
+  (mapcat find/find-sources-in-dir (dirs-on-classpath*)))
 
 (defn find-in-dir
   "Searches recursively under dir for files matching (pred ^File file). "
