@@ -101,6 +101,6 @@
     (if-let [definition-occurrence (find-definition occurrences)]
       {:definition (merge {:definition (-extract-definition definition-occurrence)}
                           definition-occurrence)
-       :occurrences (remove #(= % definition-occurrence) occurrences)}
+       :occurrences (remove (partial = definition-occurrence) occurrences)}
       (throw (IllegalStateException.
               (str "Couldn't find definition for " (:name msg)))))))
