@@ -5,7 +5,7 @@
             [clojure.walk :as walk]
             [refactor-nrepl.ns
              [helpers :refer [ctor-call->str file-content-sans-ns prefix suffix]]
-             [ns-parser :refer [get-imports get-libspecs]]]
+             [ns-parser :as ns-parser]]
             [refactor-nrepl.util :as util]))
 
 (defn- lookup-symbol-ns
@@ -68,10 +68,9 @@
           (libspec-in-use? used-syms current-ns)
           (prune-key :refer used-syms)
           (prune-key :refer-macros used-syms)
-          (prune-key :require-macros used-syms)
           (util/dissoc-when (fn empty-and-not-kw [k]
                               (and (not (keyword k)) (empty? k)))
-                            :refer :refer-macros :require-macros)))
+                            :refer :refer-macros)))
 
 (defn- static-method-or-field-access->Classname
   [symbol-in-file]
@@ -160,14 +159,17 @@
 (defn- prune-imports
   [ns-form symbols-in-file]
   (-> ns-form
-      get-imports
+      ns-parser/get-imports
       (remove-unused-imports symbols-in-file)))
 
 (defn extract-dependencies [ns-form path]
-  (let [libspecs (get-libspecs ns-form)
+  (let [required-libspecs (ns-parser/get-libspecs ns-form)
+        required-macro-libspecs (ns-parser/get-required-macros ns-form)
         current-ns (second ns-form)
         symbols-in-file (into (get-symbols-used-in-file path current-ns
-                                                        libspecs)
+                                                        required-libspecs)
                               (get-classes-used-in-typehints path))]
-    {:require (prune-libspecs libspecs symbols-in-file current-ns)
+    {:require (prune-libspecs required-libspecs symbols-in-file current-ns)
+     :require-macros (prune-libspecs required-macro-libspecs symbols-in-file
+                                     current-ns)
      :import (prune-imports ns-form symbols-in-file)}))

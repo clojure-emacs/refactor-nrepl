@@ -35,8 +35,8 @@
                          (:import [java.util Date Calendar]))))))
 
 (deftest parses-require-macros
-  (is (= '({:ns cljs.test :refer-macros [deftest is]}
-           {:ns cljs.test :require-macros [testing run-tests]})
-         (get-libspecs '(ns test
-                          (:require [cljs.test :refer-macros [deftest is]])
-                          (:require-macros [cljs.test :refer [testing run-tests]]))))))
+  (is (= '({:ns cljs.test :refer [deftest is]}
+           {:ns cljs.test :refer [testing run-tests]})
+         (get-required-macros '(ns test
+                                 (:use-macros [cljs.test :only [deftest is]])
+                                 (:require-macros [cljs.test :refer [testing run-tests]]))))))

@@ -64,19 +64,12 @@
              (->> libspecs
                   expand-prefix-specs
                   (map libspec-vector->map)))
-           (with-libspecs-from ns-form :require-macros
-             (->> libspecs
-                  (map libspec-vector->map)
-                  (map (partial util/rename-key :refer :require-macros))))
+
            (with-libspecs-from ns-form :use
              (->> libspecs
                   expand-prefix-specs
                   (map use-to-refer-all)
-                  (map libspec-vector->map)))
-           (with-libspecs-from ns-form :use-macros
-             (->> libspecs
-                  (map libspec-vector->map)
-                  (map (partial util/rename-key :only :require-macros))))]))
+                  (map libspec-vector->map)))]))
 
 (defn get-libspecs [ns-form]
   (some->> ns-form
@@ -96,6 +89,15 @@
              (map expand-prefix-specs)
              flatten
              distinct)))
+
+(defn get-required-macros [ns-form]
+  (into (with-libspecs-from ns-form :require-macros
+          (->> libspecs
+               (map libspec-vector->map)))
+        (with-libspecs-from ns-form :use-macros
+          (->> libspecs
+               (map libspec-vector->map)
+               (map (partial util/rename-key :only :refer))))))
 
 (defn get-libspecs-from-file
   "Opts are passed to "

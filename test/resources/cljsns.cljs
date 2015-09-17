@@ -4,7 +4,9 @@
             [clojure.string :refer [split-lines join]]
             [cljs.pprint :as pprint]
             [clojure.set :as set])
-  (:require-macros [cljs.test :refer [testing]])
+  (:require-macros [cljs.test :refer [testing]]
+                   [cljs.analyzer.macros :as am]
+                   cljs.analyzer.api)
   (:use-macros [cljs.test :only [run-tests]])
   (:import goog.string))
 
@@ -24,3 +26,9 @@
   (run-tests))
 
 (string/regExpEscape "ok")
+
+(am/with-core-macros "fake/path"
+  :ignore)
+
+(cljs.analyzer.api/no-warn
+ :body)

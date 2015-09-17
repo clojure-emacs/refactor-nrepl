@@ -47,7 +47,6 @@
    (merge {:as (get-libspec-alias libspecs)
            :refer (merge-referred-symbols libspecs :refer)
            :refer-macros (merge-referred-symbols libspecs :refer-macros)
-           :require-macros (merge-referred-symbols libspecs :require-macros)
            :rename (apply merge (map :rename libspecs))})
    remove-redundant-flags))
 
@@ -248,10 +247,7 @@
       (drop-index ns-form idx))))
 
 (defn- build-require-macros-form [libspecs]
-  (let [as-require (->> libspecs
-                        (filter :require-macros)
-                        (map (partial util/rename-key :require-macros :refer)))
-        require-form (build-require-form as-require)]
+  (let [require-form (build-require-form libspecs)]
     (when require-form
       (cons :require-macros (rest require-form)))))
 
@@ -259,7 +255,7 @@
   [deps old-ns-form]
   (let [new-require-form (build-require-form (:require deps))
         new-import-form (build-import-form (:import deps))
-        new-require-macros-form (build-require-macros-form (:require deps))]
+        new-require-macros-form (build-require-macros-form (:require-macros deps))]
     (-> old-ns-form
         (update-clause new-require-form :require)
         (update-clause new-require-macros-form :require-macros)
