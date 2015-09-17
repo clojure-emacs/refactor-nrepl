@@ -8,6 +8,10 @@
 (def clojure-versions (-> (io/resource "resources/clojure-versions.edn")
                           slurp
                           edn/read-string))
+(def sorted-clojure-versions
+  (vector "1.7.0-alpha1"
+          "1.6.0" "1.6.0-RC1" "1.6.0-beta1" "1.6.0-alpha1"
+          "1.5.1" "1.5.0"))
 (def clojure-artifacts ["clojure"])
 (def clojars-artifacts (-> (io/resource "resources/clojars-artifacts.edn")
                            slurp
@@ -33,7 +37,12 @@
 
     (testing "Contains artifacts from clojars"
       (is (contains? @artifacts/artifacts "alembic"))
-      (is (some #{"0.3.1"} (get-in @artifacts/artifacts ["alembic"]))))))
+      (is (some #{"0.3.1"} (get-in @artifacts/artifacts ["alembic"]))))
+
+    (testing "Sorts all the versions"
+      (reset! artifacts/artifacts {"org.clojure/clojure" clojure-versions})
+      (is (= sorted-clojure-versions
+             (artifacts/artifact-versions {:artifact "org.clojure/clojure"}))))))
 
 (deftest hotload-dependency-throws-exceptions
   (reset! artifacts/artifacts {"prismatic/schema" ["0.1"]})

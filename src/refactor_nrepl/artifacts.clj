@@ -7,10 +7,12 @@
             [clojure.java.io :as io]
             [clojure.tools.namespace.find :as find]
             [org.httpkit.client :as http]
-            [refactor-nrepl.ns.slam.hound.search :as slamhound])
+            [refactor-nrepl.ns.slam.hound.search :as slamhound]
+            [version-clj.core :as versions])
   (:import java.util.Date
            java.util.jar.JarFile))
 
+;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
 (defonce artifacts (atom {} :meta {:last-modified nil}))
 (def millis-per-day (* 24 60 60 1000))
 
@@ -89,7 +91,7 @@
   (->> @artifacts keys list*))
 
 (defn artifact-versions [{:keys [artifact]}]
-  (->> artifact (@artifacts) distinct list*))
+  (->> artifact (get @artifacts) distinct versions/version-sort reverse list*))
 
 (defn- make-resolve-missing-aware-of-new-deps
   "Once the deps are available on cp we still have to load them and
