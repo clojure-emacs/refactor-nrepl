@@ -15,6 +15,7 @@
 
 ### Changes
 
+* add `clojure-version` which returns the clojure version running in the client.
 * Rename `find-unbound` to `find-used-locals`.  This is what this op has been doing for the last several versions.
 * Drop the `configure` op, and receive settings in each message.
 

@@ -228,3 +228,10 @@
   (let [tr (or transport @transp (reset! transp (connect)))
         response (nrepl-message tr {:op :version})]
     (:version (first response))))
+
+(defn clj-version
+  "Returns the clojure version running our middleware."
+  [& {:keys [transport]}]
+  (let [tr (or transport @transp (reset! transp (connect)))
+        response (nrepl-message tr {:op :clojure-version})]
+    (:clojure-version (first response))))

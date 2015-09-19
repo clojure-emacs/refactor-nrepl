@@ -303,6 +303,10 @@ project. The reply looks like this:
 ```
 The list of suggestions is sorted by frequency in decreasing order, so the first element is always the best suggestion.
 
+### clojure-version
+
+The `clojure-version` returns the clojure version running in the client as a string. e.g. `1.7.0-alpha1` or `1.6.1`.
+
 ### Errors
 
 The middleware returns errors under one of two keys: `:error` or
