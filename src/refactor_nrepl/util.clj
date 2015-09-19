@@ -8,7 +8,8 @@
             [clojure.tools.namespace.find :as find]
             [clojure.tools.namespace
              [parse :refer [read-ns-decl]]]
-            [me.raynes.fs :as fs])
+            [me.raynes.fs :as fs]
+            [rewrite-clj.zip :as zip])
   (:import [java.io File PushbackReader]
            java.util.regex.Pattern))
 
@@ -118,61 +119,39 @@
                                            read-first-form
                                            normalize-anon-fn-params))))))
 
-(defn- search-sexp-boundary
-  "Searches for open or closing delimiter of given depth.
+(defn all-zlocs
+  "Generate a seq of all zlocs in a depth-first manner"
+  [zipper]
+  (take-while (complement zip/end?) (iterate zip/next zipper)))
 
-  Depth depends on the passed in pred.
+(defn get-next-sexp [file-content]
+  (let [zloc (zip/of-string file-content)
+        sexp (zip/sexpr zloc)]
+    (if (or (nil? sexp) (string? sexp))
+      ""
+      (zip/string zloc))))
 
-  Searches forward by default, if backwards passed in searches backwards.
+(defn get-last-sexp [file-content]
+  (->> file-content zip/of-string zip/rightmost zip/string))
 
-  If pred is (partial = 0) returns the index of the closing delimiter
-  of the first s-expression. If pred is (partial < 0) searches for
-  the opening paren of the first sexp."
-  ([pred s]
-   (search-sexp-boundary pred nil s))
-  ([pred backwards s]
-   (let [open #{\[ \{ \(}
-         close #{\] \} \)}
-         s (if backwards (reverse s) s)
-         prev-char-fn (if backwards inc dec)]
-     (if (some (set/union open close) s)
-       (loop [chars s
-              cnt 0
-              op-cl 0
-              ready false]
-         (let [[ch & chars] chars
-               char-index (dec cnt)]
-           (cond
-             (> cnt (count s)) (throw (IllegalArgumentException.
-                                       "Can't find sexp boundary!"))
-
-             (and ready (pred op-cl))
-             (if (and (= (nth s char-index) \{)
-                      (not= 0 char-index)
-                      (= (nth s (prev-char-fn char-index)) \#))
-               (prev-char-fn char-index)
-               char-index)
-
-             (open ch)
-             (recur chars (inc cnt) (inc op-cl) true)
-
-             (close ch)
-             (recur chars (inc cnt) (dec op-cl) true)
-
-             :else
-             (recur chars (inc cnt) op-cl ready))))
-       0))))
-
-(defn- cut-sexp [code sexp-start sexp-end]
-  (if (= sexp-start sexp-end)
-    ""
-    (.substring code sexp-start (inc sexp-end))))
-
-(defn get-next-sexp [code]
-  (let [trimmed-code (str/trim code)
-        sexp-start (search-sexp-boundary (partial < 0) trimmed-code)
-        sexp-end (search-sexp-boundary (partial = 0) trimmed-code)]
-    (cut-sexp trimmed-code sexp-start sexp-end)))
+(defn zip-to
+  "Move the zipper to the node at line and col"
+  [zipper line col]
+  (let [distance (fn [zloc]
+                   (let [node (zip/node zloc)
+                         line-beg (dec (:row (meta node)))
+                         line-end (dec (:end-row (meta node)))
+                         col-beg (dec (:col (meta node)))
+                         col-end (dec (:end-col (meta node)))]
+                     (+ (* 1000 (Math/abs (- line line-beg)))
+                        (* 100 (Math/abs (- line line-end)))
+                        (* 10 (Math/abs (- col col-beg)))
+                        (Math/abs (- col col-end)))))]
+    (reduce (fn [best zloc] (if (< (distance zloc) (distance best))
+                              zloc
+                              best))
+            zipper
+            (all-zlocs zipper))))
 
 (defn get-enclosing-sexp
   "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT,
@@ -186,29 +165,18 @@
   ([file-content line column]
    (get-enclosing-sexp file-content line column 1))
   ([file-content line column level]
-   (let [file-content (.replaceAll file-content "\r" "") ; \r messes up count
-         lines (str/split-lines file-content)
-         char-count-for-lines (->> lines
-                                   (take line)
-                                   (map count)
-                                   (reduce + line))
-         content-to-point (-> char-count-for-lines
-                              (+ column)
-                              (take file-content))
-         sexp-start (->> content-to-point
-                         (search-sexp-boundary (partial = level) :backwards)
-                         (- (count content-to-point) 1))
-         content-from-sexp (.substring file-content sexp-start)
-         sexp-end (+ sexp-start
-                     (->> content-from-sexp
-                          (search-sexp-boundary (partial = 0))))]
-     (cut-sexp file-content sexp-start sexp-end))))
-
-(defn get-last-sexp [file-content]
-  (let [trimmed-content (str/trim file-content)
-        sexp-start (search-sexp-boundary (partial > 0) :backwards trimmed-content)
-        sexp-end (search-sexp-boundary (partial = 0) :backwards trimmed-content)]
-    (cut-sexp trimmed-content sexp-start sexp-end)))
+   (let [zloc (zip-to (zip/of-string file-content) line column)
+         zloc (nth (iterate zip/up zloc) (dec level))]
+     (or
+      (cond
+        (and zloc (string? (zip/sexpr zloc))) (zip/string (zip/up zloc))
+        (and zloc (seq? (zip/sexpr zloc))) (zip/string zloc)
+        zloc (zip/string (zip/up zloc))
+        :else (throw (ex-info "Can't find sexp boundary"
+                              {:file-content file-content
+                               :line line
+                               :column column})))
+      ""))))
 
 (defn re-pos
   "Map of regexp matches and their positions keyed by positions."

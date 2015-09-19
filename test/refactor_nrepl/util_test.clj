@@ -18,18 +18,18 @@
 (def println-location [5 8])
 
 (deftest get-enclosing-sexp-test
-  (is (= (apply get-enclosing-sexp file-content binding-location)
-         "[some :bindings
-        more :bindings]"))
-  (is (= (apply get-enclosing-sexp file-content println-location)
-         "(println #{some}
-             ;; helpful comment
-             (prn {\"foo\" {:qux [#{more}]}}))"))
-  (is (= (apply get-enclosing-sexp file-content set-location) "#{more}"))
-  (is (= (apply get-enclosing-sexp file-content map-location) "{:qux [#{more}]}"))
-  (is (= (apply get-enclosing-sexp weird-file-content weird-location) ""))
-  (is (= (get-next-sexp weird-file-content) ""))
-  (is (= (get-next-sexp file-content-with-set) "#{foo bar baz}")))
+  (is (= "[some :bindings
+        more :bindings]"
+         (apply get-enclosing-sexp file-content binding-location)))
+  (is (=  "(println #{some}
+             ;; unhelpful comment )
+             (prn {\"foo\" {:qux [#{more}]}}))"
+          (apply get-enclosing-sexp file-content println-location)))
+  (is (=  "#{more}" (apply get-enclosing-sexp file-content set-location)))
+  (is (=  "{:qux [#{more}]}" (apply get-enclosing-sexp file-content map-location)))
+  (is (=  "" (apply get-enclosing-sexp weird-file-content weird-location)))
+  (is (= "" (get-next-sexp weird-file-content)))
+  (is (=  "#{foo bar baz}"(get-next-sexp file-content-with-set))))
 
 (deftest with-additional-ex-data-test
   (try

@@ -4,7 +4,9 @@
              :refer
              [create-result-alist find-symbol]]
             [refactor-nrepl.ns.helpers :refer [suffix]]
-            [refactor-nrepl.util :refer [get-enclosing-sexp get-next-sexp]])
+            [refactor-nrepl.util :as util]
+            [refactor-nrepl.util :refer [get-enclosing-sexp get-next-sexp]]
+            [rewrite-clj.zip :as zip])
   (:import [java.io PushbackReader StringReader]
            java.util.regex.Pattern))
 
@@ -34,14 +36,11 @@
 
 (defn- extract-def-from-binding-vector
   [^String bindings ^String var-name]
-  (let [i (.indexOf bindings var-name)
-        next-form-with-trailing-garb (str/trim
-                                      (.substring bindings
-                                                  (+ i (.length var-name))))
-        next-form (read-string next-form-with-trailing-garb)]
-    (if (re-find #"[\({\[]" (str next-form))
-      (get-next-sexp next-form-with-trailing-garb)
-      (str next-form))))
+  (let [zipper (zip/of-string bindings)
+        zloc (some (fn [zloc] (when (= (symbol var-name) (zip/sexpr zloc)) zloc))
+                   (util/all-zlocs zipper))]
+    (when zloc
+      (str/trim (zip/string (zip/right zloc))))))
 
 (defn- -extract-definition
   [{:keys [match file line-beg col-beg name]}]
