@@ -15,6 +15,7 @@
 
 ### Changes
 
+* Rename `find-unbound` to `find-used-locals`.  This is what this op has been doing for the last several versions.
 * Drop the `configure` op, and receive settings in each message.
 
 ## 1.1.0

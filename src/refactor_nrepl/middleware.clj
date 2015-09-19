@@ -16,7 +16,7 @@
              [stubs-for-interface :refer [stubs-for-interface]]]
             [refactor-nrepl.find
              [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
-             [find-unbound :refer [find-unbound-vars]]]
+             [find-locals :refer [find-used-locals]]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
              [namespace-aliases :refer [namespace-aliases]]
@@ -81,7 +81,7 @@
   (reply transport msg :ns (some-> msg clean-ns (pprint-ns path)) :status :done))
 
 (defn- find-unbound-reply [{:keys [transport] :as msg}]
-  (reply transport msg :unbound (find-unbound-vars msg) :status :done))
+  (reply transport msg :unbound (find-used-locals msg) :status :done))
 
 (defn- version-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :version (plugin/version)))

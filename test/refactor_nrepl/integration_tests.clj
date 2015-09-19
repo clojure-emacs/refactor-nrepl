@@ -287,7 +287,7 @@
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
-(deftest test-find-unbound-vars
+(deftest test-find-used-locals
   (with-test-project
     (let [five-file (str tmp-dir "/src/com/example/five.clj")
           transport (connect :port 7777)]

@@ -1,11 +1,11 @@
-(ns refactor-nrepl.find.find-unbound
+(ns refactor-nrepl.find.find-locals
   (:require [clojure.set :as set]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
              [util :refer :all]]))
 
-(defn find-unbound-vars [{:keys [file line column]}]
+(defn find-used-locals  [{:keys [file line column]}]
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
