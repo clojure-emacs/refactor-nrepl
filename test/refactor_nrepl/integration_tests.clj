@@ -2,7 +2,6 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
             [clojure.tools.nrepl.server :as nrserver]
-            [refactor-nrepl.middleware :as middleware]
             [refactor-nrepl middleware
              [client :refer :all]
              [plugin :as plugin]])
@@ -319,7 +318,3 @@
 (deftest test-version
   (is (= (str (plugin/version))
          (version :transport (connect :port 7777)))))
-
-(deftest clojure-version-test
-  (is (= (clojure-version)
-         (clj-version :transport (connect :port 7777)))))

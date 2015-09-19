@@ -83,8 +83,6 @@
 (defn- find-used-locals-reply [{:keys [transport] :as msg}]
   (reply transport msg :used-locals (find-used-locals msg)))
 
-(defn- clojure-version-reply [{:keys [transport] :as msg}]
-  (reply transport msg :clojure-version (clojure-version)))
 
 (defn- version-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :version (plugin/version)))
@@ -114,7 +112,6 @@
    "artifact-list" artifact-list-reply
    "artifact-versions" artifact-versions-reply
    "clean-ns" clean-ns-reply
-   "clojure-version" clojure-version-reply
    "extract-definition" extract-definition-reply
    "find-debug-fns" find-debug-fns-reply
    "find-symbol" find-symbol-reply
