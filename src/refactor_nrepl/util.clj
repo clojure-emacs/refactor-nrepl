@@ -124,15 +124,22 @@
   [zipper]
   (take-while (complement zip/end?) (iterate zip/next zipper)))
 
+(defn- comment-or-string-or-nil? [zloc]
+  (or (nil? zloc)
+      (not (zip/sexpr zloc)) ; comment node
+      (string? (zip/sexpr zloc))))
+
 (defn get-next-sexp [file-content]
-  (let [zloc (zip/of-string file-content)
-        sexp (zip/sexpr zloc)]
-    (if (or (nil? sexp) (string? sexp))
-      ""
-      (zip/string zloc))))
+  (let [zloc (zip/of-string file-content)]
+    (some (fn [zloc] (when-not (comment-or-string-or-nil? zloc)
+                       (zip/string zloc)))
+          (take-while (complement nil?) (iterate zip/right zloc)))))
 
 (defn get-last-sexp [file-content]
-  (->> file-content zip/of-string zip/rightmost zip/string))
+  (let [zloc (->> file-content zip/of-string zip/rightmost)]
+    (some (fn [zloc] (when-not (comment-or-string-or-nil? zloc)
+                       (zip/string zloc)))
+          (take-while (complement nil?) (iterate zip/left zloc)))))
 
 (defn zip-to
   "Move the zipper to the node at line and col"
@@ -167,16 +174,14 @@
   ([file-content line column level]
    (let [zloc (zip-to (zip/of-string file-content) line column)
          zloc (nth (iterate zip/up zloc) (dec level))]
-     (or
-      (cond
-        (and zloc (string? (zip/sexpr zloc))) (zip/string (zip/up zloc))
-        (and zloc (seq? (zip/sexpr zloc))) (zip/string zloc)
-        zloc (zip/string (zip/up zloc))
-        :else (throw (ex-info "Can't find sexp boundary"
-                              {:file-content file-content
-                               :line line
-                               :column column})))
-      ""))))
+     (cond
+       (and zloc (string? (zip/sexpr zloc))) (zip/string (zip/up zloc))
+       (and zloc (seq? (zip/sexpr zloc))) (zip/string zloc)
+       zloc (zip/string (zip/up zloc))
+       :else (throw (ex-info "Can't find sexp boundary"
+                             {:file-content file-content
+                              :line line
+                              :column column}))))))
 
 (defn re-pos
   "Map of regexp matches and their positions keyed by positions."
