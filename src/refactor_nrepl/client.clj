@@ -212,11 +212,11 @@
   - [transport] an optional transport used to communicate with the client"
   [& {:keys [transport file line column]}]
   (let [tr (or transport @transp (reset! transp (connect)))
-        response (nrepl-message tr {:op :find-unbound
+        response (nrepl-message tr {:op :find-used-locals
                                     :file file
                                     :line line
                                     :column column})
-        unbound (:unbound (first response))
+        unbound (:used-locals (first response))
         error (:error (first response))]
     (if error
       (do (println "something bad happened: " error) (first response))

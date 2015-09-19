@@ -80,8 +80,9 @@
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
   (reply transport msg :ns (some-> msg clean-ns (pprint-ns path)) :status :done))
 
-(defn- find-unbound-reply [{:keys [transport] :as msg}]
-  (reply transport msg :unbound (find-used-locals msg) :status :done))
+(defn- find-used-locals-reply [{:keys [transport] :as msg}]
+  (reply transport msg :used-locals (find-used-locals msg)))
+
 
 (defn- version-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :version (plugin/version)))
@@ -114,7 +115,7 @@
    "extract-definition" extract-definition-reply
    "find-debug-fns" find-debug-fns-reply
    "find-symbol" find-symbol-reply
-   "find-unbound" find-unbound-reply
+   "find-used-locals" find-used-locals-reply
    "hotload-dependency" hotload-dependency-reply
    "namespace-aliases" namespace-aliases-reply
    "rename-file-or-dir" rename-file-or-dir-reply

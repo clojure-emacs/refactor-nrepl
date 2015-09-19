@@ -217,7 +217,7 @@ to determine the available and used locals.
 
 Both `line` and `column` start counting at 1.
 
-Return values `status` of `done` and `unbound` which is a list of
+Return values `status` of `done` and `used-locals` which is a list of
 unbound vars, or `error` when something went wrong.
 
 The returned symbols' order is based on the order of their occurrence in
