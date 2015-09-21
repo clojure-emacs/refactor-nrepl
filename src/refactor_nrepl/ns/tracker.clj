@@ -8,8 +8,7 @@
 (defn build-tracker
   "Build a tracker for the project."
   []
-  (let [tracker (tracker/tracker)]
-    (file/add-files tracker (util/find-clojure-sources-in-project))))
+  (file/add-files (tracker/tracker) (util/filter-project-files util/source-file?)))
 
 (defn get-dependents
   "Get the dependent files for ns from tracker."
