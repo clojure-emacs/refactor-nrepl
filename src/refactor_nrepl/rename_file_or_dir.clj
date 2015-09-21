@@ -179,7 +179,6 @@
         old-path (if (.endsWith old-path "/") old-path (str old-path "/"))
         new-path (if (.endsWith new-path "/") new-path (str new-path "/"))]
     (flatten (for [f (file-seq (File. old-path))
-                   ;; TODO does this not handle renaming nested dirs?
                    :when (not (fs/directory? f))
                    :let [path (util/normalize-to-unix-path (.getAbsolutePath f))]]
                (-rename-file-or-dir path (merge-paths path old-path new-path))))))
