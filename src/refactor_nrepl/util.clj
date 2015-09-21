@@ -61,10 +61,9 @@
   (.endsWith (.getPath f) ".clj"))
 
 (defn source-file?
-  "True for clj or cljs files."
+  "True for clj, cljs or cljc files."
   [^File f]
-  (or (.endsWith (.getPath f) ".clj")
-      (.endsWith (.getPath f) ".cljs")))
+  ((some-fn cljc-file? cljs-file? clj-file?) f))
 
 (defn filter-project-files
   "Return the files in the project satisfying (pred ^File file)."

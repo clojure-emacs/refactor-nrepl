@@ -24,9 +24,10 @@
   [path]
   (let [chop-prefix (fn [dir]
                       (->> dir
+                           str/lower-case
                            Pattern/quote
                            re-pattern
-                           (str/split path)
+                           (str/split (str/lower-case path))
                            second))
         shortest (fn [acc val] (if (< (.length acc) (.length val)) acc val))]
     (let [relative-paths (->> (util/dirs-on-classpath) (map chop-prefix) (remove nil?))]
@@ -38,11 +39,22 @@
           p)
         (throw (IllegalStateException. (str "Can't find src dir prefix for path " path)))))))
 
+;; Taken from raynes' fs and modified to work with cljc and cljs
+(defn path-ns
+  "Takes a `path` to a source file and constructs a namespace symbol
+   out of the path."
+  [path]
+  (-> path
+      (str/replace #"\.clj[cs]?" "")
+      (str/replace \_ \-)
+      (str/replace \/ \.)
+      symbol))
+
 (defn- path->ns
   "Given an absolute file path to a non-existing file determine the
   name of the ns."
   [new-path]
-  (-> new-path util/normalize-to-unix-path chop-src-dir-prefix fs/path-ns))
+  (-> new-path util/normalize-to-unix-path chop-src-dir-prefix path-ns))
 
 (defn update-ns-reference-in-libspec
   [old-ns new-ns libspec]
@@ -72,8 +84,10 @@
   [file old-ns new-ns]
   (let [ns-form (read-ns-form file)
         libspecs (ns-parser/get-libspecs ns-form)
+        require-macros (ns-parser/get-required-macros ns-form)
         classes (ns-parser/get-imports ns-form)
         deps {:require (update-libspecs libspecs old-ns new-ns)
+              :require-macros (update-libspecs require-macros old-ns new-ns)
               :import (update-class-references classes old-ns new-ns)}]
     (pprint-ns (rebuild-ns-form deps ns-form) (.getAbsolutePath file))))
 
@@ -124,12 +138,27 @@
          (str/replace-first (slurp f) (str old-ns))
          (spit f))))
 
+(defn- moving-dirs? [old-path new-path]
+  (let [p1 (util/normalize-to-unix-path old-path)
+        p2 (util/normalize-to-unix-path new-path)]
+    (not= (butlast (str/split p1 #"/"))
+          (butlast (str/split p2 #"/")))))
+
+(defn- calculate-affected-files
+  [old-path new-path dependents]
+  ;; When the directory is changed we don't yet know what the path of
+  ;; the new dependents will be
+  (if (moving-dirs? old-path new-path)
+    [new-path]
+    (conj dependents new-path)))
+
 (defn- rename-clj-file
   "Move file from old to new, updating any dependents."
   [old-path new-path]
   (let [old-ns (util/ns-from-string (slurp old-path))
         new-ns (path->ns new-path)
-        dependents (tracker/get-dependents (tracker/build-tracker) old-ns)
+        tracker (tracker/build-tracker)
+        dependents (tracker/get-dependents tracker old-ns)
         new-dependents (atom {})]
     (doseq [f dependents]
       (swap! new-dependents
@@ -137,7 +166,7 @@
     (rename-file! old-path new-path)
     (update-ns! new-path old-ns)
     (update-dependents! @new-dependents)
-    (into '() (map #(.getAbsolutePath %) dependents))))
+    (calculate-affected-files old-path new-path (keys @new-dependents))))
 
 (defn- merge-paths
   "Update path with new prefix when parent dir is moved"
@@ -150,6 +179,7 @@
         old-path (if (.endsWith old-path "/") old-path (str old-path "/"))
         new-path (if (.endsWith new-path "/") new-path (str new-path "/"))]
     (flatten (for [f (file-seq (File. old-path))
+                   ;; TODO does this not handle renaming nested dirs?
                    :when (not (fs/directory? f))
                    :let [path (util/normalize-to-unix-path (.getAbsolutePath f))]]
                (-rename-file-or-dir path (merge-paths path old-path new-path))))))
@@ -167,7 +197,8 @@
 (defn- -rename-file-or-dir [old-path new-path]
   (let [affected-files  (if (fs/directory? old-path)
                           (rename-dir old-path new-path)
-                          (if (file/clojure-file? (File. old-path))
+                          (if ((some-fn util/clj-file? util/cljs-file?)
+                               (File. old-path))
                             (rename-clj-file old-path new-path)
                             (rename-file! old-path new-path)))]
     (->> affected-files
@@ -176,7 +207,22 @@
          (map util/normalize-to-unix-path)
          (remove fs/directory?)
          (filter file-or-symlink-exists?)
-         doall)))
+         (into (list)))))
+
+(defn- assert-friendly
+  [old-path new-path]
+  (cond
+    (or (str/blank? old-path) (str/blank? new-path))
+    (throw (IllegalArgumentException. "Can't move empty path!"))
+
+    (or (and (fs/file? old-path) (fs/directory? old-path))
+        (and (fs/directory? old-path) (fs/file? old-path)))
+    (throw (ex-info "old-path and new-path has to be of same type (dir-dir or file-file)!"
+                    {:old-path old-path :new-path new-path}))
+    (and (not (fs/directory? old-path))
+         (not= (fs/extension old-path) (fs/extension new-path)))
+    (throw (ex-info (str "Can't change file extension when moving! ")
+                    {:old-path old-path :new-path new-path}))))
 
 (defn rename-file-or-dir
   "Renames a file or dir updating all dependent files.
@@ -185,11 +231,6 @@
 
   Returns a list of all files that were affected."
   [old-path new-path]
-  {:pre [(not (str/blank? old-path))
-         (not (str/blank? new-path))
-         (or (fs/file? old-path) (fs/directory? old-path))]}
+  (assert-friendly old-path new-path)
   (binding [*print-length* nil]
-    (let [affected-files (-rename-file-or-dir old-path new-path)]
-      (if (fs/directory? new-path)
-        affected-files
-        (conj affected-files new-path)))))
+    (-rename-file-or-dir old-path new-path)))

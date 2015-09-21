@@ -4,6 +4,7 @@
 
 ### New features
 
+* `rename-file-or-dir` now knows how to move cljs files.
 * The `artifact-version` list is now sorted.
 * Add `namespace-aliases` which provides a mapping of the namespace aliases that are in use in the project.
 * Make `find-symbol` able to handle macros.
