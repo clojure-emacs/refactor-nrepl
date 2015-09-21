@@ -152,7 +152,7 @@
     [new-path]
     (conj dependents new-path)))
 
-(defn- rename-clj-file
+(defn- rename-source-file
   "Move file from old to new, updating any dependents."
   [old-path new-path]
   (let [old-ns (util/ns-from-string (slurp old-path))
@@ -198,7 +198,7 @@
                           (rename-dir old-path new-path)
                           (if ((some-fn util/clj-file? util/cljs-file?)
                                (File. old-path))
-                            (rename-clj-file old-path new-path)
+                            (rename-source-file old-path new-path)
                             (rename-file! old-path new-path)))]
     (->> affected-files
          flatten
