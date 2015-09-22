@@ -101,15 +101,22 @@
                (map #(set/rename-keys % {:only :refer}))))))
 
 (defn get-libspecs-from-file
-  "Opts are the same as those expected by tools.namespace's
-  read-ns-decl."
+  "Return all the libspecs in a file.
+
+  This is the concatenation of all the libspecs found in the use,
+  use-macros, require and require-macros forms.
+
+  Note that no post-processing is done so there might be duplicates or
+  libspecs which could have been combined or eliminated as unused.
+
+  Opts are the same as those expected by tools.namespace's
+  read-ns-decl and the default is to allow reader conditionals and
+  read :clj."
   ([^File f]
-   (some->> f
-            .getAbsolutePath
-            (read-ns-form)
-            get-libspecs))
+   (get-libspecs-from-file {:features #{:clj} :read-cond :allow} f))
   ([opts ^File f]
    (some->> f
             .getAbsolutePath
             (read-ns-form opts)
-            get-libspecs)))
+            ((juxt get-libspecs get-required-macros))
+            (mapcat identity))))
