@@ -101,7 +101,8 @@
                (map #(set/rename-keys % {:only :refer}))))))
 
 (defn get-libspecs-from-file
-  "Opts are passed to "
+  "Opts are the same as those expected by tools.namespace's
+  read-ns-decl."
   ([^File f]
    (some->> f
             .getAbsolutePath
