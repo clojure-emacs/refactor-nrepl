@@ -196,13 +196,6 @@
   [pred m]
   (into {} (filter pred m)))
 
-(defn rename-key
-  "Rename the key in m to new-name."
-  [k new-name m]
-  (-> m
-      (assoc new-name (k m))
-      (dissoc k)))
-
 (defn dissoc-when
   "Remove the enumerated keys from m on which pred is truthy."
   [m pred & ks]

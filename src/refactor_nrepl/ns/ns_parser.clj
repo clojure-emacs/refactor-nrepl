@@ -11,9 +11,10 @@
    ;; rest are cljs specific
    :refer-macros [referred macros here]
    :require-macros true}"
-  (:require [refactor-nrepl.ns.helpers :refer [get-ns-component prefix-form?]]
-            [refactor-nrepl.util :as util]
-            [refactor-nrepl.ns.helpers :refer [read-ns-form]])
+  (:require [clojure.set :as set]
+            [refactor-nrepl.ns.helpers :refer [get-ns-component prefix-form?]]
+            [refactor-nrepl.ns.helpers :refer [read-ns-form]]
+            [refactor-nrepl.util :as util])
   (:import java.io.File))
 
 (defn- libspec-vector->map
@@ -97,7 +98,7 @@
         (with-libspecs-from ns-form :use-macros
           (->> libspecs
                (map libspec-vector->map)
-               (map (partial util/rename-key :only :refer))))))
+               (map #(set/rename-keys % {:only :refer}))))))
 
 (defn get-libspecs-from-file
   "Opts are passed to "
