@@ -70,15 +70,16 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
 (defn read-ns-form
   "Read the ns form found at PATH.
 
-  Opts are the same as those taken by tools.namespace's read-ns-decl"
+  Features is either :clj or :cljs."
   ([path]
    (with-open [file-reader (FileReader. path)]
      (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path))))))
-  ([opts path]
+  ([features path]
    (with-open [file-reader (FileReader. path)]
-     (if-let [ns-form (read-ns-decl (PushbackReader. file-reader) opts)]
+     (if-let [ns-form (read-ns-decl (PushbackReader. file-reader)
+                                    {:read-cond :allow :features #{features}})]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path)))))))
 

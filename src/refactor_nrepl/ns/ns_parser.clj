@@ -109,14 +109,12 @@
   Note that no post-processing is done so there might be duplicates or
   libspecs which could have been combined or eliminated as unused.
 
-  Opts are the same as those expected by tools.namespace's
-  read-ns-decl and the default is to allow reader conditionals and
-  read :clj."
+  Features is either :clj or :cljs, the default is :clj."
   ([^File f]
-   (get-libspecs-from-file {:features #{:clj} :read-cond :allow} f))
-  ([opts ^File f]
+   (get-libspecs-from-file :clj f))
+  ([features ^File f]
    (some->> f
             .getAbsolutePath
-            (read-ns-form opts)
+            (helpers/read-ns-form features)
             ((juxt get-libspecs get-required-macros))
             (mapcat identity))))

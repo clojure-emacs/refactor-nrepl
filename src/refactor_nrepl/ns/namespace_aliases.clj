@@ -32,8 +32,7 @@
       v)))
 
 (defn- put-cached-libspec [f lang]
-  (let [libspecs (ns-parser/get-libspecs-from-file
-                  {:features #{lang} :read-cond :allow} f)]
+  (let [libspecs (ns-parser/get-libspecs-from-file lang f)]
     (swap! cache assoc-in [(.getAbsolutePath f) lang]
            [(.lastModified f) libspecs])
     libspecs))
