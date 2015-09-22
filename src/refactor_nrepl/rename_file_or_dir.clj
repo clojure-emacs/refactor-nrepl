@@ -210,18 +210,19 @@
 
 (defn- assert-friendly
   [old-path new-path]
-  (cond
-    (or (str/blank? old-path) (str/blank? new-path))
-    (throw (IllegalArgumentException. "Can't move empty path!"))
+  (let [exception-data {:old-path old-path :new-path new-path}]
+    (cond
+      (or (str/blank? old-path) (str/blank? new-path))
+      (throw (ex-info "Can't act on empty path!" exception-data))
 
-    (or (and (fs/file? old-path) (fs/directory? old-path))
-        (and (fs/directory? old-path) (fs/file? old-path)))
-    (throw (ex-info "old-path and new-path has to be of same type (dir-dir or file-file)!"
-                    {:old-path old-path :new-path new-path}))
-    (and (not (fs/directory? old-path))
-         (not= (fs/extension old-path) (fs/extension new-path)))
-    (throw (ex-info (str "Can't change file extension when moving! ")
-                    {:old-path old-path :new-path new-path}))))
+      (or (and (fs/file? old-path) (fs/directory? old-path))
+          (and (fs/directory? old-path) (fs/file? old-path)))
+      (throw (ex-info "Can only move dir to dir or file to file!" exception-data))
+
+      (and (not (fs/directory? old-path))
+           (not= (fs/extension old-path) (fs/extension new-path)))
+      (throw (ex-info (str "Can't change file extension when moving! ")
+                      exception-data)))))
 
 (defn rename-file-or-dir
   "Renames a file or dir updating all dependent files.
