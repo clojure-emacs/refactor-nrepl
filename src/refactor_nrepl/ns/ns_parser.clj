@@ -12,8 +12,7 @@
    :refer-macros [referred macros here]
    :require-macros true}"
   (:require [clojure.set :as set]
-            [refactor-nrepl.ns.helpers :refer [get-ns-component prefix-form?]]
-            [refactor-nrepl.ns.helpers :refer [read-ns-form]]
+            [refactor-nrepl.ns.helpers :as helpers]
             [refactor-nrepl.util :as util])
   (:import java.io.File))
 
@@ -34,7 +33,7 @@
                              (rest libspec))
                            (symbol (str prefix "." libspec))))
         normalize-libspec-vector (fn [libspec]
-                                   (if (prefix-form? libspec)
+                                   (if (helpers/prefix-form? libspec)
                                      (let [prefix (first libspec)]
                                        (map (partial prepend-prefix prefix)
                                             (rest libspec)))
@@ -43,7 +42,7 @@
 
 (defn- use-to-refer-all [use-spec]
   (if (vector? use-spec)
-    (if (prefix-form? use-spec)
+    (if (helpers/prefix-form? use-spec)
       [(first use-spec) (map #(conj % :refer :all))]
       (conj use-spec :refer :all))
     [use-spec :refer :all]))
@@ -52,7 +51,7 @@
   "Bind the symbol libspecs to the libspecs extracted from the key in
   ns-form and execute body."
   [ns-form key & body]
-  `(let [~'libspecs (rest (get-ns-component ~ns-form ~key))]
+  `(let [~'libspecs (rest (helpers/get-ns-component ~ns-form ~key))]
      ~@body))
 
 (defn- extract-required-macros [libspec-vector]
@@ -85,7 +84,7 @@
                                          (symbol (str package "." class-name)))
                                        (rest import-spec)))
                                 import-spec))]
-    (some->> (get-ns-component ns-form :import)
+    (some->> (helpers/get-ns-component ns-form :import)
              rest ; drop :import
              (map expand-prefix-specs)
              flatten
