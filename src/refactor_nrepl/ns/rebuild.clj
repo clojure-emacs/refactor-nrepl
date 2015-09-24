@@ -249,8 +249,8 @@
     (cons :require-macros (rest require-form))))
 
 (defn- drop-dependency-clauses
-  "Drop every form from the ns-form which isn't related to bringing
-  symbols into the namespace."
+  "Drop every form from the ns-form which related to bringing symbols
+  into the namespace."
   [ns-form]
   (remove (fn [component]
             (#{:require :require-macros :use :use-macros :import}
