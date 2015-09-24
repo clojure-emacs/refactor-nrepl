@@ -1,7 +1,6 @@
 (ns refactor-nrepl.core
-  (:require [clojure.java
-             [classpath :as cp]
-             [io :as io]]
+  (:require [clojure.java.classpath :as cp]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.namespace.parse :as parse]
             [me.raynes.fs :as fs]

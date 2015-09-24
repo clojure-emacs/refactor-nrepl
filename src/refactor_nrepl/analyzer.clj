@@ -1,12 +1,10 @@
 (ns refactor-nrepl.analyzer
   (:refer-clojure :exclude [macroexpand-1])
   (:require [clojure.java.io :as io]
-            [clojure.tools
-             [analyzer :as ana]
-             [reader :as reader]]
-            [clojure.tools.analyzer
-             [ast :refer [nodes]]
-             [jvm :as aj]]
+            [clojure.tools.analyzer :as ana]
+            [clojure.tools.reader :as reader]
+            [clojure.tools.analyzer.ast :refer [nodes]]
+            [clojure.tools.analyzer.jvm :as aj]
             [clojure.tools.analyzer.jvm.utils :as ajutils]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.walk :as walk]
