@@ -11,11 +11,6 @@
   (:import [java.io File PushbackReader]
            java.util.regex.Pattern))
 
-(defn alias-info [full-ast]
-  (-> full-ast first :alias-info))
-
-(defn ns-from-string [ns-string]
-  (second (read-ns-decl (PushbackReader. (java.io.StringReader. ns-string)))))
 
 (defn normalize-to-unix-path
   "Replace use / as separator and lower-case."

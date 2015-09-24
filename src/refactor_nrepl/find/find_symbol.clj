@@ -1,13 +1,14 @@
 (ns refactor-nrepl.find.find-symbol
-  (:require [clojure.set :as set]
-            [clojure.string :as str]
+  (:require [clojure
+             [set :as set]
+             [string :as str]]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :as find]
             [refactor-nrepl
              [analyzer :refer [ns-ast]]
+             [core :as core]
              [util :as util]]
-            [refactor-nrepl.find.find-macros :refer [find-macro]]
-            [refactor-nrepl.core :as core]))
+            [refactor-nrepl.find.find-macros :refer [find-macro]]))
 
 (defn- node->var
   "Returns a fully qualified symbol for vars other those from clojure.core, for
@@ -64,13 +65,16 @@
   ([name asts pred]
    (find-nodes (map #(postwalk % (partial dissoc-macro-nodes name)) asts) pred)))
 
+(defn- alias-info [full-ast]
+  (-> full-ast first :alias-info))
+
 (defn- find-invokes
   "Finds fn invokes in the AST.
   Returns a list of line, end-line, column, end-column and fn name tuples"
   [asts fn-names]
   (find-nodes asts
               #(fns-invoked? (into #{} (str/split fn-names #","))
-                             (util/alias-info asts)
+                             (alias-info asts)
                              %)))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
@@ -98,7 +102,7 @@
                 asts
                 (partial contains-var-or-const?
                          name
-                         (util/alias-info asts)))))
+                         (alias-info asts)))))
 
 (defn- match [file-content line end-line]
   (let [line-index (dec line)
