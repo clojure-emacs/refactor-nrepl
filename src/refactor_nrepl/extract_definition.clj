@@ -4,8 +4,8 @@
              :refer
              [create-result-alist find-symbol]]
             [refactor-nrepl.core :refer [suffix]]
+            [refactor-nrepl.s-expressions :as sexp]
             [refactor-nrepl.util :as util]
-            [refactor-nrepl.util :refer [get-enclosing-sexp get-next-sexp]]
             [rewrite-clj.zip :as zip])
   (:import [java.io PushbackReader StringReader]
            java.util.regex.Pattern))
@@ -38,14 +38,14 @@
   [^String bindings ^String var-name]
   (let [zipper (zip/of-string bindings)
         zloc (some (fn [zloc] (when (= (symbol var-name) (zip/sexpr zloc)) zloc))
-                   (util/all-zlocs zipper))]
+                   (sexp/all-zlocs zipper))]
     (when zloc
       (str/trim (zip/string (zip/right zloc))))))
 
 (defn- -extract-definition
   [{:keys [match file line-beg col-beg name]}]
-  (let [literal-sexp (get-enclosing-sexp (slurp file) (dec line-beg)
-                                         col-beg)
+  (let [literal-sexp (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
+                                              col-beg)
         form (read-string literal-sexp)]
     (.replaceAll
      (case (first form)
@@ -70,8 +70,8 @@
 (defn- def?
   "Is the OCCURRENCE the defining form?"
   [{:keys [file name col-beg line-beg] :as occurrence}]
-  (let [form (read-string (get-enclosing-sexp (slurp file) (dec line-beg)
-                                              col-beg))
+  (let [form (read-string (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
+                                                   col-beg))
         name (symbol (suffix (read-string name)))]
     (if (def-form? form)
       (= (second form) name)

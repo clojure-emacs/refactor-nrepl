@@ -2,8 +2,9 @@
   (:require [clojure.set :as set]
             [clojure.tools.analyzer.ast :refer [nodes]]
             [refactor-nrepl
-             [analyzer :as ana]]
-            [refactor-nrepl.util :as util]))
+             [analyzer :as ana]
+             [s-expressions :as sexp]
+             [util :as util]]))
 
 (defn find-used-locals  [{:keys [file line column]}]
   {:pre [(number? line)
@@ -12,7 +13,7 @@
   (util/throw-unless-clj-file file)
   (let [content (slurp file)
         ast (ana/ns-ast content)
-        sexp (util/get-enclosing-sexp content (dec line) (dec column))
+        sexp (sexp/get-enclosing-sexp content (dec line) (dec column))
         selected-sexp-node (->> ast
                                 (ana/top-level-form-index line column)
                                 (nth ast)

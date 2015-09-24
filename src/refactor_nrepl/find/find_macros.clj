@@ -1,15 +1,17 @@
 (ns refactor-nrepl.find.find-macros
-  (:import clojure.lang.LineNumberingPushbackReader
-           [java.io BufferedReader File FileReader StringReader])
   (:require [clojure.string :as str]
             [clojure.tools.reader :as reader]
+            [refactor-nrepl
+             [core :as core]
+             [s-expressions :as sexp]
+             [util :as util]]
             [refactor-nrepl.find.bindings :as bindings]
-            [refactor-nrepl.core :as core]
             [refactor-nrepl.ns
              [ns-parser :as ns-parser]
              [tracker :as tracker]]
-            [refactor-nrepl.util :as util]
-            [rewrite-clj.zip :as zip]))
+            [rewrite-clj.zip :as zip])
+  (:import clojure.lang.LineNumberingPushbackReader
+           [java.io BufferedReader File FileReader StringReader]))
 
 ;; The structure here is {path [timestamp macros]}
 (def ^:private cache (atom {}))
@@ -31,7 +33,7 @@
         file-content (slurp f)
         file-ns (util/ns-from-string file-content)
         content (keep-lines file-content end-line)
-        sexp (util/get-last-sexp content)
+        sexp (sexp/get-last-sexp content)
         macro-name (name (second form))
         col-beg (dec (.indexOf sexp macro-name))]
     {:name (str file-ns "/" macro-name)
@@ -161,7 +163,7 @@
   ((active-bindings zip-node) macro-sym))
 
 (defn- content-offset [path]
-  (-> path slurp util/get-next-sexp str/split-lines count))
+  (-> path slurp sexp/get-next-sexp str/split-lines count))
 
 (defn- collect-occurrences
   [occurrences macro ^File path zip-node]

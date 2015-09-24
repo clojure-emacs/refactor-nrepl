@@ -4,9 +4,10 @@
              [string :as str]]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :as find]
-            [refactor-nrepl.analyzer :as ana]
             [refactor-nrepl
+             [analyzer :as ana]
              [core :as core]
+             [s-expressions :as sexp]
              [util :as util]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]))
 
@@ -147,8 +148,8 @@
   [file-content {:keys [line-beg col-beg]}]
   (binding [*read-eval* false]
     (let [line (dec line-beg)
-          encl-sexp-level1 (or (util/get-enclosing-sexp file-content line col-beg) "")
-          encl-sexp-level2 (or (util/get-enclosing-sexp file-content line col-beg 2) "")]
+          encl-sexp-level1 (or (sexp/get-enclosing-sexp file-content line col-beg) "")
+          encl-sexp-level2 (or (sexp/get-enclosing-sexp file-content line col-beg 2) "")]
       [encl-sexp-level1 (read-string encl-sexp-level1)
        encl-sexp-level2 (read-string encl-sexp-level2)])))
 
