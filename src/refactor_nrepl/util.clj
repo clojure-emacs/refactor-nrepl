@@ -23,25 +23,18 @@
     (.replaceAll path (Pattern/quote "\\") "/")
     path))
 
-(defn- dirs-on-classpath*
-  "Return all dirs on classpath, filterout out our inlined deps
+(defn dirs-on-classpath
+  "Return all dirs on classpath, filtering out our inlined deps
   directory."
   []
   (->> (cp/classpath)
        (filter fs/directory?)
        (remove #(-> % str (.endsWith "target/srcdeps")))))
 
-(defn dirs-on-classpath
-  "Return all directories on classpath."
-  []
-  (->> (dirs-on-classpath*)
-       (map #(.getAbsolutePath %))
-       (map normalize-to-unix-path)))
-
 (defn find-clojure-sources-in-project
   "Return all clojure files in the project that are on the classpath."
   []
-  (mapcat find/find-sources-in-dir (dirs-on-classpath*)))
+  (mapcat find/find-sources-in-dir (dirs-on-classpath)))
 
 (defn find-in-dir
   "Searches recursively under dir for files matching (pred ^File file). "
@@ -82,7 +75,7 @@
 (defn filter-project-files
   "Return the files in the project satisfying (pred ^File file)."
   [pred]
-  (mapcat (partial find-in-dir pred) (dirs-on-classpath*)))
+  (mapcat (partial find-in-dir pred) (dirs-on-classpath)))
 
 (defn throw-unless-clj-file [file-path]
   (when-not (re-matches #".+\.clj$" file-path)

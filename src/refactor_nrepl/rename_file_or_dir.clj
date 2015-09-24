@@ -30,7 +30,11 @@
                            (str/split (str/lower-case path))
                            second))
         shortest (fn [acc val] (if (< (.length acc) (.length val)) acc val))]
-    (let [relative-paths (->> (util/dirs-on-classpath) (map chop-prefix) (remove nil?))]
+    (let [relative-paths (->> (util/dirs-on-classpath)
+                              (map (memfn getAbsolutePath))
+                              (map util/normalize-to-unix-path)
+                              (map chop-prefix)
+                              (remove nil?))]
       (if-let [p (cond
                    (= (count relative-paths) 1) (first relative-paths)
                    (> (count relative-paths) 1) (reduce shortest relative-paths))]
