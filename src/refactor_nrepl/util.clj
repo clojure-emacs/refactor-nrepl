@@ -23,7 +23,10 @@
     (.replaceAll path (Pattern/quote "\\") "/")
     path))
 
-(defn dirs-on-classpath* []
+(defn- dirs-on-classpath*
+  "Return all dirs on classpath, filterout out our inlined deps
+  directory."
+  []
   (->> (cp/classpath)
        (filter fs/directory?)
        (remove #(-> % str (.endsWith "target/srcdeps")))))
