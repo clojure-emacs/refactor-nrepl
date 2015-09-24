@@ -1,8 +1,6 @@
 (ns refactor-nrepl.ns.namespace-aliases
-  (:require [refactor-nrepl.ns
-             [ns-parser :as ns-parser]]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.util :as util]))
+  (:require [refactor-nrepl.core :as core]
+            [refactor-nrepl.ns.ns-parser :as ns-parser]))
 
 ;; The structure here is {path {lang [timestamp value]}}
 ;; where lang is either :clj or :cljs
@@ -48,9 +46,9 @@
   {:clj {util com.acme.util str clojure.string
    :cljs {gstr goog.str}}}"
   []
-  {:clj (->> (util/find-in-project (some-fn util/clj-file? util/cljc-file?))
+  {:clj (->> (core/find-in-project (some-fn core/clj-file? core/cljc-file?))
              (map (partial get-libspec-from-file-with-caching :clj))
              aliases-by-frequencies)
-   :cljs (->> (util/find-in-project (some-fn util/cljs-file? util/cljc-file?))
+   :cljs (->> (core/find-in-project (some-fn core/cljs-file? core/cljc-file?))
               (map (partial get-libspec-from-file-with-caching :cljs))
               aliases-by-frequencies)})

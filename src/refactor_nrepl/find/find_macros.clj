@@ -31,7 +31,7 @@
   [form f]
   (let [{:keys [line column end-line end-column]} (meta form)
         file-content (slurp f)
-        file-ns (util/ns-from-string file-content)
+        file-ns (core/ns-from-string file-content)
         content (keep-lines file-content end-line)
         sexp (sexp/get-last-sexp content)
         macro-name (name (second form))
@@ -79,7 +79,7 @@
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
   []
-  (->> (util/find-in-project (some-fn util/cljc-file? util/clj-file?))
+  (->> (core/find-in-project (some-fn core/cljc-file? core/clj-file?))
        (mapcat get-macro-definitions-in-file-with-caching)))
 
 (defn- get-ns-aliases

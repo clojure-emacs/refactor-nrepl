@@ -1,7 +1,72 @@
 (ns refactor-nrepl.core
-  (:require [clojure.string :as str]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]])
-  (:import [java.io FileReader PushbackReader StringReader]))
+  (:require [clojure.java
+             [classpath :as cp]
+             [io :as io]]
+            [clojure.string :as str]
+            [clojure.tools.namespace.parse :as parse]
+            [me.raynes.fs :as fs]
+            [refactor-nrepl.util :refer [normalize-to-unix-path]])
+  (:import [java.io File FileReader PushbackReader StringReader]))
+
+(defn ns-from-string
+  "Retrieve the symbol naming the ns from file-content."
+  [file-content]
+  (second (parse/read-ns-decl (PushbackReader. (java.io.StringReader. file-content)))))
+
+(defn dirs-on-classpath
+  "Return all dirs on classpath, filtering out our inlined deps
+  directory."
+  []
+  (->> (cp/classpath)
+       (filter fs/directory?)
+       (remove #(-> % str normalize-to-unix-path (.endsWith "target/srcdeps")))))
+
+(defn find-in-dir
+  "Searches recursively under dir for files matching (pred ^File file). "
+  [pred ^File dir]
+  (filter pred (file-seq dir)))
+
+(defn cljc-file?
+  [path-or-file]
+  (.endsWith (.getPath (io/file path-or-file)) ".cljc"))
+
+(defn cljs-file?
+  [path-or-file]
+  (.endsWith (.getPath (io/file path-or-file)) ".cljs"))
+
+(defn clj-file?
+  [path-or-file]
+  (.endsWith (.getPath (io/file path-or-file)) ".clj"))
+
+(defn source-file?
+  "True for clj, cljs or cljc files."
+  [path-or-file]
+  ((some-fn cljc-file? cljs-file? clj-file?) (io/file path-or-file)))
+
+
+(defn file->dialect
+  "Return the clojure dialect used in the file f.
+
+  The dialect is either :clj, :cljs or :cljc."
+  [path-or-file]
+  (let [f (io/file path-or-file)]
+    (cond
+      (clj-file? f) :clj
+      (cljs-file? f) :cljs
+      (cljc-file? f) :cljc
+      :else (throw (ex-info "Path isn't pointing to file in a clj dialect!"
+                            {:path path-or-file})))))
+
+(defn find-in-project
+  "Return the files in the project satisfying (pred ^File file)."
+  [pred]
+  (-> find-in-dir (partial pred) (mapcat (dirs-on-classpath)) distinct))
+
+(defn throw-unless-clj-file [file-path]
+  (when-not (re-matches #".+\.clj$" file-path)
+    (throw (IllegalArgumentException.
+            "Only .clj files are supported!"))))
+
 
 (defn- libspec?
   [thing]
@@ -65,13 +130,13 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
   Dialect is either :clj or :cljs."
   ([path]
    (with-open [file-reader (FileReader. path)]
-     (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
+     (if-let [ns-form (parse/read-ns-decl (PushbackReader. file-reader))]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path))))))
   ([dialect path]
    (with-open [file-reader (FileReader. path)]
-     (if-let [ns-form (read-ns-decl (PushbackReader. file-reader)
-                                    {:read-cond :allow :features #{dialect}})]
+     (if-let [ns-form (parse/read-ns-decl (PushbackReader. file-reader)
+                                          {:read-cond :allow :features #{dialect}})]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path)))))))
 
@@ -107,13 +172,13 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
 (defn ns-form-from-string
   ([file-content]
    (try
-     (read-ns-decl (PushbackReader. (StringReader. file-content)))
+     (parse/read-ns-decl (PushbackReader. (StringReader. file-content)))
      (catch Exception e
        (throw (IllegalArgumentException. "Malformed ns form!")))))
   ([dialect file-content]
    (let [rdr-opts {:read-cond :allow :features #{dialect}}]
      (try
-       (read-ns-decl (PushbackReader. (StringReader. file-content)) rdr-opts)
+       (parse/read-ns-decl (PushbackReader. (StringReader. file-content)) rdr-opts)
        (catch Exception e
          (throw (IllegalArgumentException. "Malformed ns form!")))))))
 

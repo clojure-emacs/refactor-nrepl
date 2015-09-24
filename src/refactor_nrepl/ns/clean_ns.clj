@@ -15,8 +15,7 @@
             [refactor-nrepl.ns
              [dependencies :refer [extract-dependencies]]
              [ns-parser :as ns-parser]
-             [rebuild :refer [rebuild-ns-form]]]
-            [refactor-nrepl.util :as util]))
+             [rebuild :refer [rebuild-ns-form]]]))
 
 (defn- assert-no-exclude-clause
   [use-form]
@@ -32,11 +31,11 @@
   ns-form)
 
 (defn clean-ns [{:keys [path]}]
-  {:pre [(seq path) (string? path) (util/source-file? path)]}
+  {:pre [(seq path) (string? path) (core/source-file? path)]}
   ;; Prefix notation not supported in cljs.
   ;; We also turn it off for cljc for reasons of symmetry
-  (config/with-config {:prefix-rewriting (if (or (util/cljs-file? path)
-                                                 (util/cljc-file? path))
+  (config/with-config {:prefix-rewriting (if (or (core/cljs-file? path)
+                                                 (core/cljc-file? path))
                                            false
                                            (:prefix-rewriting config/*config*))}
     (let [ns-form (core/read-ns-form path)

@@ -103,7 +103,7 @@
 (defn- parse-clj-or-cljs-ns
   ([path] (parse-clj-or-cljs-ns path nil))
   ([path dialect]
-   (let [dialect (or dialect (util/file->dialect path))
+   (let [dialect (or dialect (core/file->dialect path))
          ns-form (core/read-ns-form dialect path)]
      {dialect (merge {:require (get-libspecs ns-form)
                       :import (get-imports ns-form)}
@@ -116,11 +116,11 @@
 
 (defn parse-ns [path-or-file]
   (assoc
-   (if (util/cljc-file? (io/file path-or-file))
+   (if (core/cljc-file? (io/file path-or-file))
      (parse-cljc-ns path-or-file)
      (parse-clj-or-cljs-ns path-or-file))
    :ns (second (core/read-ns-form path-or-file))
-   :source-dialect (util/file->dialect path-or-file)))
+   :source-dialect (core/file->dialect path-or-file)))
 
 (defn get-libspecs-from-file
   "Return all the libspecs in a file.

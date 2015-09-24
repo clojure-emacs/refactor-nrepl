@@ -30,7 +30,7 @@
                            (str/split (str/lower-case path))
                            second))
         shortest (fn [acc val] (if (< (.length acc) (.length val)) acc val))]
-    (let [relative-paths (->> (util/dirs-on-classpath)
+    (let [relative-paths (->> (core/dirs-on-classpath)
                               (map (memfn getAbsolutePath))
                               (map util/normalize-to-unix-path)
                               (map chop-prefix)
@@ -168,7 +168,7 @@
 (defn- rename-source-file
   "Move file from old to new, updating any dependents."
   [old-path new-path]
-  (let [old-ns (util/ns-from-string (slurp old-path))
+  (let [old-ns (core/ns-from-string (slurp old-path))
         new-ns (path->ns new-path)
         tracker (tracker/build-tracker)
         dependents (tracker/get-dependents tracker old-ns)
@@ -209,7 +209,7 @@
 (defn- -rename-file-or-dir [old-path new-path]
   (let [affected-files  (if (fs/directory? old-path)
                           (rename-dir old-path new-path)
-                          (if ((some-fn util/clj-file? util/cljs-file?)
+                          (if ((some-fn core/clj-file? core/cljs-file?)
                                (File. old-path))
                             (rename-source-file old-path new-path)
                             (rename-file! old-path new-path)))]

@@ -3,12 +3,12 @@
              [dependency :as dep]
              [file :as file]
              [track :as tracker]]
-            [refactor-nrepl.util :as util]))
+            [refactor-nrepl.core :as core]))
 
 (defn build-tracker
   "Build a tracker for the project."
   []
-  (file/add-files (tracker/tracker) (util/find-in-project util/source-file?)))
+  (file/add-files (tracker/tracker) (core/find-in-project core/source-file?)))
 
 (defn get-dependents
   "Get the dependent files for ns from tracker."

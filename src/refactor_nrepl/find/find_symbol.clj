@@ -134,7 +134,7 @@
 
 (defn- find-global-symbol [file ns var-name clj-dir ignore-errors]
   (let [dir (or clj-dir ".")
-        namespace (or ns (util/ns-from-string (slurp file)))
+        namespace (or ns (core/ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
                                var-name
                                (str/join "/" [namespace var-name]))]
@@ -238,7 +238,7 @@
   [line-beg line-end col-beg col-end name file match])
 
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
-  (util/throw-unless-clj-file file)
+  (core/throw-unless-clj-file file)
   (map to-find-symbol-result
        (or
         ;; find-macro is first because find-global-symbol returns garb for macros

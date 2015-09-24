@@ -126,7 +126,7 @@
     (binding [*ns* (or (find-ns (symbol current-ns)) *ns*)]
       (let [rdr (-> path slurp core/file-content-sans-ns
                     readers/indexing-push-back-reader)
-            dialect (or dialect (util/file->dialect path))
+            dialect (or dialect (core/file->dialect path))
             rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
             syms (atom #{})
             collect-symbol (fn [form]
@@ -172,7 +172,7 @@
    (extract-clj-or-cljs-dependencies path nil))
   ([path dialect]
    (let [parsed-ns (ns-parser/parse-ns path)
-         dialect (or dialect (util/file->dialect path))
+         dialect (or dialect (core/file->dialect path))
          {current-ns :ns} parsed-ns
          required-libspecs (some-> parsed-ns dialect :require)
          required-macro-libspecs (some-> parsed-ns :cljs :require-macros)
@@ -196,7 +196,7 @@
    (extract-clj-or-cljs-dependencies path :cljs)))
 
 (defn extract-dependencies [path]
-  (let [dialect (util/file->dialect path)]
+  (let [dialect (core/file->dialect path)]
     (merge (if (= dialect :cljc)
              (extract-cljc-dependencies path)
              (extract-clj-or-cljs-dependencies path))

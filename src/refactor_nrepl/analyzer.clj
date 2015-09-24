@@ -12,7 +12,7 @@
             [clojure.walk :as walk]
             [refactor-nrepl
              [config :as config]
-             [util :as util]])
+             [core :as core]])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
 
@@ -99,7 +99,7 @@
                              "OK"))))))
 
 (defn warm-ast-cache []
-  (doseq [f (util/find-in-project util/clj-file?)]
+  (doseq [f (core/find-in-project core/clj-file?)]
     (try
       (ns-ast (slurp f))
       (catch Throwable th))) ;noop, ast-status will be reported separately
