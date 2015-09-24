@@ -3,7 +3,7 @@
             [refactor-nrepl
              [config :as config]
              [util :as util]]
-            [refactor-nrepl.ns.helpers :refer [index-of-component prefix prefix-form? suffix]]))
+            [refactor-nrepl.core :refer [index-of-component prefix prefix-form? suffix]]))
 
 (defn- assert-single-alias
   [libspecs alias]

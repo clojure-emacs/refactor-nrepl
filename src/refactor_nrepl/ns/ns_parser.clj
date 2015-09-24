@@ -13,7 +13,7 @@
    :require-macros true}"
   (:require [clojure.java.io :as io]
             [clojure.set :as set]
-            [refactor-nrepl.ns.helpers :as helpers]
+            [refactor-nrepl.core :as core]
             [refactor-nrepl.util :as util])
   (:import java.io.File))
 
@@ -34,7 +34,7 @@
                              (rest libspec))
                            (symbol (str prefix "." libspec))))
         normalize-libspec-vector (fn [libspec]
-                                   (if (helpers/prefix-form? libspec)
+                                   (if (core/prefix-form? libspec)
                                      (let [prefix (first libspec)]
                                        (map (partial prepend-prefix prefix)
                                             (rest libspec)))
@@ -43,7 +43,7 @@
 
 (defn- use-to-refer-all [use-spec]
   (if (vector? use-spec)
-    (if (helpers/prefix-form? use-spec)
+    (if (core/prefix-form? use-spec)
       [(first use-spec) (map #(conj % :refer :all))]
       (conj use-spec :refer :all))
     [use-spec :refer :all]))
@@ -52,7 +52,7 @@
   "Bind the symbol libspecs to the libspecs extracted from the key in
   ns-form and execute body."
   [ns-form key & body]
-  `(let [~'libspecs (rest (helpers/get-ns-component ~ns-form ~key))]
+  `(let [~'libspecs (rest (core/get-ns-component ~ns-form ~key))]
      ~@body))
 
 (defn- extract-required-macros [libspec-vector]
@@ -85,7 +85,7 @@
                                          (symbol (str package "." class-name)))
                                        (rest import-spec)))
                                 import-spec))]
-    (some->> (helpers/get-ns-component ns-form :import)
+    (some->> (core/get-ns-component ns-form :import)
              rest ; drop :import
              (map expand-prefix-specs)
              flatten
@@ -104,7 +104,7 @@
   ([path] (parse-clj-or-cljs-ns path nil))
   ([path dialect]
    (let [dialect (or dialect (util/file->dialect path))
-         ns-form (helpers/read-ns-form dialect path)]
+         ns-form (core/read-ns-form dialect path)]
      {dialect (merge {:require (get-libspecs ns-form)
                       :import (get-imports ns-form)}
                      (when (= dialect :cljs)
@@ -119,7 +119,7 @@
    (if (util/cljc-file? (io/file path-or-file))
      (parse-cljc-ns path-or-file)
      (parse-clj-or-cljs-ns path-or-file))
-   :ns (second (helpers/read-ns-form path-or-file))
+   :ns (second (core/read-ns-form path-or-file))
    :source-dialect (util/file->dialect path-or-file)))
 
 (defn get-libspecs-from-file
@@ -137,6 +137,6 @@
   ([dialect ^File f]
    (some->> f
             .getAbsolutePath
-            (helpers/read-ns-form dialect)
+            (core/read-ns-form dialect)
             ((juxt get-libspecs get-required-macros))
             (mapcat identity))))

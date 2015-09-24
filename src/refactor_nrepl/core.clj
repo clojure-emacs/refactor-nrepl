@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.helpers
+(ns refactor-nrepl.core
   (:require [clojure.string :as str]
             [clojure.tools.namespace.parse :refer [read-ns-decl]])
   (:import [java.io FileReader PushbackReader StringReader]))
@@ -58,14 +58,6 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
       (-> fully-qualified-name str (.split "/") last)
 
       :else (-> fully-qualified-name str (.split "\\.") last))))
-
-(defn ctor-call->str
-  "Date. -> \"Date\""
-  [sym]
-  (let [s (str sym)]
-    (if (.endsWith s ".")
-      (.substring s 0 (dec (.length s)))
-      s)))
 
 (defn read-ns-form
   "Read the ns form found at PATH.

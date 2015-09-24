@@ -1,6 +1,6 @@
 (ns refactor-nrepl.rename-file-or-dir-test
   (:require [clojure.test :refer :all]
-            [refactor-nrepl.ns.helpers
+            [refactor-nrepl.core
              :refer
              [get-ns-component ns-form-from-string]]
             [refactor-nrepl.rename-file-or-dir :refer :all])

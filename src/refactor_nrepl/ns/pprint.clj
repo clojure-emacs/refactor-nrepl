@@ -2,7 +2,7 @@
   (:require [clojure
              [pprint :refer [pprint]]
              [string :as str]]
-            [refactor-nrepl.ns.helpers :as helpers :refer [prefix-form?]]
+            [refactor-nrepl.core :as core :refer [prefix-form?]]
             [rewrite-clj.zip :as zip]))
 
 (defn- libspec-vectors-last [libspecs]
@@ -86,7 +86,7 @@
   map before printing."
   [path]
   (let [meta? (-> path slurp (.replaceFirst "\\^\\{" "\\{")
-                  helpers/ns-form-from-string second)]
+                  core/ns-form-from-string second)]
     (when (map? meta?)
       meta?)))
 

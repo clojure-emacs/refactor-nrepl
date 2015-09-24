@@ -7,7 +7,7 @@
              [analyzer :refer [ns-ast]]
              [util :as util]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]
-            [refactor-nrepl.ns.helpers :as ns-helpers]))
+            [refactor-nrepl.core :as core]))
 
 (defn- node->var
   "Returns a fully qualified symbol for vars other those from clojure.core, for
@@ -228,7 +228,7 @@
   (map to-find-symbol-result
        (or
         ;; find-macro is first because find-global-symbol returns garb for macros
-        (find-macro (ns-helpers/fully-qualify name ns))
+        (find-macro (core/fully-qualify name ns))
         (and (seq file) (not-empty (find-local-symbol file name line column)))
         (find-global-symbol file ns name dir (and ignore-errors
                                                   (or (not (coll? ignore-errors))

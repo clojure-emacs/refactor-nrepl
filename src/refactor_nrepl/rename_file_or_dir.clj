@@ -2,11 +2,11 @@
   (:require [clojure.string :as str]
             [clojure.tools.namespace.file :as file]
             [me.raynes.fs :as fs]
+            [refactor-nrepl.core :as core]
             [refactor-nrepl
              [config :as config]
              [util :as util]]
             [refactor-nrepl.ns
-             [helpers :refer [file-content-sans-ns read-ns-form]]
              [ns-parser :as ns-parser]
              [pprint :refer [pprint-ns]]
              [rebuild :refer [rebuild-ns-form]]
@@ -95,7 +95,7 @@
 (defn- create-new-ns-form
   "Reads file and returns an updated ns."
   [file old-ns new-ns]
-  (let [ns-form (read-ns-form file)
+  (let [ns-form (core/read-ns-form file)
         parsed-ns (ns-parser/parse-ns file)
         deps (update-references-in-deps parsed-ns old-ns new-ns)]
     (pprint-ns (rebuild-ns-form deps ns-form) (.getAbsolutePath file))))
@@ -109,7 +109,7 @@
         new-ns-ref (str new-ns "/")]
     (-> file
         slurp
-        file-content-sans-ns
+        core/file-content-sans-ns
         str/triml
         (str/replace old-prefix new-prefix)
         (str/replace old-ns-ref new-ns-ref))))

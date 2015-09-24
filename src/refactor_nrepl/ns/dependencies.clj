@@ -3,9 +3,8 @@
             [clojure.tools.reader :as reader]
             [clojure.tools.reader.reader-types :as readers]
             [clojure.walk :as walk]
-            [refactor-nrepl.ns
-             [helpers :refer [ctor-call->str file-content-sans-ns prefix suffix]]
-             [ns-parser :as ns-parser]]
+            [refactor-nrepl.core :as core]
+            [refactor-nrepl.ns [ns-parser :as ns-parser]]
             [refactor-nrepl.util :as util]))
 
 (defn- lookup-symbol-ns
@@ -79,7 +78,7 @@
         str
         (.split "/")
         first
-        suffix)))
+        core/suffix)))
 
 (defn- class-in-use?
   [symbols-in-file c]
@@ -87,10 +86,10 @@
    ;; fully.qualified.Class
    (symbols-in-file c)
    ;; OnlyClassName or Class$Enum/Value
-   ((set (map suffix symbols-in-file)) (suffix c))
+   ((set (map core/suffix symbols-in-file)) (core/suffix c))
    ;; Static/fieldOrMethod
    ((set (map static-method-or-field-access->Classname symbols-in-file))
-    (suffix c))))
+    (core/suffix c))))
 
 (defn- get-referred-symbols
   [libspec]
@@ -107,17 +106,25 @@
            :ns))
 
 (defn- fix-ns-of-backquoted-symbols [libspecs sym]
-  (if (= (prefix sym) (str (ns-name *ns*)))
-    (if-let [prefix (find-symbol-ns libspecs (suffix sym))]
-      (str prefix "/" (suffix sym))
+  (if (= (core/prefix sym) (str (ns-name *ns*)))
+    (if-let [prefix (find-symbol-ns libspecs (core/suffix sym))]
+      (str prefix "/" (core/suffix sym))
       sym)
     sym))
+
+(defn- ctor-call->str
+  "Date. -> \"Date\""
+  [sym]
+  (let [s (str sym)]
+    (if (.endsWith s ".")
+      (.substring s 0 (dec (.length s)))
+      s)))
 
 (defn- get-symbols-used-in-file
   [path current-ns libspecs dialect]
   (util/with-additional-ex-data [:file path]
     (binding [*ns* (or (find-ns (symbol current-ns)) *ns*)]
-      (let [rdr (-> path slurp file-content-sans-ns
+      (let [rdr (-> path slurp core/file-content-sans-ns
                     readers/indexing-push-back-reader)
             dialect (or dialect (util/file->dialect path))
             rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
@@ -138,7 +145,7 @@
 
 (defn- get-classes-used-in-typehints [path]
   (util/with-additional-ex-data [:file path]
-    (let [rdr (-> path slurp file-content-sans-ns readers/indexing-push-back-reader)
+    (let [rdr (-> path slurp core/file-content-sans-ns readers/indexing-push-back-reader)
           rdr-opts {:read-cond :allow :features #{:clj} :eof :eof}
           types (atom [])
           conj-type (fn [form]

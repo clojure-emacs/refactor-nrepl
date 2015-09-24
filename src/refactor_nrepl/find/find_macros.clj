@@ -4,8 +4,8 @@
   (:require [clojure.string :as str]
             [clojure.tools.reader :as reader]
             [refactor-nrepl.find.bindings :as bindings]
+            [refactor-nrepl.core :as core]
             [refactor-nrepl.ns
-             [helpers :as ns-helpers]
              [ns-parser :as ns-parser]
              [tracker :as tracker]]
             [refactor-nrepl.util :as util]
@@ -46,7 +46,7 @@
   [f]
   (util/with-additional-ex-data [:file (.getAbsolutePath f)]
     (with-open [file-rdr (FileReader. f)]
-      (binding [*ns* (or (ns-helpers/path->namespace :no-error f) *ns*)]
+      (binding [*ns* (or (core/path->namespace :no-error f) *ns*)]
         (let [rdr (LineNumberingPushbackReader. file-rdr)
               opts {:read-cond :allow :features #{:clj} :eof :eof}]
           (loop [macros [], form (reader/read opts rdr)]
@@ -91,19 +91,19 @@
   [libspec macro-name]
   (some->> (when (sequential? (:refer libspec)) (:refer libspec))
            (map str)
-           (some #(= % (ns-helpers/suffix macro-name)))))
+           (some #(= % (core/suffix macro-name)))))
 
 (defn- referred-from-use?
   [libspec macro-name]
   (some->> libspec
            :use
            (map str)
-           (filter #(= % (ns-helpers/suffix macro-name)))
+           (filter #(= % (core/suffix macro-name)))
            first))
 
 (defn- macro-referred? [libspecs macro-name]
   (let [libspec (some->> libspecs
-                         (filter #(= (str (:ns %)) (ns-helpers/prefix macro-name)))
+                         (filter #(= (str (:ns %)) (core/prefix macro-name)))
                          first)]
     (or (referred-from-require? libspec macro-name)
         (referred-from-use? libspec macro-name))))
@@ -129,8 +129,8 @@
 
 (defn- macro-found?
   [sym macro-name libspecs current-ns]
-  (let [macro-prefix (ns-helpers/prefix macro-name)
-        macro-suffix (ns-helpers/suffix macro-name)
+  (let [macro-prefix (core/prefix macro-name)
+        macro-suffix (core/suffix macro-name)
         alias? ((get-ns-aliases libspecs) macro-prefix)]
     (or
      ;; locally defined macro
@@ -169,7 +169,7 @@
         macro-name (str (:name macro))
         sym (:string-value node)
         path (.getAbsolutePath path)
-        ns-form (ns-helpers/read-ns-form path)
+        ns-form (core/read-ns-form path)
         libspecs (ns-parser/get-libspecs ns-form)
         current-ns (str (second ns-form))
         offset (content-offset path)]
@@ -180,7 +180,7 @@
   zip-node)
 
 (defn- find-usages-in-file [macro ^File path]
-  (let [zipper (-> path slurp ns-helpers/file-content-sans-ns zip/of-string)
+  (let [zipper (-> path slurp core/file-content-sans-ns zip/of-string)
         occurrences (atom [])]
     (zip/postwalk zipper
                   token-node?
@@ -195,7 +195,7 @@
 
 
 (defn- fully-qualified-name? [fully-qualified-name]
-  (when (ns-helpers/prefix fully-qualified-name)
+  (when (core/prefix fully-qualified-name)
     fully-qualified-name))
 
 (defn find-macro
@@ -206,7 +206,7 @@
     (let [all-defs (find-macro-definitions-in-project)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
           tracker (tracker/build-tracker)
-          origin-ns (symbol (ns-helpers/prefix fully-qualified-name))
+          origin-ns (symbol (core/prefix fully-qualified-name))
           dependents (tracker/get-dependents tracker origin-ns)]
       (some->> macro-def
                :file

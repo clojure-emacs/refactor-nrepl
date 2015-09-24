@@ -11,9 +11,9 @@
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
   (:require [refactor-nrepl.config :as config]
+            [refactor-nrepl.core :as core]
             [refactor-nrepl.ns
              [dependencies :refer [extract-dependencies]]
-             [helpers :refer [get-ns-component read-ns-form]]
              [ns-parser :as ns-parser]
              [rebuild :refer [rebuild-ns-form]]]
             [refactor-nrepl.util :as util]))
@@ -28,7 +28,7 @@
   use-form)
 
 (defn- validate [ns-form]
-  (assert-no-exclude-clause (get-ns-component ns-form :use))
+  (assert-no-exclude-clause (core/get-ns-component ns-form :use))
   ns-form)
 
 (defn clean-ns [{:keys [path]}]
@@ -39,7 +39,7 @@
                                                  (util/cljc-file? path))
                                            false
                                            (:prefix-rewriting config/*config*))}
-    (let [ns-form (read-ns-form path)
+    (let [ns-form (core/read-ns-form path)
           _ (validate ns-form)
           new-ns-form (-> path extract-dependencies (rebuild-ns-form ns-form))]
       (when-not (= ns-form new-ns-form)

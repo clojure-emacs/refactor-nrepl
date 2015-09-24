@@ -1,9 +1,8 @@
 (ns refactor-nrepl.ns.namespace-aliases-test
   (:require [clojure.test :as t]
-            [refactor-nrepl.ns
-             [helpers :as util]
-             [namespace-aliases :as sut]]
-            [refactor-nrepl.util :as rutil]))
+            [refactor-nrepl.core :as core]
+            [refactor-nrepl.ns.namespace-aliases :as sut]
+            [refactor-nrepl.util :as util]))
 
 (t/deftest finds-the-aliases-in-this-ns
   (let [aliases (:clj (sut/namespace-aliases))]
@@ -33,10 +32,9 @@
 
 (t/deftest sorts-by-frequencies
   (let [aliases (:clj (sut/namespace-aliases))
-        _ (util/ns-form-from-string "(ns foo)")
-        utils (get (rutil/filter-map #(= (first %) 'util) aliases) 'util)]
-    (t/is (= (first utils) 'refactor-nrepl.util))
-    (t/is (some #(= % 'refactor-nrepl.ns.helpers) utils))))
+        _ (core/ns-form-from-string "(ns foo)")
+        utils (get (util/filter-map #(= (first %) 'util) aliases) 'util)]
+    (t/is (= (first utils) 'refactor-nrepl.util))))
 
 (t/deftest libspecs-are-cached
   (sut/namespace-aliases)

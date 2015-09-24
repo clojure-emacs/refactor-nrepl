@@ -3,7 +3,7 @@
   (:require [cider.nrepl.middleware.info :refer [info-clj]]
             [cider.nrepl.middleware.util.cljs :as cljs]
             [cljs-tooling.util.analysis :as cljs-ana]
-            [refactor-nrepl.ns.helpers :refer [prefix suffix]]
+            [refactor-nrepl.core :refer [prefix suffix]]
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [sym]

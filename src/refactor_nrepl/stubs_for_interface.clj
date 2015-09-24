@@ -2,12 +2,12 @@
   (:require [clojure
              [reflect :as reflect]
              [string :as str]]
-            [refactor-nrepl.ns.helpers :as ns-helpers]))
+            [refactor-nrepl.core :as core]))
 
 (defn- format-type-hint
   [t]
-  (let [type-hint (if (= (ns-helpers/prefix t) "java.lang")
-                    (str "^" (ns-helpers/suffix t))
+  (let [type-hint (if (= (core/prefix t) "java.lang")
+                    (str "^" (core/suffix t))
                     (str "^" t))]
     ;; varargs
     (if (.endsWith type-hint "<>")
@@ -34,8 +34,8 @@
 (defn- declared-by?
   "Does THING declare F or is it inherited?"
   [thing f]
-  (= (ns-helpers/suffix thing)
-     (ns-helpers/suffix (:declaring-class f))))
+  (= (core/suffix thing)
+     (core/suffix (:declaring-class f))))
 
 (defn- prune-reflect-result
   [reflect-result thing]

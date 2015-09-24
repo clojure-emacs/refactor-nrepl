@@ -1,7 +1,7 @@
 (ns refactor-nrepl.ns.namespace-aliases
   (:require [refactor-nrepl.ns
-             [helpers :as ns-helpers]
              [ns-parser :as ns-parser]]
+            [refactor-nrepl.core :as core]
             [refactor-nrepl.util :as util]))
 
 ;; The structure here is {path {lang [timestamp value]}}

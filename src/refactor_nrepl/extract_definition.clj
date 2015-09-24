@@ -3,7 +3,7 @@
             [refactor-nrepl.find.find-symbol
              :refer
              [create-result-alist find-symbol]]
-            [refactor-nrepl.ns.helpers :refer [suffix]]
+            [refactor-nrepl.core :refer [suffix]]
             [refactor-nrepl.util :as util]
             [refactor-nrepl.util :refer [get-enclosing-sexp get-next-sexp]]
             [rewrite-clj.zip :as zip])
