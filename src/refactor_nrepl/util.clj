@@ -1,13 +1,11 @@
 (ns refactor-nrepl.util
   (:require [clojure.java.classpath :as cp]
-            [clojure
-             [set :as set]
-             [string :as str]
-             [walk :as walk]]
+            [clojure.java.io :as io]
             [clojure.tools.analyzer.ast :refer [nodes]]
-            [clojure.tools.namespace.find :as find]
             [clojure.tools.namespace
+             [find :as find]
              [parse :refer [read-ns-decl]]]
+            [clojure.walk :as walk]
             [me.raynes.fs :as fs]
             [rewrite-clj.zip :as zip])
   (:import [java.io File PushbackReader]
@@ -49,21 +47,35 @@
   (filter pred (file-seq dir)))
 
 (defn cljc-file?
-  [^File f]
-  (.endsWith (.getPath f) ".cljc"))
+  [path-or-file]
+  (.endsWith (.getPath (io/file path-or-file)) ".cljc"))
 
 (defn cljs-file?
-  [^File f]
-  (.endsWith (.getPath f) ".cljs"))
+  [path-or-file]
+  (.endsWith (.getPath (io/file path-or-file)) ".cljs"))
 
 (defn clj-file?
-  [^File f]
-  (.endsWith (.getPath f) ".clj"))
+  [path-or-file]
+  (.endsWith (.getPath (io/file path-or-file)) ".clj"))
 
 (defn source-file?
   "True for clj, cljs or cljc files."
-  [^File f]
-  ((some-fn cljc-file? cljs-file? clj-file?) f))
+  [path-or-file]
+  ((some-fn cljc-file? cljs-file? clj-file?) (io/file path-or-file)))
+
+
+(defn file->dialect
+  "Return the clojure dialect used in the file f.
+
+  The dialect is either :clj, :cljs or :cljc."
+  [path-or-file]
+  (let [f (io/file path-or-file)]
+    (cond
+      (clj-file? f) :clj
+      (cljs-file? f) :cljs
+      (cljc-file? f) :cljc
+      :else (throw (ex-info "Path isn't pointing to file in a clj dialect!"
+                            {:path path-or-file})))))
 
 (defn filter-project-files
   "Return the files in the project satisfying (pred ^File file)."
@@ -216,3 +228,11 @@
      ~@body
      (catch clojure.lang.ExceptionInfo e#
        (throw (apply ex-info-assoc e# ~kvs)))))
+
+(defn conj-some
+  "Like conj but nil values are discared from xs."
+  [coll & xs]
+  (let [xs (remove nil? xs)]
+    (if (seq xs)
+      (apply conj coll xs)
+      coll)))

@@ -4,6 +4,8 @@
 
 ### New features
 
+* Add cljc support to `clean-ns`.
+* Add cljs support to `clean-ns`.
 * `rename-file-or-dir` now knows how to move cljs files.
 * The `artifact-version` list is now sorted.
 * Add `namespace-aliases` which provides a mapping of the namespace aliases that are in use in the project.

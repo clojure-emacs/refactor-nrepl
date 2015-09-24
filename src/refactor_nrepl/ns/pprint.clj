@@ -2,7 +2,8 @@
   (:require [clojure
              [pprint :refer [pprint]]
              [string :as str]]
-            [refactor-nrepl.ns.helpers :as helpers :refer [prefix-form?]]))
+            [refactor-nrepl.ns.helpers :as helpers :refer [prefix-form?]]
+            [rewrite-clj.zip :as zip]))
 
 (defn- libspec-vectors-last [libspecs]
   (vec (concat (remove sequential? libspecs)
