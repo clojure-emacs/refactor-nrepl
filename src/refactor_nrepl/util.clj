@@ -29,7 +29,7 @@
   []
   (->> (cp/classpath)
        (filter fs/directory?)
-       (remove #(-> % str (.endsWith "target/srcdeps")))))
+       (remove #(-> % str normalize-to-unix-path (.endsWith "target/srcdeps")))))
 
 (defn find-clojure-sources-in-project
   "Return all clojure files in the project that are on the classpath."
