@@ -70,16 +70,16 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
 (defn read-ns-form
   "Read the ns form found at PATH.
 
-  Features is either :clj or :cljs."
+  Dialect is either :clj or :cljs."
   ([path]
    (with-open [file-reader (FileReader. path)]
      (if-let [ns-form (read-ns-decl (PushbackReader. file-reader))]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path))))))
-  ([features path]
+  ([dialect path]
    (with-open [file-reader (FileReader. path)]
      (if-let [ns-form (read-ns-decl (PushbackReader. file-reader)
-                                    {:read-cond :allow :features #{features}})]
+                                    {:read-cond :allow :features #{dialect}})]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path)))))))
 
@@ -96,12 +96,21 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
                        (when-not no-error
                          (throw e))))))
 
-(defn file-content-sans-ns [file-content]
-  ;; NOTE: It's tempting to trim this result but
-  ;; find-macros relies on this not being trimmed
-  (let [rdr (PushbackReader. (StringReader. file-content))]
-    (read rdr)
-    (slurp rdr)))
+(defn file-content-sans-ns
+  "Read the content of file after the ns.
+
+  Any whitespace in the file is preserved, including the conventional
+  blank line after the ns form, before the rest of the file content.
+
+  The default value of dialect is :clj."
+  ([file-content] (file-content-sans-ns file-content :clj))
+  ([file-content dialect]
+   ;; NOTE: It's tempting to trim this result but
+   ;; find-macros relies on this not being trimmed
+   (let [rdr-opts {:read-cond :allow :features #{dialect}}
+         rdr (PushbackReader. (StringReader. file-content))]
+     (read rdr-opts rdr)
+     (slurp rdr))))
 
 (defn ns-form-from-string
   ([file-content]
@@ -109,11 +118,12 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
      (read-ns-decl (PushbackReader. (StringReader. file-content)))
      (catch Exception e
        (throw (IllegalArgumentException. "Malformed ns form!")))))
-  ([opts file-content]
-   (try
-     (read-ns-decl (PushbackReader. (StringReader. file-content)) opts)
-     (catch Exception e
-       (throw (IllegalArgumentException. "Malformed ns form!"))))))
+  ([dialect file-content]
+   (let [rdr-opts {:read-cond :allow :features #{dialect}}]
+     (try
+       (read-ns-decl (PushbackReader. (StringReader. file-content)) rdr-opts)
+       (catch Exception e
+         (throw (IllegalArgumentException. "Malformed ns form!")))))))
 
 (defn ^String fully-qualify
   "Create a fully qualified name from name and ns."

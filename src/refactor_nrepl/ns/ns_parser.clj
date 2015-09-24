@@ -11,7 +11,8 @@
    ;; rest are cljs specific
    :refer-macros [referred macros here]
    :require-macros true}"
-  (:require [clojure.set :as set]
+  (:require [clojure.java.io :as io]
+            [clojure.set :as set]
             [refactor-nrepl.ns.helpers :as helpers]
             [refactor-nrepl.util :as util])
   (:import java.io.File))
@@ -99,6 +100,28 @@
                (map libspec-vector->map)
                (map #(set/rename-keys % {:only :refer}))))))
 
+(defn- parse-clj-or-cljs-ns
+  ([path] (parse-clj-or-cljs-ns path nil))
+  ([path dialect]
+   (let [dialect (or dialect (util/file->dialect path))
+         ns-form (helpers/read-ns-form dialect path)]
+     {dialect (merge {:require (get-libspecs ns-form)
+                      :import (get-imports ns-form)}
+                     (when (= dialect :cljs)
+                       {:require-macros (get-required-macros ns-form)}))})))
+
+(defn- parse-cljc-ns [path]
+  (merge (parse-clj-or-cljs-ns path :clj)
+         (parse-clj-or-cljs-ns path :cljs)))
+
+(defn parse-ns [path-or-file]
+  (assoc
+   (if (util/cljc-file? (io/file path-or-file))
+     (parse-cljc-ns path-or-file)
+     (parse-clj-or-cljs-ns path-or-file))
+   :ns (second (helpers/read-ns-form path-or-file))
+   :source-dialect (util/file->dialect path-or-file)))
+
 (defn get-libspecs-from-file
   "Return all the libspecs in a file.
 
@@ -108,12 +131,12 @@
   Note that no post-processing is done so there might be duplicates or
   libspecs which could have been combined or eliminated as unused.
 
-  Features is either :clj or :cljs, the default is :clj."
+  Dialect is either :clj or :cljs, the default is :clj."
   ([^File f]
    (get-libspecs-from-file :clj f))
-  ([features ^File f]
+  ([dialect ^File f]
    (some->> f
             .getAbsolutePath
-            (helpers/read-ns-form features)
+            (helpers/read-ns-form dialect)
             ((juxt get-libspecs get-required-macros))
             (mapcat identity))))

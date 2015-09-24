@@ -3,9 +3,7 @@
             [refactor-nrepl
              [config :as config]
              [util :as util]]
-            [refactor-nrepl.ns.helpers
-             :refer
-             [index-of-component prefix prefix-form? suffix]]))
+            [refactor-nrepl.ns.helpers :refer [index-of-component prefix prefix-form? suffix]]))
 
 (defn- assert-single-alias
   [libspecs alias]
@@ -247,18 +245,47 @@
       (drop-index ns-form idx))))
 
 (defn- build-require-macros-form [libspecs]
-  (let [require-form (build-require-form libspecs)]
-    (when require-form
-      (cons :require-macros (rest require-form)))))
+  (when-let [require-form (build-require-form libspecs)]
+    (cons :require-macros (rest require-form))))
+
+(defn- drop-dependency-clauses
+  "Drop every form from the ns-form which isn't related to bringing
+  symbols into the namespace."
+  [ns-form]
+  (remove (fn [component]
+            (#{:require :require-macros :use :use-macros :import}
+             (and (sequential? component) (first component))))
+          ns-form))
+
+(defn build-clj-or-cljs-dep-forms [deps dialect]
+  (let [deps (dialect deps)
+        forms (remove nil?
+                      (list
+                       (build-require-form (:require deps))
+                       (when (= dialect :cljs)
+                         (build-require-macros-form (:require-macros deps)))
+                       (build-import-form (:import deps))))]
+    (when (seq forms)
+      forms)))
+
+(defn build-cljc-dep-forms [deps]
+  (let [rdr-cond (symbol "#?@")
+        clj-forms (build-clj-or-cljs-dep-forms deps :clj)
+        cljs-forms (build-clj-or-cljs-dep-forms deps :cljs)]
+    (if (and clj-forms clj-forms)
+      (list rdr-cond `(:clj ~(vec clj-forms) :cljs ~(vec cljs-forms)))
+      (or clj-forms cljs-forms))))
+
+(defn build-dep-forms
+  [{:keys [source-dialect] :as deps}]
+  (if (= source-dialect :cljc)
+    (build-cljc-dep-forms deps)
+    (build-clj-or-cljs-dep-forms deps source-dialect)))
 
 (defn rebuild-ns-form
   [deps old-ns-form]
-  (let [new-require-form (build-require-form (:require deps))
-        new-import-form (build-import-form (:import deps))
-        new-require-macros-form (build-require-macros-form (:require-macros deps))]
-    (-> old-ns-form
-        (update-clause new-require-form :require)
-        (update-clause new-require-macros-form :require-macros)
-        (update-clause new-import-form :import)
-        (remove-clause :use)
-        (remove-clause :use-macros))))
+  (-> old-ns-form
+      drop-dependency-clauses
+      reverse
+      (into (build-dep-forms deps))
+      reverse))

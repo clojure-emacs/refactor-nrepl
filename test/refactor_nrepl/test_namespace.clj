@@ -1,11 +1,12 @@
 (ns refactor-nrepl.test-namespace
-  (:require [clojure.test :refer :all]
+  (:require [clojure.string :as str]
+            [clojure.test :refer :all]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
              [helpers :refer [get-ns-component read-ns-form]]]
+            [refactor-nrepl.ns.helpers :as helpers]
             [refactor-nrepl.ns.pprint :refer [pprint-ns]]
-            [refactor-nrepl.util :as util]
-            [clojure.string :as str])
+            [refactor-nrepl.util :as util])
   (:import java.io.File))
 
 (defn- absolute-path [^String path]
@@ -27,6 +28,10 @@
 (def ns-referencing-macro (absolute-path "test/resources/ns_referencing_macro.clj"))
 (def cljs-ns (clean-msg "test/resources/cljsns.cljs"))
 (def cljs-ns-cleaned (read-ns-form (absolute-path "test/resources/cljsns_cleaned.cljs")))
+
+(def cljc-ns (clean-msg "test/resources/cljcns.cljc"))
+(def cljc-ns-cleaned-clj (read-ns-form (absolute-path "test/resources/cljcns_cleaned.cljc")))
+(def cljc-ns-cleaned-cljs (read-ns-form :cljs (absolute-path "test/resources/cljcns_cleaned.cljc")))
 
 (deftest combines-requires
   (let [requires (get-ns-component (clean-ns ns2) :require)
@@ -148,8 +153,14 @@
     (is (nil? new-ns))))
 
 (deftest handles-clojurescript-files
-  (let [new-ns (rest (clean-ns cljs-ns))]
-    (is (= (rest cljs-ns-cleaned) new-ns))))
+  (let [new-ns (clean-ns cljs-ns)]
+    (is (= cljs-ns-cleaned new-ns))))
+
+(deftest handles-cljc-files
+  (let [new-clj-ns (helpers/ns-form-from-string (str (clean-ns cljc-ns)))
+        new-cljs-ns (helpers/ns-form-from-string :cljs (str (clean-ns cljc-ns)))]
+    (is (= cljc-ns-cleaned-clj new-clj-ns))
+    (is (= cljc-ns-cleaned-cljs new-cljs-ns))))
 
 ;; Order of stuff in maps aren't stable across versions which messes
 ;; with pretty-printing

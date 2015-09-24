@@ -92,10 +92,6 @@
    ((set (map static-method-or-field-access->Classname symbols-in-file))
     (suffix c))))
 
-(defn- remove-unused-imports
-  [imports symbols-in-file]
-  (filter (partial class-in-use? symbols-in-file) imports))
-
 (defn- get-referred-symbols
   [libspec]
   (when-not (or (symbol? libspec)
@@ -118,19 +114,22 @@
     sym))
 
 (defn- get-symbols-used-in-file
-  [path current-ns libspecs]
+  [path current-ns libspecs dialect]
   (util/with-additional-ex-data [:file path]
     (binding [*ns* (or (find-ns (symbol current-ns)) *ns*)]
-      (let [rdr (-> path slurp file-content-sans-ns readers/indexing-push-back-reader)
+      (let [rdr (-> path slurp file-content-sans-ns
+                    readers/indexing-push-back-reader)
+            dialect (or dialect (util/file->dialect path))
+            rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
             syms (atom #{})
             collect-symbol (fn [form]
                              (when (symbol? form)
                                (swap! syms conj (ctor-call->str form)))
                              form)]
-        (loop [form (reader/read rdr nil :eof)]
+        (loop [form (reader/read rdr-opts rdr)]
           (when (not= form :eof)
             (walk/prewalk collect-symbol form)
-            (recur (reader/read rdr nil :eof))))
+            (recur (reader/read rdr-opts rdr))))
         (set (map (partial fix-ns-of-backquoted-symbols libspecs) @syms))))))
 
 (defn- remove-unused-requires [symbols-in-file current-ns libspecs]
@@ -140,14 +139,15 @@
 (defn- get-classes-used-in-typehints [path]
   (util/with-additional-ex-data [:file path]
     (let [rdr (-> path slurp file-content-sans-ns readers/indexing-push-back-reader)
+          rdr-opts {:read-cond :allow :features #{:clj} :eof :eof}
           types (atom [])
           conj-type (fn [form]
                       (when-let [t (:tag (meta form))] (swap! types conj (str t)))
                       form)]
-      (loop [form (reader/read rdr nil :eof)]
+      (loop [form (reader/read rdr-opts rdr)]
         (when (not= form :eof)
           (walk/prewalk conj-type form)
-          (recur (reader/read rdr nil :eof))))
+          (recur (reader/read rdr-opts rdr))))
       (set @types))))
 
 (defn- prune-libspecs
@@ -157,19 +157,40 @@
        (filter (complement nil?))))
 
 (defn- prune-imports
-  [ns-form symbols-in-file]
-  (-> ns-form
-      ns-parser/get-imports
-      (remove-unused-imports symbols-in-file)))
+  [imports symbols-in-file]
+  (filter (partial class-in-use? symbols-in-file) imports))
 
-(defn extract-dependencies [ns-form path]
-  (let [required-libspecs (ns-parser/get-libspecs ns-form)
-        required-macro-libspecs (ns-parser/get-required-macros ns-form)
-        current-ns (second ns-form)
-        symbols-in-file (into (get-symbols-used-in-file path current-ns
-                                                        required-libspecs)
-                              (get-classes-used-in-typehints path))]
-    {:require (prune-libspecs required-libspecs symbols-in-file current-ns)
-     :require-macros (prune-libspecs required-macro-libspecs symbols-in-file
-                                     current-ns)
-     :import (prune-imports ns-form symbols-in-file)}))
+(defn extract-clj-or-cljs-dependencies
+  ([path]
+   (extract-clj-or-cljs-dependencies path nil))
+  ([path dialect]
+   (let [parsed-ns (ns-parser/parse-ns path)
+         dialect (or dialect (util/file->dialect path))
+         {current-ns :ns} parsed-ns
+         required-libspecs (some-> parsed-ns dialect :require)
+         required-macro-libspecs (some-> parsed-ns :cljs :require-macros)
+         symbols-in-file (into (get-classes-used-in-typehints path)
+                               (get-symbols-used-in-file path current-ns
+                                                         (into required-libspecs
+                                                               required-macro-libspecs)
+                                                         dialect))]
+     {dialect (merge {:require
+                      (prune-libspecs required-libspecs  symbols-in-file current-ns)
+                      :import (prune-imports (some-> parsed-ns dialect :import)
+                                             symbols-in-file)}
+                     (when (= dialect :cljs)
+                       {:require-macros
+                        (prune-libspecs required-macro-libspecs symbols-in-file
+                                        current-ns)}))})))
+
+(defn- extract-cljc-dependencies [path]
+  (merge
+   (extract-clj-or-cljs-dependencies path :clj)
+   (extract-clj-or-cljs-dependencies path :cljs)))
+
+(defn extract-dependencies [path]
+  (let [dialect (util/file->dialect path)]
+    (merge (if (= dialect :cljc)
+             (extract-cljc-dependencies path)
+             (extract-clj-or-cljs-dependencies path))
+           {:source-dialect dialect})))

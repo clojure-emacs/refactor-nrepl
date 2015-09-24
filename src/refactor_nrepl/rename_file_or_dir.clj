@@ -79,16 +79,25 @@
         new-prefix (str/replace (str new-ns) "-" "_")]
     (map (partial replace-package-prefix old-prefix new-prefix) classes)))
 
+(defn- update-references-in-deps
+  [parsed-ns old-ns new-ns]
+  (let [dialect (:source-dialect parsed-ns)
+        libspecs (-> parsed-ns dialect :require)
+        require-macros (-> parsed-ns :cljs :require-macros)
+        classes (->  parsed-ns dialect :import)]
+    (merge parsed-ns
+           {dialect
+            (merge {:require (update-libspecs libspecs old-ns new-ns)
+                    :import (update-class-references classes old-ns new-ns)}
+                   (when (= dialect :cljs)
+                     {:require-macros (update-libspecs require-macros old-ns new-ns)}))})))
+
 (defn- create-new-ns-form
   "Reads file and returns an updated ns."
   [file old-ns new-ns]
   (let [ns-form (read-ns-form file)
-        libspecs (ns-parser/get-libspecs ns-form)
-        require-macros (ns-parser/get-required-macros ns-form)
-        classes (ns-parser/get-imports ns-form)
-        deps {:require (update-libspecs libspecs old-ns new-ns)
-              :require-macros (update-libspecs require-macros old-ns new-ns)
-              :import (update-class-references classes old-ns new-ns)}]
+        parsed-ns (ns-parser/parse-ns file)
+        deps (update-references-in-deps parsed-ns old-ns new-ns)]
     (pprint-ns (rebuild-ns-form deps ns-form) (.getAbsolutePath file))))
 
 (defn- update-file-content-sans-ns
