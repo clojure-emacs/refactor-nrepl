@@ -99,7 +99,7 @@
                              "OK"))))))
 
 (defn warm-ast-cache []
-  (doseq [f (util/find-clojure-sources-in-project)]
+  (doseq [f (util/filter-project-files util/clj-file?)]
     (try
       (ns-ast (slurp f))
       (catch Throwable th))) ;noop, ast-status will be reported separately

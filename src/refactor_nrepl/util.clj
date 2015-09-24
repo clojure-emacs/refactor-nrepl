@@ -31,11 +31,6 @@
        (filter fs/directory?)
        (remove #(-> % str normalize-to-unix-path (.endsWith "target/srcdeps")))))
 
-(defn find-clojure-sources-in-project
-  "Return all clojure files in the project that are on the classpath."
-  []
-  (mapcat find/find-sources-in-dir (dirs-on-classpath)))
-
 (defn find-in-dir
   "Searches recursively under dir for files matching (pred ^File file). "
   [pred ^File dir]
@@ -75,7 +70,7 @@
 (defn filter-project-files
   "Return the files in the project satisfying (pred ^File file)."
   [pred]
-  (mapcat (partial find-in-dir pred) (dirs-on-classpath)))
+  (-> find-in-dir (partial pred) (mapcat (dirs-on-classpath)) distinct))
 
 (defn throw-unless-clj-file [file-path]
   (when-not (re-matches #".+\.clj$" file-path)
