@@ -150,15 +150,6 @@
                               :line line
                               :column column}))))))
 
-(defn re-pos
-  "Map of regexp matches and their positions keyed by positions."
-  [re s]
-  (loop [m (re-matcher re s)
-         res (sorted-map)]
-    (if (.find m)
-      (recur m (assoc res (.start m) (.group m)))
-      res)))
-
 (defn filter-map
   "Return a new map where (pred [k v]) is true for every key-value pair."
   [pred m]

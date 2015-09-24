@@ -10,6 +10,8 @@
              [util :as util]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]))
 
+(def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
+
 (defn- node->var
   "Returns a fully qualified symbol for vars other those from clojure.core, for
   which the non-qualified name is returned."
@@ -76,8 +78,6 @@
               #(fns-invoked? (into #{} (str/split fn-names #","))
                              (alias-info asts)
                              %)))
-
-(def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
 
 (defn- contains-const?
   [var-name alias-info node]
@@ -159,12 +159,21 @@
        (= #{:or :keys} (set/intersection #{:or :keys} (set (keys level2-form))))
        (some #{var-name} (map str (keys (:or level2-form))))))
 
+(defn- re-pos
+  "Map of regexp matches and their positions keyed by positions."
+  [re s]
+  (loop [m (re-matcher re s)
+         res (sorted-map)]
+    (if (.find m)
+      (recur m (assoc res (.start m) (.group m)))
+      res)))
+
 (defn- occurrence-for-optmap-default
   [var-name [{:keys [line-beg col-beg] :as orig-occurrence} [_ _ level2-string _]]]
-  (let [var-positions (util/re-pos (re-pattern (format "\\W%s\\W" var-name)) level2-string)
+  (let [var-positions (re-pos (re-pattern (format "\\W%s\\W" var-name)) level2-string)
         var-default-pos (first (second var-positions))
         newline-cnt (reduce (fn [cnt char] (if (= char \newline) (inc cnt) cnt)) 0 (.substring level2-string 0 var-default-pos))
-        prev-newline-position (->> (concat (keys (util/re-pos #"\n" level2-string))
+        prev-newline-position (->> (concat (keys (re-pos #"\n" level2-string))
                                            (keys var-positions))
                                    sort
                                    (take-while (partial not= var-default-pos))
