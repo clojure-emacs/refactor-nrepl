@@ -1,4 +1,4 @@
-(ns refactor-nrepl.test-namespace
+(ns refactor-nrepl.ns.clean-ns-test
   (:require [clojure.string :as str]
             [clojure.test :refer :all]
             [refactor-nrepl.ns
