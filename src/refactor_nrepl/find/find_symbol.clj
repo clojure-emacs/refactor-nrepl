@@ -4,8 +4,8 @@
              [string :as str]]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.find :as find]
+            [refactor-nrepl.analyzer :as ana]
             [refactor-nrepl
-             [analyzer :refer [ns-ast]]
              [core :as core]
              [util :as util]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]))
@@ -116,7 +116,7 @@
 
 (defn- find-symbol-in-file [fully-qualified-name ignore-errors file]
   (let [file-content (slurp file)
-        locs (try (->> (ns-ast file-content)
+        locs (try (->> (ana/ns-ast file-content)
                        (find-symbol-in-ast fully-qualified-name)
                        (filter :line-beg))
                   (catch Exception e
@@ -165,13 +165,13 @@
         var-default-pos (first (second var-positions))
         newline-cnt (reduce (fn [cnt char] (if (= char \newline) (inc cnt) cnt)) 0 (.substring level2-string 0 var-default-pos))
         prev-newline-position (->> (concat (keys (util/re-pos #"\n" level2-string))
-                                      (keys var-positions))
+                                           (keys var-positions))
                                    sort
                                    (take-while (partial not= var-default-pos))
                                    last)
         new-col (if (= 0 newline-cnt)
-                    (- var-default-pos (ffirst var-positions))
-                    (inc (- var-default-pos prev-newline-position)))
+                  (- var-default-pos (ffirst var-positions))
+                  (inc (- var-default-pos prev-newline-position)))
         new-occurrence (-> (update-in orig-occurrence [:line-beg] + newline-cnt)
                            (update-in [:line-end] + newline-cnt))]
     (if (= 0 newline-cnt)
@@ -193,15 +193,15 @@
          (number? column)
          (not-empty file)]}
   (let [file-content (slurp file)
-        ast (ns-ast file-content)]
-    (when-let [form-index (util/top-level-form-index line column ast)]
+        ast (ana/ns-ast file-content)]
+    (when-let [form-index (ana/top-level-form-index line column ast)]
       (let [top-level-form-ast (nth ast form-index)
             local-var-name (->> top-level-form-ast
                                 nodes
                                 (filter #(and (#{:local :binding} (:op %))
                                               (= var-name (-> % :form str))
                                               (:local %)))
-                                (filter (partial util/node-at-loc? line column))
+                                (filter (partial ana/node-at-loc? line column))
                                 first
                                 :name)
             local-occurrences
@@ -209,8 +209,8 @@
                          {:name var-name
                           :file (.getCanonicalPath (java.io.File. file))
                           :match (match file-content
-                                        (:line-beg %)
-                                        (:line-end %))})
+                                   (:line-beg %)
+                                   (:line-end %))})
                  (find-nodes var-name
                              [top-level-form-ast]
                              #(and (#{:local :binding} (:op %))
@@ -249,7 +249,7 @@
         :match match))
 
 (defn find-debug-fns [{:keys [ns-string debug-fns]}]
-  (let [res  (-> ns-string ns-ast (find-invokes debug-fns))
+  (let [res  (-> ns-string ana/ns-ast (find-invokes debug-fns))
         res (map to-find-symbol-result res)]
     (when (seq res)
       res)))

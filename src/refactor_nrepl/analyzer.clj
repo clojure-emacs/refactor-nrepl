@@ -1,15 +1,20 @@
 (ns refactor-nrepl.analyzer
   (:refer-clojure :exclude [macroexpand-1])
   (:require [clojure.java.io :as io]
-            [clojure.tools.analyzer :as ana]
-            [clojure.tools.analyzer.jvm :as aj]
+            [clojure.tools
+             [analyzer :as ana]
+             [reader :as reader]]
+            [clojure.tools.analyzer
+             [ast :refer [nodes]]
+             [jvm :as aj]]
             [clojure.tools.analyzer.jvm.utils :as ajutils]
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [clojure.tools.reader :as reader]
+            [clojure.walk :as walk]
             [refactor-nrepl
-             [util :as util]
-             [config :as config]])
-  (:import java.io.PushbackReader))
+             [config :as config]
+             [util :as util]])
+  (:import java.io.PushbackReader
+           java.util.regex.Pattern))
 
 ;;; The structure here is {ns {content-hash ast}}
 (def ^:private ast-cache (atom {}))
@@ -99,3 +104,46 @@
       (ns-ast (slurp f))
       (catch Throwable th))) ;noop, ast-status will be reported separately
   (ast-stats))
+
+(defn node-at-loc? [loc-line loc-column node]
+  (let [{:keys [line end-line column end-column]} (:env node)]
+    ;; The node for ::an-ns-alias/foo, when it appeared as a toplevel form,
+    ;; had nil as position info
+    (and line end-line column end-column
+         (and (>= loc-line line)
+              (<= loc-line end-line)
+              (>= loc-column column)
+              (<= loc-column end-column)))))
+
+(defn- normalize-anon-fn-params
+  "replaces anon fn params in a read form"
+  [form]
+  (walk/postwalk
+   (fn [token] (if (re-matches #"p\d+__\d+#" (str token)) 'p token)) form))
+
+(defn- read-when-sexp [form]
+  (let [f-string (str form)]
+    (when (some #{\) \} \]} f-string)
+      (read-string f-string))))
+
+(defn node-for-sexp?
+  "Is NODE the ast node for SEXP?"
+  [sexp node]
+  (binding [*read-eval* false]
+    (let [sexp-sans-comments-and-meta (normalize-anon-fn-params (read-string sexp))
+          pattern (re-pattern (Pattern/quote (str sexp-sans-comments-and-meta)))]
+      (if-let [forms (:raw-forms node)]
+        (some #(re-find pattern %)
+              (map (comp str normalize-anon-fn-params read-when-sexp) forms))
+        (= sexp-sans-comments-and-meta (-> (:form node)
+                                           read-when-sexp
+                                           normalize-anon-fn-params))))))
+
+(defn top-level-form-index
+  [line column ns-ast]
+  (->> ns-ast
+       (map-indexed #(vector %1 (->> %2
+                                     nodes
+                                     (some (partial node-at-loc? line column)))))
+       (filter #(second %))
+       ffirst))

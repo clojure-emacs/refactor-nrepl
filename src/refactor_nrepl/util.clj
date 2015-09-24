@@ -4,13 +4,17 @@
             [clojure.tools.analyzer.ast :refer [nodes]]
             [clojure.tools.namespace
              [find :as find]
-             [parse :refer [read-ns-decl]]]
+             [parse :as parse]]
             [clojure.walk :as walk]
             [me.raynes.fs :as fs]
             [rewrite-clj.zip :as zip])
   (:import [java.io File PushbackReader]
            java.util.regex.Pattern))
 
+(defn ns-from-string
+  "Retrieve the symbol naming the ns from file-content."
+  [file-content]
+  (second (parse/read-ns-decl (PushbackReader. (java.io.StringReader. file-content)))))
 
 (defn normalize-to-unix-path
   "Replace use / as separator and lower-case."
@@ -77,53 +81,10 @@
   [pred]
   (mapcat (partial find-in-dir pred) (dirs-on-classpath*)))
 
-(defn node-at-loc? [loc-line loc-column node]
-  (let [{:keys [line end-line column end-column]} (:env node)]
-    ;; The node for ::an-ns-alias/foo, when it appeared as a toplevel form,
-    ;; had nil as position info
-    (and line end-line column end-column
-         (and (>= loc-line line)
-              (<= loc-line end-line)
-              (>= loc-column column)
-              (<= loc-column end-column)))))
-
-(defn top-level-form-index
-  [line column ns-ast]
-  (->> ns-ast
-       (map-indexed #(vector %1 (->> %2
-                                     nodes
-                                     (some (partial node-at-loc? line column)))))
-       (filter #(second %))
-       ffirst))
-
 (defn throw-unless-clj-file [file-path]
   (when-not (re-matches #".+\.clj$" file-path)
     (throw (IllegalArgumentException.
             "Only .clj files are supported!"))))
-
-(defn- normalize-anon-fn-params
-  "replaces anon fn params in a read form"
-  [form]
-  (walk/postwalk
-   (fn [token] (if (re-matches #"p\d+__\d+#" (str token)) 'p token)) form))
-
-(defn- read-first-form [form]
-  (let [f-string (str form)]
-    (when (some #{\) \} \]} f-string)
-      (read-string f-string))))
-
-(defn node-for-sexp?
-  "Is NODE the ast node for SEXP?"
-  [sexp node]
-  (binding [*read-eval* false]
-    (let [sexp-sans-comments-and-meta (normalize-anon-fn-params (read-string sexp))
-          pattern (re-pattern (Pattern/quote (str sexp-sans-comments-and-meta)))]
-      (if-let [forms (:raw-forms node)]
-        (some #(re-find pattern %)
-              (map (comp str normalize-anon-fn-params read-first-form) forms))
-        (= sexp-sans-comments-and-meta (-> (:form node)
-                                           read-first-form
-                                           normalize-anon-fn-params))))))
 
 (defn all-zlocs
   "Generate a seq of all zlocs in a depth-first manner"
