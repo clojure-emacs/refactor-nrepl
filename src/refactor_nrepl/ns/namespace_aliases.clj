@@ -48,9 +48,9 @@
   {:clj {util com.acme.util str clojure.string
    :cljs {gstr goog.str}}}"
   []
-  {:clj (->> (util/filter-project-files (some-fn util/clj-file? util/cljc-file?))
+  {:clj (->> (util/find-in-project (some-fn util/clj-file? util/cljc-file?))
              (map (partial get-libspec-from-file-with-caching :clj))
              aliases-by-frequencies)
-   :cljs (->> (util/filter-project-files (some-fn util/cljs-file? util/cljc-file?))
+   :cljs (->> (util/find-in-project (some-fn util/cljs-file? util/cljc-file?))
               (map (partial get-libspec-from-file-with-caching :cljs))
               aliases-by-frequencies)})

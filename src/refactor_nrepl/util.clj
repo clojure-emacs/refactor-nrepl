@@ -67,7 +67,7 @@
       :else (throw (ex-info "Path isn't pointing to file in a clj dialect!"
                             {:path path-or-file})))))
 
-(defn filter-project-files
+(defn find-in-project
   "Return the files in the project satisfying (pred ^File file)."
   [pred]
   (-> find-in-dir (partial pred) (mapcat (dirs-on-classpath)) distinct))

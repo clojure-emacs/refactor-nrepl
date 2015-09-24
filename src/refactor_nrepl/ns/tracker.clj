@@ -8,7 +8,7 @@
 (defn build-tracker
   "Build a tracker for the project."
   []
-  (file/add-files (tracker/tracker) (util/filter-project-files util/source-file?)))
+  (file/add-files (tracker/tracker) (util/find-in-project util/source-file?)))
 
 (defn get-dependents
   "Get the dependent files for ns from tracker."

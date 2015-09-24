@@ -99,7 +99,7 @@
                              "OK"))))))
 
 (defn warm-ast-cache []
-  (doseq [f (util/filter-project-files util/clj-file?)]
+  (doseq [f (util/find-in-project util/clj-file?)]
     (try
       (ns-ast (slurp f))
       (catch Throwable th))) ;noop, ast-status will be reported separately

@@ -79,7 +79,7 @@
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
   []
-  (->> (util/filter-project-files (some-fn util/cljc-file? util/clj-file?))
+  (->> (util/find-in-project (some-fn util/cljc-file? util/clj-file?))
        (mapcat get-macro-definitions-in-file-with-caching)))
 
 (defn- get-ns-aliases
