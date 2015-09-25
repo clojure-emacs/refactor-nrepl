@@ -99,9 +99,9 @@ This op finds occurrences of a single symbol.
 
 `ignore-errors` [optional] if set find symbol carries on even if there is broken namespace which we can not build AST for
 
-The return value is a stream of occurrences under the key `occurrence` which is an alist like this:
+The return value is a stream of occurrences under the key `occurrence` which is an list of maps like this:
 
-`(:line-beg 5 :line-end 5 :col-beg 19 :col-end 26 :name a-name :file \"/aboslute/path/to/file.clj\" :match (fn-name some args))`
+`{:line-beg 5 :line-end 5 :col-beg 19 :col-end 26 :name a-name :file \"/aboslute/path/to/file.clj\" :match (fn-name some args)}`
 
 When the final `occurrence` has been sent a final message is sent with `count`, indicating the total number of matches, and `status` `done`.
 

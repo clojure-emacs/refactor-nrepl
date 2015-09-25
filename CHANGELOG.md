@@ -18,6 +18,8 @@
 
 ### Changes
 
+* [#118](https://github.com/clojure-emacs/refactor-nrepl/issues/118)Improve the `find-symbol` reply.  It's now a map instead of a
+  vector.
 * Remove `find-debug-fns`.  None of us ever used this and there's some
   overlap with `find-usages`.
 * Rename `find-unbound` to `find-used-locals`.  This is what this op has been doing for the last several versions.

@@ -15,7 +15,7 @@
              [rename-file-or-dir :refer [rename-file-or-dir]]
              [stubs-for-interface :refer [stubs-for-interface]]]
             [refactor-nrepl.find
-             [find-symbol :refer [create-result-alist find-symbol]]
+             [find-symbol :refer [find-symbol]]
              [find-locals :refer [find-used-locals]]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
@@ -59,7 +59,7 @@
   (with-errors-being-passed-on transport msg
     (let [occurrences (find-symbol msg)]
       (doseq [occurrence occurrences
-              :let [response (serialize-response msg (apply create-result-alist occurrence))]]
+              :let [response (serialize-response msg occurrence)]]
         (transport/send transport
                         (response-for msg :occurrence response)))
       (transport/send transport (response-for msg :count (count occurrences)

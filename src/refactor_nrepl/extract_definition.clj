@@ -1,8 +1,6 @@
 (ns refactor-nrepl.extract-definition
   (:require [clojure.string :as str]
-            [refactor-nrepl.find.find-symbol
-             :refer
-             [create-result-alist find-symbol]]
+            [refactor-nrepl.find.find-symbol :refer [find-symbol]]
             [refactor-nrepl.core :refer [suffix]]
             [refactor-nrepl.s-expressions :as sexp]
             [refactor-nrepl.util :as util]
@@ -93,10 +91,7 @@
 (defn extract-definition
   "Returns the definition of SYMBOL to facilitate inlining."
   [msg]
-  (let [occurrences (some->> msg
-                             find-symbol
-                             (map #(apply create-result-alist %))
-                             (map occurrence-to-map))]
+  (let [occurrences (find-symbol msg )]
     (if-let [definition-occurrence (find-definition occurrences)]
       {:definition (merge {:definition (-extract-definition definition-occurrence)}
                           definition-occurrence)

@@ -224,21 +224,10 @@
 
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (core/throw-unless-clj-file file)
-  (map to-find-symbol-result
-       (or
-        ;; find-macro is first because find-global-symbol returns garb for macros
-        (find-macro (core/fully-qualify name ns))
-        (and (seq file) (not-empty (find-local-symbol file name line column)))
-        (find-global-symbol file ns name dir (and ignore-errors
-                                                  (or (not (coll? ignore-errors))
-                                                      (not-empty ignore-errors)))))))
-
-(defn create-result-alist
-  [line-beg line-end col-beg col-end name file match]
-  (list :line-beg line-beg
-        :line-end line-end
-        :col-beg col-beg
-        :col-end col-end
-        :name name
-        :file file
-        :match match))
+  (or
+   ;; find-macro is first because find-global-symbol returns garb for macros
+   (find-macro (core/fully-qualify name ns))
+   (and (seq file) (not-empty (find-local-symbol file name line column)))
+   (find-global-symbol file ns name dir (and ignore-errors
+                                             (or (not (coll? ignore-errors))
+                                                 (not-empty ignore-errors))))))

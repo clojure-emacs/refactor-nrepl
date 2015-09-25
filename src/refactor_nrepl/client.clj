@@ -56,10 +56,10 @@
         replacement (str esc red no-ns-sym esc reset)]
     (str/replace full-hit (re-pattern no-ns-sym) replacement)))
 
-(defn- prettify-found-symbol-result [[line _ _ _ sym path match]]
+(defn- prettify-found-symbol-result [{:keys [line-beg name file match]}]
   (->> match
-       (colorise-found sym)
-       (str esc yellow path esc reset "[" line "]" ": ")))
+       (colorise-found name)
+       (str esc yellow file esc reset "[" line-beg "]" ": ")))
 
 (defn- replace-in-line [name new-name occ-line-index col indexed-line]
   (let [line (val indexed-line)]
@@ -72,17 +72,17 @@
       line)))
 
 (defn- rename-symbol-occurrence!
-  [name new-name [line end-line col end-col sym path _]]
-  (let [occ-line-index (dec line)]
-    (->> path
+  [name new-name {:keys [line-beg col-beg file]}]
+  (let [occ-line-index (dec line-beg)]
+    (->> file
          slurp
          str/split-lines
          (interleave (range))
          (#(apply sorted-map %))
-         (map (partial replace-in-line name new-name occ-line-index col))
+         (map (partial replace-in-line name new-name occ-line-index col-beg))
          (str/join "\n")
          (#(str % "\n"))
-         (spit path))))
+         (spit file))))
 
 (defn connect
   "Connects to an nrepl server. The client won't be functional if the nrepl
@@ -115,7 +115,6 @@
          (map first)
          (remove nil?)
          (map edn/read-string)
-         (map #(remove keyword? %))
          (map action)
          doall)))
 
