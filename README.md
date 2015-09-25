@@ -188,7 +188,11 @@ This op can be [configured](#configuration).
 
 The goal of the op is to provide intelligent suggestions when the user wants to import or require the unresolvable symbol at point.
 
-The op requires `symbol` which represents a name to look up on the classpath.
+The op requires `symbol` which represents a name to look up on the
+classpath.  This symbol can be qualified, e.g. `walk/postwalk` or
+`Pattern/quote` will yield the correct result, even though the first
+is a qualified reference to a clojure var and the second a reference
+to a static java method.
 
 The return value `candidates` is an alist of `((candidate1 . type1)
 (candidate2 . type2) ...)` where type is in `#{:type :class :ns

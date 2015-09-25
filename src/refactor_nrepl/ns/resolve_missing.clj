@@ -11,7 +11,7 @@
           [(when-let [p (prefix sym)]
              (slamhound/candidates :import (symbol p) [] {}))
            (slamhound/candidates :import (symbol (suffix sym)) [] {})
-           (slamhound/candidates :refer sym [] {})]))
+           (slamhound/candidates :refer (symbol (suffix sym)) [] {})]))
 
 (defn- get-type [sym]
   (let [info (info-clj 'user sym)]
@@ -57,6 +57,7 @@
             (str "Invalid input to resolve missing: '" sym "'"))))
   (if-let [env (cljs/grab-cljs-env msg)]
     (some->> sym
+             suffix
              symbol
              (get (cljs-vars-to-namespaces env))
              pr-str)
