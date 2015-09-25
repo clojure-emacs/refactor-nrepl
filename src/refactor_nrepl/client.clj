@@ -158,37 +158,6 @@
                       :transport transport :ns ns :file file :name name
                       :dir dir :line line :column column))
 
-(defn remove-debug-invocations
-  "Removes debug function invocations. In reality it could remove any function
-  invocations.
-
-  Expected input:
-  - debug-fns see documenation on find (debug) function invocations for
-  expected format. defaults to \"println,pr,prn\"
-  - file to refactor, provide path as you would provide for slurp
-  - transport optional, however if you don't provide your own repl
-  transport the client will create and store its own. therefore it is
-  preferred that you create, store and manage your own transport by calling
-  the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport file debug-fns] :or {debug-fns "println,pr,prn"}}]
-  {:pre [file]}
-  (let [tr (or transport @transp (reset! transp (connect)))
-        ns-string (slurp file)
-        result (nrepl-message tr {:op :find-debug-fns
-                                  :ns-string ns-string
-                                  :debug-fns debug-fns})
-        invocations (-> result first :value)]
-    (when (seq invocations)
-      (->> ns-string
-           str/split-lines
-           (remove-invocations
-            (if (string? invocations)
-              (edn/read-string invocations) invocations))
-           (remove (partial = "$remove$"))
-           (str/join "\n")
-           (#(str % "\n"))
-           (spit file)))))
-
 (defn resolve-missing
   "Resolve a missing symbol to provide candidates for imports.
 
