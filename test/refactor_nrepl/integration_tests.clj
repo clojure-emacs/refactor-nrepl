@@ -186,35 +186,6 @@
       (is (= new-two (slurp (str tmp-dir "/src/com/example/two.clj")))
           "rename failed in com.example.two"))))
 
-(deftest test-remove-println
-  (with-test-project
-    (let [three-file (str tmp-dir "/src/com/example/three.clj")
-          transport (connect :port 7777)
-          new-three "(ns com.example.three)
-
-(defn fn-with-println [a]
-  (if a
-    (str a)
-    a))
-
-(defn fn-with-let [left]
-  (let [right 100]
-    (+ left right)
-    (let [right (+ left 10)]
-      (+ right left))))
-
-(defn other-fn-with-let [left]
-  (let [right 100]
-    (+ left right)
-    (let [right (+ left 10)]
-      (+ right left))))
-
-(defn thre [])
-"]
-      (remove-debug-invocations :transport transport :file three-file)
-
-      (is (= new-three (slurp three-file)) "remove println failed"))))
-
 (defrecord Foo [])
 (deftype Bar [])
 (definterface Baz)

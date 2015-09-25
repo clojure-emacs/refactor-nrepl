@@ -18,6 +18,8 @@
 
 ### Changes
 
+* Remove `find-debug-fns`.  None of us ever used this and there's some
+  overlap with `find-usages`.
 * Rename `find-unbound` to `find-used-locals`.  This is what this op has been doing for the last several versions.
 * Drop the `configure` op, and receive settings in each message.
 

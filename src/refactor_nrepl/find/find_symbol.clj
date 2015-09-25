@@ -24,12 +24,6 @@
         full-class (get alias-info class class)]
     (str/join "/" (remove nil? [full-class (:field node)]))))
 
-(defn- fns-invoked?
-  "Checks if `node` is a function-call present in `fn-set`."
-  [fn-set alias-info node]
-  (and (= :invoke (:op node))
-       (fn-set (node->var alias-info (:fn node)))))
-
 (defn- contains-var?
   "Checks if the var of `node` is present in the `var-set`."
   [vars-set alias-info node]
@@ -70,15 +64,6 @@
 
 (defn- alias-info [full-ast]
   (-> full-ast first :alias-info))
-
-(defn- find-invokes
-  "Finds fn invokes in the AST.
-  Returns a list of line, end-line, column, end-column and fn name tuples"
-  [asts fn-names]
-  (find-nodes asts
-              #(fns-invoked? (into #{} (str/split fn-names #","))
-                             (alias-info asts)
-                             %)))
 
 (defn- contains-const?
   [var-name alias-info node]
@@ -257,9 +242,3 @@
         :name name
         :file file
         :match match))
-
-(defn find-debug-fns [{:keys [ns-string debug-fns]}]
-  (let [res  (-> ns-string ana/ns-ast (find-invokes debug-fns))
-        res (map to-find-symbol-result res)]
-    (when (seq res)
-      res)))

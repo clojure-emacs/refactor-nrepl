@@ -61,41 +61,6 @@ Configuration settings are passed along with each msg, currently the recognized 
 
 Any configuration settings passed along with the message will replace the defaults above.
 
-### Find (debug) function invocations
-
-Searches for invocations of predefined list of functions.
-
-Expected input:
-- ns-string -- the body of the namespace to work with
-- refactor-fn -- value: "find-debug-fns"
-- debug-fns -- coma separated list of functions to find invocations of
-
-Returns tuples containing [line-number end-line-number column-number end-column-number fn-name].
-
-The functions to look for should be listed in a comma separated string, either fully qualified or just the function name. If the fully qualified name is provided the middleware will find the invocations of the function if it is required plainly or with an alias. For example:
-
-```clojure
-(:require [clojure.set]
-          [secret-santa.util :as u])
-```
-
-However, if only the function name is provided the middleware will find invocations of the function where it is referred. For Example
-
-```clojure
-(:require [clojure.set :refer [difference]]
-          [secret-santa.util :refer :all])
-```
-
-In case your client wants to find core clojure functions (for example `println`) list them only with the function name. A list of functions names to find: `"println,pr,prn,secret-santa.util2/foobar,print-let,print.foo/print-let"`.
-
-Example call from the repl using the clojure client:
-
-```clojure
-(require 'refactor-nrepl.client)
-(def tr (refactor-nrepl.client/connect))
-(refactor-nrepl.client/remove-debug-invocations :transport tr :file "src/secret_santa/core.clj")
-```
-
 ### Artifact lookup
 
 This middleware provides operations for obtaining information about artifacts from clojars, or mvn central.

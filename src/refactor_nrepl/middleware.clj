@@ -15,7 +15,7 @@
              [rename-file-or-dir :refer [rename-file-or-dir]]
              [stubs-for-interface :refer [stubs-for-interface]]]
             [refactor-nrepl.find
-             [find-symbol :refer [create-result-alist find-debug-fns find-symbol]]
+             [find-symbol :refer [create-result-alist find-symbol]]
              [find-locals :refer [find-used-locals]]]
             [refactor-nrepl.ns
              [clean-ns :refer [clean-ns]]
@@ -65,9 +65,6 @@
       (transport/send transport (response-for msg :count (count occurrences)
                                               :status :done)))))
 
-(defn- find-debug-fns-reply [{:keys [transport] :as msg}]
-  (reply transport msg :value (find-debug-fns msg) :status :done))
-
 (defn- artifact-list-reply [{:keys [transport] :as msg}]
   (reply transport msg :artifacts (artifact-list msg) :status :done))
 
@@ -113,7 +110,6 @@
    "artifact-versions" artifact-versions-reply
    "clean-ns" clean-ns-reply
    "extract-definition" extract-definition-reply
-   "find-debug-fns" find-debug-fns-reply
    "find-symbol" find-symbol-reply
    "find-used-locals" find-used-locals-reply
    "hotload-dependency" hotload-dependency-reply
