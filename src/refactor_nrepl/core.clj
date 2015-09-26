@@ -20,10 +20,15 @@
        (filter fs/directory?)
        (remove #(-> % str normalize-to-unix-path (.endsWith "target/srcdeps")))))
 
+(defn- hidden? [path-or-file]
+  (.isHidden (io/file path-or-file)))
+
 (defn find-in-dir
   "Searches recursively under dir for files matching (pred ^File file). "
   [pred ^File dir]
-  (filter pred (file-seq dir)))
+  (->> (file-seq dir)
+       (remove hidden?)
+       (filter pred)))
 
 (defn cljc-file?
   [path-or-file]
