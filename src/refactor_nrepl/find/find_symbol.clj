@@ -126,8 +126,7 @@
     (->> dir
          java.io.File.
          find/find-sources-in-dir
-         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors))
-         (map identity))))
+         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [line-beg col-beg]}]
