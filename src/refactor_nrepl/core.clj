@@ -22,8 +22,9 @@
 
 (defn find-in-dir
   "Searches recursively under dir for files matching (pred ^File file). "
-  [pred ^File dir]
-  (->> (file-seq dir)
+  [pred dir]
+  (->> (io/file dir)
+       file-seq
        (remove (memfn isHidden))
        (filter (memfn exists))
        (filter pred)))
@@ -44,7 +45,6 @@
   "True for clj, cljs or cljc files."
   [path-or-file]
   ((some-fn cljc-file? cljs-file? clj-file?) (io/file path-or-file)))
-
 
 (defn file->dialect
   "Return the clojure dialect used in the file f.

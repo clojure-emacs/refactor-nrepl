@@ -3,12 +3,10 @@
              [set :as set]
              [string :as str]]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
-            [clojure.tools.namespace.find :as find]
             [refactor-nrepl
              [analyzer :as ana]
              [core :as core]
-             [s-expressions :as sexp]
-             [util :as util]]
+             [s-expressions :as sexp]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
@@ -124,8 +122,7 @@
                                var-name
                                (str/join "/" [namespace var-name]))]
     (->> dir
-         java.io.File.
-         find/find-sources-in-dir
+         (core/find-in-dir (some-fn core/clj-file? core/cljc-file?))
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
 
 (defn- get&read-enclosing-sexps
