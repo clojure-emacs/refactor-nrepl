@@ -100,8 +100,10 @@
 (defn- find-symbol-ns [libspecs sym]
   (some->> libspecs
            (filter (fn [{:keys [refer refer-macros] :as libspec}]
-                     (or (some (partial = (symbol sym)) refer)
-                         (some (partial = (symbol sym)) refer-macros))))
+                     (or
+                      (and (sequential? refer)
+                           (some (partial = (symbol sym)) refer))
+                      (some (partial = (symbol sym)) refer-macros))))
            first
            :ns))
 
