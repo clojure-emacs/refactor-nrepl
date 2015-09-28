@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.namespace-aliases
+(ns refactor-nrepl.ns.libspecs
   (:require [refactor-nrepl.core :as core]
             [refactor-nrepl.ns.ns-parser :as ns-parser]))
 
@@ -52,3 +52,32 @@
    :cljs (->> (core/find-in-project (some-fn core/cljs-file? core/cljc-file?))
               (map (partial get-libspec-from-file-with-caching :cljs))
               aliases-by-frequencies)})
+
+(defn- unwrap-refer
+  [file {:keys [ns refer]}]
+  (when (coll? refer)
+    (map
+     #(hash-map (str file) {(str ns "/" %) %})
+     refer)))
+
+(defn- apply-unwrap-refer [[file libspec]]
+  (mapcat (partial unwrap-refer file) libspec))
+
+(defn- sym-by-file&fullname [files-libspecs]
+  (apply merge-with conj
+         (mapcat apply-unwrap-refer files-libspecs)))
+
+(defn referred-syms-by-file&fullname
+  "Return a map of filename to a map of sym fullname to sym
+   the sym itself
+
+   Example:
+   {:clj  {\"/home/someuser/projects/some.clj\" [\"example.com/foobar\" foobar]}
+    :cljs}"
+  []
+  {:clj (->> (core/find-in-project (some-fn core/clj-file? core/cljc-file?))
+             (map (juxt identity (partial get-libspec-from-file-with-caching :clj)))
+             sym-by-file&fullname)
+   :cljs (->> (core/find-in-project (some-fn core/cljs-file? core/cljc-file?))
+              (map (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
+              sym-by-file&fullname)})

@@ -4,32 +4,10 @@
             [clojure.tools.nrepl.server :as nrserver]
             [refactor-nrepl middleware
              [client :refer :all]
-             [plugin :as plugin]])
+             [plugin :as plugin]]
+            [clojure.string :as str])
   (:import java.io.File
            org.apache.commons.io.FileUtils))
-
-(defn- create-temp-dir
-  "Creates and returns a new temporary directory java.io.File."
-  [name]
-  (let [temp-file (File/createTempFile name nil)]
-    (.delete temp-file)
-    (.mkdirs temp-file)
-    temp-file))
-
-(defn create-test-project []
-  (let [temp-dir (create-temp-dir "refactor-nrepl-test")
-        orig-src (io/file "test/resources/testproject/src")]
-    (FileUtils/copyDirectoryToDirectory orig-src temp-dir)
-    temp-dir))
-
-(defmacro with-test-project
-  "Bind tmp-dir to a test directory and execute body."
-  [& body]
-  `(let [~'tmp-dir (create-test-project)]
-     (try
-       ~@body
-       (finally
-         (.delete ~'tmp-dir)))))
 
 (defn start-up-repl-server []
   (let [server
@@ -51,23 +29,30 @@
 
 (use-fixtures :once wrap-setup-once)
 
+(defmacro with-testproject-on-classpath
+  "redef refactor-nrepl.core/dirs-on-classpath to point to test/resources/testproject which is also made available as test-project-dir"
+  [& body]
+  `(with-redefs [refactor-nrepl.core/dirs-on-classpath (fn [] [(io/file "test/resources/testproject")])]
+     (let [~'test-project-dir "test/resources/testproject"]
+       ~@body)))
+
 (deftest test-find-two-foo
-  (with-test-project
+  (with-testproject-on-classpath
     (let [transport (connect :port 7777)
           response (find-usages :transport transport :ns 'com.example.two
-                                :file (str tmp-dir "/src/com/example/one.clj")
+                                :file (str test-project-dir "/src/com/example/one.clj")
                                 :line 6 :column 19
-                                :name "foo" :dir (str tmp-dir))
+                                :name "foo" :dir test-project-dir)
           result (remove keyword? response)]
 
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
       (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
-      (is (re-matches #"(?s).*\[2\].*" (first result)) "call of foo not found in ns com.example.one")
+      (is (some (partial re-matches #"(?s).*one.clj \[2\].*") result) "call of foo not found in ns com.example.one")
 
-      (is (re-matches #"(?s).*\[6\].*" (second result)) "call of foo not found in ns com.example.one")
+      (is (some (partial re-matches #"(?s).*one.clj \[6\].*") result) "call of foo not found in ns com.example.one")
 
-      (is (re-matches #"(?s).*\[3\].*" (last result)) "def of foo not found in ns com.example.two"))))
+      (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two"))))
 
 (defn ns-ast-throw-error-for-five [content]
   (if (.contains content "com.example.five")
@@ -75,76 +60,76 @@
     (#'refactor-nrepl.analyzer/cachable-ast content)))
 
 (deftest test-find-two-foo-errors-ignored
-  (with-test-project
+  (with-testproject-on-classpath
     (with-redefs [refactor-nrepl.analyzer/ns-ast ns-ast-throw-error-for-five]
       (let [transport (connect :port 7777)
             response (find-usages :transport transport :ns 'com.example.two
-                                  :file (str tmp-dir "/src/com/example/one.clj")
+                                  :file (str test-project-dir "/src/com/example/one.clj")
                                   :line 6 :column 19
-                                  :name "foo" :dir (str tmp-dir))
+                                  :name "foo" :dir test-project-dir)
             result (remove keyword? response)]
 
         (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
         (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
-        (is (re-matches #"(?s).*\[2\].*" (first result)) "call of foo not found in ns com.example.one")
+        (is (some (partial re-matches #"(?s).*one.clj \[2\].*") result) "call of foo not found in ns com.example.one")
 
-        (is (re-matches #"(?s).*\[6\].*" (second result)) "call of foo not found in ns com.example.one")
+        (is (some (partial re-matches #"(?s).*one.clj \[6\].*") result) "call of foo not found in ns com.example.one")
 
-        (is (re-matches #"(?s).*\[3\].*" (last result)) "def of foo not found in ns com.example.two")))))
+        (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two")))))
 
 (deftest test-shouldnt-find-str-in-assert
-  (with-test-project
+  (with-testproject-on-classpath
     (let [transport (connect :port 7777)
           response (find-usages :transport transport :ns 'clojure.core
-                                :file (str tmp-dir "/src/com/example/macros.clj")
+                                :file (str test-project-dir "/src/com/example/macros.clj")
                                 :line 8 :column 4
-                                :name "str" :dir (str tmp-dir))
+                                :name "str" :dir test-project-dir)
           result (remove keyword? response)]
       ;;(clojure.pprint/pprint result)
 
       (is (not-any? #(.contains % "(assert (> x 0)") result) "`assert` found when searching for `clojure.core/str`"))))
 
 (deftest test-shouldnt-find-expanded-fn-in-place-of-macro
-  (with-test-project
+  (with-testproject-on-classpath
     (let [transport (connect :port 7777)
           response (find-usages :transport transport :ns 'com.example.macros
-                                :file (str tmp-dir "/src/com/example/macros.clj")
+                                :file (str test-project-dir "/src/com/example/macros.clj")
                                 :line 7 :column 11
-                                :name "str-nicely" :dir (str tmp-dir))
+                                :name "str-nicely" :dir test-project-dir)
           result (remove keyword? response)]
       ;;(clojure.pprint/pprint result)
 
       (is (not-any? #(.contains % "(nicely x)") result) "`str-nicely` found at macro call site"))))
 
 (deftest test-find-fn-in-similarly-named-ns
-  (with-test-project
+  (with-testproject-on-classpath
     (let [transport (connect :port 7777)
           response (find-usages :transport transport :ns 'com.example.three
-                                :file (str tmp-dir "/src/com/example/four.clj")
+                                :file (str test-project-dir "/src/com/example/four.clj")
                                 :line 11 :column 3
-                                :name "thre" :dir (str tmp-dir))
+                                :name "thre" :dir test-project-dir)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
 (deftest test-find-fn-in-dashed-ns
-  (with-test-project
+  (with-testproject-on-classpath
     (let [transport (connect :port 7777)
           response (find-usages :transport transport :ns 'com.example.twenty-four
-                                :file (str tmp-dir "/src/com/example/four.clj")
+                                :file (str test-project-dir "/src/com/example/four.clj")
                                 :line 14 :column 4
-                                :name "stuff" :dir (str tmp-dir))
+                                :name "stuff" :dir test-project-dir)
           result (remove keyword? response)]
 
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
 (deftest test-find-dashed-fn
-  (with-test-project
+  (with-testproject-on-classpath
     (let [transport (connect :port 7777)
           response (find-usages :transport transport :ns 'com.example.twenty-four
-                                :file (str tmp-dir "/src/com/example/four.clj")
+                                :file (str test-project-dir "/src/com/example/four.clj")
                                 :line 16 :column 4
-                                :name "more-stuff" :dir (str tmp-dir))
+                                :name "more-stuff" :dir test-project-dir)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
@@ -181,48 +166,48 @@
     (is (= split-type :ns))))
 
 (deftest find-local-arg
-  (with-test-project
-    (let [three-file (str tmp-dir "/src/com/example/three.clj")
+  (with-testproject-on-classpath
+    (let [three-file (str test-project-dir "/src/com/example/three.clj")
           transport (connect :port 7777)
           response (find-usages :transport transport :name "a" :file three-file :line 3 :column 24)
           result (remove keyword? response)]
       (is (= 5 (count result)) (format "expected 5 results but got %d" (count result))))))
 
 (deftest find-local-let
-  (with-test-project
-    (let [three-file (str tmp-dir "/src/com/example/three.clj")
+  (with-testproject-on-classpath
+    (let [three-file (str test-project-dir "/src/com/example/three.clj")
           transport (connect :port 7777)
           response (find-usages :transport transport :name "right" :file three-file :line 12 :column 12)
           result (remove keyword? response)]
       (is (= 2 (count result)) (format "expected 2 results but got %d" (count result))))))
 
 (deftest find-local-in-optmap-default
-  (with-test-project
-    (let [five-file (str tmp-dir "/src/com/example/five.clj")
+  (with-testproject-on-classpath
+    (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)
           response (find-usages :transport transport :name "foo" :file five-file :line 46 :column 10)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
 (deftest find-local-in-optmap-default-linebreaks
-  (with-test-project
-    (let [five-file (str tmp-dir "/src/com/example/five.clj")
+  (with-testproject-on-classpath
+    (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)
           response (find-usages :transport transport :name "foo" :file five-file :line 49 :column 12)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
 (deftest find-local-in-optmap-default-in-let
-  (with-test-project
-    (let [five-file (str tmp-dir "/src/com/example/five.clj")
+  (with-testproject-on-classpath
+    (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)
           response (find-usages :transport transport :name "foo" :file five-file :line 59 :column 12)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
 (deftest test-find-used-locals
-  (with-test-project
-    (let [five-file (str tmp-dir "/src/com/example/five.clj")
+  (with-testproject-on-classpath
+    (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)]
       (is (= (find-unbound :transport transport :file five-file :line 12 :column 6)
              '(s)))
@@ -243,10 +228,11 @@
              '(x y z a b c))))))
 
 (deftest find-unbound-fails-on-cljs
-  (let [cljs-file "/tmp/src/com/example/file.cljs"
-        transport (connect :port 7777)]
-    (is (:error (find-unbound :transport transport :file cljs-file
-                              :line 12 :column 6)))))
+  (with-testproject-on-classpath
+    (let [cljs-file (str test-project-dir "/tmp/src/com/example/file.cljs")
+          transport (connect :port 7777)]
+      (is (:error (find-unbound :transport transport :file cljs-file
+                                :line 12 :column 6))))))
 
 (deftest test-version
   (is (= (str (plugin/version))

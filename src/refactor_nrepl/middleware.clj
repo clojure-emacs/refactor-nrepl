@@ -1,27 +1,23 @@
 (ns refactor-nrepl.middleware
-  (:require [cider.nrepl.middleware.util
-             [cljs :as cljs]
-             [misc :refer [err-info]]]
-            [clojure.tools.nrepl
-             [middleware :refer [set-descriptor!]]
-             [misc :refer [response-for]]
-             [transport :as transport]]
-            [refactor-nrepl
-             [analyzer :refer [warm-ast-cache]]
-             [artifacts :refer [artifact-list artifact-versions hotload-dependency]]
-             [config :as config]
-             [extract-definition :refer [extract-definition]]
-             [plugin :as plugin]
-             [rename-file-or-dir :refer [rename-file-or-dir]]
-             [stubs-for-interface :refer [stubs-for-interface]]]
-            [refactor-nrepl.find
-             [find-symbol :refer [find-symbol]]
-             [find-locals :refer [find-used-locals]]]
-            [refactor-nrepl.ns
-             [clean-ns :refer [clean-ns]]
-             [namespace-aliases :refer [namespace-aliases]]
-             [pprint :refer [pprint-ns]]
-             [resolve-missing :refer [resolve-missing]]]))
+  (:require [cider.nrepl.middleware.util.cljs :as cljs]
+            [cider.nrepl.middleware.util.misc :refer [err-info]]
+            [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+            [clojure.tools.nrepl.misc :refer [response-for]]
+            [clojure.tools.nrepl.transport :as transport]
+            [refactor-nrepl.analyzer :refer [warm-ast-cache]]
+            [refactor-nrepl.artifacts :refer
+             [artifact-list artifact-versions hotload-dependency]]
+            [refactor-nrepl.config :as config]
+            [refactor-nrepl.extract-definition :refer [extract-definition]]
+            [refactor-nrepl.find.find-locals :refer [find-used-locals]]
+            [refactor-nrepl.find.find-symbol :refer [find-symbol]]
+            [refactor-nrepl.ns.clean-ns :refer [clean-ns]]
+            [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
+            [refactor-nrepl.ns.pprint :refer [pprint-ns]]
+            [refactor-nrepl.ns.resolve-missing :refer [resolve-missing]]
+            [refactor-nrepl.plugin :as plugin]
+            [refactor-nrepl.rename-file-or-dir :refer [rename-file-or-dir]]
+            [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
 
 (defmacro ^:private with-errors-being-passed-on [transport msg & body]
   `(try

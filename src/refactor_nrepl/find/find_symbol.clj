@@ -3,11 +3,13 @@
              [set :as set]
              [string :as str]]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
+            [clojure.tools.namespace.parse :as parse]
             [refactor-nrepl
              [analyzer :as ana]
              [core :as core]
              [s-expressions :as sexp]]
-            [refactor-nrepl.find.find-macros :refer [find-macro]]))
+            [refactor-nrepl.find.find-macros :refer [find-macro]]
+            [refactor-nrepl.ns.libspecs :as libspecs]))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
 
@@ -83,7 +85,8 @@
 (defn- find-symbol-in-ast [name asts]
   (when asts
     (find-nodes name
-                asts
+                (remove (fn [ast] (-> ast :raw-forms first parse/ns-decl?))
+                        asts)
                 (partial contains-var-or-const?
                          name
                          (alias-info asts)))))
@@ -106,6 +109,16 @@
                   (catch Exception e
                     (when-not ignore-errors
                       (throw e))))
+        locs (concat locs
+                     (some->
+                      (libspecs/referred-syms-by-file&fullname)
+                      (get-in [:clj (str file) fully-qualified-name]);; :clj cljs is not supported yet anyway
+                      meta
+                      ((fn [{:keys [line column end-line end-column]}]
+                          (list {:line-beg line
+                                 :line-end end-line
+                                 :col-beg column
+                                 :col-end end-column})))))
         gather (fn [info]
                  (merge info
                         {:file (.getCanonicalPath file)
