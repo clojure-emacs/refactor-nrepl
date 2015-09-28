@@ -20,14 +20,58 @@
        (filter fs/directory?)
        (remove #(-> % str normalize-to-unix-path (.endsWith "target/srcdeps")))))
 
+(defn project-root
+  "Return the project root directory.
+
+  If path-or-file-in-project is provided it should be a project file
+  to use as a starting point. We search anything above this dir, until
+  we reach the file system root. Default value is the property
+  'user.dir'."
+  ([] (project-root (System/getProperty "user.dir")))
+  ([path-or-file-in-project]
+   (let [path-or-file-in-project (io/file path-or-file-in-project)
+         start (if (fs/directory? path-or-file-in-project)
+                 path-or-file-in-project
+                 (fs/parent path-or-file-in-project))
+         names-at-root #{"project.clj" "build.boot"}
+         known-root-file? (fn [f] (some (fn [known-root-name]
+                                          (.endsWith (.getCanonicalPath f)
+                                                     known-root-name))
+                                        names-at-root))
+         root-dir? (fn [f] (some known-root-file? (.listFiles f)))
+         most-likely-root (io/file (System/getProperty "user.dir"))]
+     (if (root-dir? most-likely-root)
+       most-likely-root
+       (loop [f start]
+         (cond
+           (root-dir? f) f
+           (nil? (fs/parent f)) nil
+           :else (recur (fs/parent f))))))))
+
+(defn build-artifact? [path-or-file]
+  (let [f (io/file path-or-file)
+        target-path (-> path-or-file project-root .getCanonicalPath
+                        normalize-to-unix-path
+                        (str "/target"))
+        parent-paths (map (comp normalize-to-unix-path
+                                (memfn getCanonicalPath))
+                          (fs/parents f))]
+    (and (some #{target-path} parent-paths)
+         path-or-file)))
+
 (defn find-in-dir
-  "Searches recursively under dir for files matching (pred ^File file). "
+  "Searches recursively under dir for files matching (pred ^File file).
+
+  Note that files which are non-existant, hidden or build-artifacts
+  are pruned by this function."
   [pred dir]
-  (->> (io/file dir)
-       file-seq
-       (remove (memfn isHidden))
-       (filter (memfn exists))
-       (filter pred)))
+  (->>  dir
+        io/file
+        file-seq
+        (filter (every-pred fs/exists?
+                            (complement fs/hidden?)
+                            pred
+                            (complement build-artifact?)))))
 
 (defn cljc-file?
   [path-or-file]
@@ -68,7 +112,6 @@
   (when-not (re-matches #".+\.clj$" file-path)
     (throw (IllegalArgumentException.
             "Only .clj files are supported!"))))
-
 
 (defn- libspec?
   [thing]
