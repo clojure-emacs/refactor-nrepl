@@ -33,19 +33,6 @@ Add the following in `~/.boot/profile.boot`:
        'refactor-nrepl.middleware/wrap-refactor)
 ```
 
-### Clojure client
-
-A clojure client is provided for demonstrative purposes, and to make some refactorings available from the REPL.
-
-The refactoring functions are provided as public functions of the `refactor-nrepl.client` namespace. To work with these functions, you need to connect to a nREPL server which has the `refactor-nrepl` middleware enabled.
-
-To connect you have two options:
-
-1. Call `connect`, store the returned `transport` and pass this to all the refactor functions.
-2. Call the refactor functions without a transport, in which case the client will create and store its own transport.
-
-You also need to pass in the path to the file you want to refactor. Pass in a path as you would provide it for `slurp`. You might also need to pass in more optional or required arguments depending on the the refactor function -- see the documenation of the refactor functions in the `refactor-nrepl.client` namespace.
-
 ## Available features
 
 ### Configuration

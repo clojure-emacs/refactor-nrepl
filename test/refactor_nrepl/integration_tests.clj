@@ -93,16 +93,6 @@
 
         (is (re-matches #"(?s).*\[3\].*" (last result)) "def of foo not found in ns com.example.two")))))
 
-(deftest test-rename-broken-ns
-  (with-test-project
-    (with-redefs [refactor-nrepl.analyzer/ns-ast ns-ast-throw-error-for-five]
-      (let [transport (connect :port 7777)]
-        (is (thrown? IllegalStateException
-                     (rename-symbol :transport transport :ns 'com.example.two :name "foo"
-                                    :file (str tmp-dir "/src/com/example/two.clj")
-                                    :dir (str tmp-dir) :new-name "baz"
-                                    :line 3 :column 28)))))))
-
 (deftest test-shouldnt-find-str-in-assert
   (with-test-project
     (let [transport (connect :port 7777)
@@ -157,34 +147,6 @@
                                 :name "more-stuff" :dir (str tmp-dir))
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
-
-(deftest test-rename-foo
-  (with-test-project
-    (let [transport (connect :port 7777)
-          new-one "(ns com.example.one
-  (:require [com.example.two :as two :refer [baz]]
-            [com.example.four :as four]))
-
-(defn bar []
-  (str \"bar\" (two/baz)))
-
-(defn from-registry [k]
-  (k four/registry))
-"
-          new-two "(ns com.example.two)
-
-(defn ^{:doc \"some text\"} baz []
-  \"foo\")
-"]
-      (rename-symbol :transport transport :ns 'com.example.two :name "foo"
-                     :file (str tmp-dir "/src/com/example/four.clj") :line 3 :column 28
-                     :dir (str tmp-dir) :new-name "baz")
-
-      (is (= new-one (slurp (str tmp-dir "/src/com/example/one.clj")))
-          "rename failed in com.example.one")
-
-      (is (= new-two (slurp (str tmp-dir "/src/com/example/two.clj")))
-          "rename failed in com.example.two"))))
 
 (defrecord Foo [])
 (deftype Bar [])

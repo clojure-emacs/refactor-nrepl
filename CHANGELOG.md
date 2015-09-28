@@ -17,6 +17,7 @@
 [#106](https://github.com/clojure-emacs/refactor-nrepl/issues/106) Failure to build ASTs when namespaced keywords are present in the project.
 
 ### Changes
+* Get rid of the client namespace
 
 * [#118](https://github.com/clojure-emacs/refactor-nrepl/issues/118)Improve the `find-symbol` reply.  It's now a map instead of a
   vector.

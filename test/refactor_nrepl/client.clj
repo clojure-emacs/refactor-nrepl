@@ -11,78 +11,11 @@
 
 (def ^:private transp (atom nil))
 
-(def ^:private esc \u001b)
-
-(def ^:private red "[31m")
-
-(def ^:private yellow "[33m")
-
-(def ^:private reset "[0m")
-
 (defn- nrepl-message
   ([timeout tr payload]
    (nrepl/message (nrepl/client tr timeout) payload))
   ([tr payload]
    (nrepl-message 5000 tr payload)))
-
-(defn- remove-invocation [invocation lines]
-  (for [line lines
-        :let [i (.indexOf lines line)
-              line-index (-> invocation first dec)
-              end-line-index (-> invocation second dec)
-              from (if (= i line-index)
-                     (dec (nth invocation 2))
-                     0)
-              to (if (= i end-line-index)
-                   (dec (nth invocation 3))
-                   (-> line count))]]
-    (if (and (>= i line-index) (<= i end-line-index))
-      (-> line
-          (str/replace (.substring line from to) "")
-          (#(if (str/blank? %) "$remove$" %)))
-      line)))
-
-;; multiple invocations to remove in the same line not supported yet
-(defn- remove-invocations [invocations lines]
-  (loop [lines lines
-         invocations invocations]
-    (if (empty? invocations)
-      lines
-      (recur (remove-invocation (first invocations) lines)
-             (rest invocations)))))
-
-(defn- colorise-found [sym full-hit]
-  (let [no-ns-sym (-> sym (str/split #"/") last)
-        replacement (str esc red no-ns-sym esc reset)]
-    (str/replace full-hit (re-pattern no-ns-sym) replacement)))
-
-(defn- prettify-found-symbol-result [{:keys [line-beg name file match]}]
-  (->> match
-       (colorise-found name)
-       (str esc yellow file esc reset "[" line-beg "]" ": ")))
-
-(defn- replace-in-line [name new-name occ-line-index col indexed-line]
-  (let [line (val indexed-line)]
-    (if (= (key indexed-line) occ-line-index)
-      (let [col (if col (dec col) 0)
-            [line-first line-rest] (->> line
-                                        (split-at col)
-                                        (map #(apply str %)))]
-        (str line-first (str/replace-first line-rest name new-name)))
-      line)))
-
-(defn- rename-symbol-occurrence!
-  [name new-name {:keys [line-beg col-beg file]}]
-  (let [occ-line-index (dec line-beg)]
-    (->> file
-         slurp
-         str/split-lines
-         (interleave (range))
-         (#(apply sorted-map %))
-         (map (partial replace-in-line name new-name occ-line-index col-beg))
-         (str/join "\n")
-         (#(str % "\n"))
-         (spit file))))
 
 (defn connect
   "Connects to an nrepl server. The client won't be functional if the nrepl
@@ -118,6 +51,10 @@
          (map action)
          doall)))
 
+(defn- prettify-found-symbol-result [{:keys [line-beg name file match]}]
+  (->> match
+       (str file " " "[" line-beg "]" ": ")))
+
 (defn find-usages
   "Finds and lists symbols (defs, defns) in the project: both where they are defined and their occurrences.
 
@@ -136,27 +73,6 @@
   {:pre [(or (and ns name) (and file line column))]}
   (act-on-occurrences prettify-found-symbol-result :transport transport
                       :ns ns :name name :dir dir :file file :line line :column column :ignore-errors "true"))
-
-(defn rename-symbol
-  "Renames symbols (defs and defns) in the project's given dir.
-
-  Expected input:
-  - ns namespace of the symbol to find
-  - name of the symbol to find as string
-  - new-name to rename to
-  - dir director to search clj files in, defaults to `.`
-  - file to refactor, provide path as you would provide for slurp
-  - line line of the symbol to find in the source file
-  - column column of the symbol to find in the source file
-  - transport optional, however if you don't provide your own repl
-  transport the client will create and store its own. therefore it is
-  preferred that you create, store and manage your own transport by calling
-  the connect function in this namespace so the client does not get stateful"
-  [& {:keys [transport ns name new-name dir file line column]}]
-  {:pre [ns name new-name]}
-  (act-on-occurrences (partial rename-symbol-occurrence! name new-name)
-                      :transport transport :ns ns :file file :name name
-                      :dir dir :line line :column column))
 
 (defn resolve-missing
   "Resolve a missing symbol to provide candidates for imports.
