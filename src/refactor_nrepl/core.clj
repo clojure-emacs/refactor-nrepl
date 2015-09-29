@@ -3,6 +3,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [clojure.tools.namespace.parse :as parse]
+            [clojure.tools.reader.reader-types :as readers]
             [me.raynes.fs :as fs]
             [refactor-nrepl.util :refer [normalize-to-unix-path]])
   (:import [java.io File FileReader PushbackReader StringReader]))
@@ -175,12 +176,14 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
   Dialect is either :clj or :cljs."
   ([path]
    (with-open [file-reader (FileReader. path)]
-     (if-let [ns-form (parse/read-ns-decl (PushbackReader. file-reader))]
+     (if-let [ns-form (parse/read-ns-decl (readers/indexing-push-back-reader
+                                           (PushbackReader. file-reader)))]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path))))))
   ([dialect path]
    (with-open [file-reader (FileReader. path)]
-     (if-let [ns-form (parse/read-ns-decl (PushbackReader. file-reader)
+     (if-let [ns-form (parse/read-ns-decl (readers/indexing-push-back-reader
+                                           (PushbackReader. file-reader))
                                           {:read-cond :allow :features #{dialect}})]
        ns-form
        (throw (IllegalStateException. (str "No ns form at " path)))))))

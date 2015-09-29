@@ -1,7 +1,7 @@
 (ns refactor-nrepl.ns.namespace-aliases-test
   (:require [clojure.test :as t]
             [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.namespace-aliases :as sut]
+            [refactor-nrepl.ns.libspecs :as sut]
             [refactor-nrepl.util :as util]))
 
 (t/deftest finds-the-aliases-in-this-ns
@@ -38,11 +38,11 @@
 
 (t/deftest libspecs-are-cached
   (sut/namespace-aliases)
-  (with-redefs [refactor-nrepl.ns.namespace-aliases/put-cached-libspec
+  (with-redefs [refactor-nrepl.ns.libspecs/put-cached-libspec
                 (fn [& _] (throw (ex-info "Cache miss!" {})))]
     (t/is (sut/namespace-aliases)))
   (reset! @#'sut/cache {})
-  (with-redefs [refactor-nrepl.ns.namespace-aliases/put-cached-libspec
+  (with-redefs [refactor-nrepl.ns.libspecs/put-cached-libspec
                 (fn [& _] (throw (Exception. "Expected!")))]
     (t/is (thrown-with-msg? Exception #"Expected!"
                             (sut/namespace-aliases)))))
