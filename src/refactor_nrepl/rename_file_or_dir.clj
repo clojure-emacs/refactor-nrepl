@@ -129,7 +129,9 @@
   "Actually rename a file."
   [old-path new-path]
   (fs/mkdirs (fs/parent new-path))
-  (fs/rename old-path new-path)
+  (when-not (fs/rename old-path new-path)
+    (throw (ex-info "Failed renaming file!"
+                    {:old-path old-path :new-path new-path})))
   (loop [dir (.getParentFile (File. old-path))]
     (when (empty? (.listFiles dir))
       (.delete dir)
