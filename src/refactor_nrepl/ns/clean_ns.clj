@@ -14,8 +14,8 @@
              [config :as config]
              [core :as core]]
             [refactor-nrepl.ns
-             [dependencies :refer [extract-dependencies]]
              [ns-parser :as ns-parser]
+             [prune-dependencies :refer [prune-dependencies]]
              [rebuild :refer [rebuild-ns-form]]]))
 
 (defn- assert-no-exclude-clause
@@ -42,7 +42,8 @@
     (let [ns-form (core/read-ns-form path)
           _ (validate ns-form)
           new-ns-form (if (get config/*config* :prune-ns-form)
-                        (-> path extract-dependencies (rebuild-ns-form ns-form))
+                        (-> path ns-parser/parse-ns (prune-dependencies path)
+                            (rebuild-ns-form ns-form))
                         (-> path ns-parser/parse-ns (rebuild-ns-form ns-form)))]
       (when-not (= ns-form new-ns-form)
         new-ns-form))))

@@ -1,11 +1,11 @@
-(ns refactor-nrepl.ns.dependencies
+(ns refactor-nrepl.ns.prune-dependencies
   (:require [cider.nrepl.middleware.info :as info]
             [clojure.tools.reader :as reader]
             [clojure.tools.reader.reader-types :as readers]
             [clojure.walk :as walk]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns [ns-parser :as ns-parser]]
-            [refactor-nrepl.util :as util]))
+            [refactor-nrepl
+             [core :as core]
+             [util :as util]]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]
@@ -169,12 +169,11 @@
   [imports symbols-in-file]
   (filter (partial class-in-use? symbols-in-file) imports))
 
-(defn extract-clj-or-cljs-dependencies
-  ([path]
-   (extract-clj-or-cljs-dependencies path nil))
-  ([path dialect]
-   (let [parsed-ns (ns-parser/parse-ns path)
-         dialect (or dialect (core/file->dialect path))
+(defn prune-clj-or-cljs-dependencies
+  ([parsed-ns path]
+   (prune-clj-or-cljs-dependencies parsed-ns path nil))
+  ([parsed-ns path dialect]
+   (let [dialect (or dialect (core/file->dialect path))
          {current-ns :ns} parsed-ns
          required-libspecs (some-> parsed-ns dialect :require)
          required-macro-libspecs (some-> parsed-ns :cljs :require-macros)
@@ -192,14 +191,14 @@
                         (prune-libspecs required-macro-libspecs symbols-in-file
                                         current-ns)}))})))
 
-(defn- extract-cljc-dependencies [path]
+(defn- prune-cljc-dependencies [parsed-ns path]
   (merge
-   (extract-clj-or-cljs-dependencies path :clj)
-   (extract-clj-or-cljs-dependencies path :cljs)))
+   (prune-clj-or-cljs-dependencies parsed-ns path :clj)
+   (prune-clj-or-cljs-dependencies parsed-ns path :cljs)))
 
-(defn extract-dependencies [path]
+(defn prune-dependencies [parsed-ns path]
   (let [dialect (core/file->dialect path)]
     (merge (if (= dialect :cljc)
-             (extract-cljc-dependencies path)
-             (extract-clj-or-cljs-dependencies path))
+             (prune-cljc-dependencies parsed-ns path)
+             (prune-clj-or-cljs-dependencies parsed-ns path))
            {:source-dialect dialect})))
