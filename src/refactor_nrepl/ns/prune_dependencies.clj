@@ -1,11 +1,9 @@
 (ns refactor-nrepl.ns.prune-dependencies
   (:require [cider.nrepl.middleware.info :as info]
-            [clojure.tools.reader :as reader]
-            [clojure.tools.reader.reader-types :as readers]
-            [clojure.walk :as walk]
             [refactor-nrepl
              [core :as core]
-             [util :as util]]))
+             [util :as util]]
+            [refactor-nrepl.find.symbols-in-file :as symbols-in-file]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]
@@ -97,67 +95,9 @@
                 (= (:refer libspec) :all))
     (:refer libspec)))
 
-(defn- find-symbol-ns [libspecs sym]
-  (some->> libspecs
-           (filter (fn [{:keys [refer refer-macros] :as libspec}]
-                     (or
-                      (and (sequential? refer)
-                           (some (partial = (symbol sym)) refer))
-                      (some (partial = (symbol sym)) refer-macros))))
-           first
-           :ns))
-
-(defn- fix-ns-of-backquoted-symbols [libspecs sym]
-  (if (= (core/prefix sym) (str (ns-name *ns*)))
-    (if-let [prefix (find-symbol-ns libspecs (core/suffix sym))]
-      (str prefix "/" (core/suffix sym))
-      sym)
-    sym))
-
-(defn- ctor-call->str
-  "Date. -> \"Date\""
-  [sym]
-  (let [s (str sym)]
-    (if (.endsWith s ".")
-      (.substring s 0 (dec (.length s)))
-      s)))
-
-(defn- get-symbols-used-in-file
-  [path current-ns libspecs dialect]
-  (util/with-additional-ex-data [:file path]
-    (binding [*ns* (or (find-ns (symbol current-ns)) *ns*)]
-      (let [rdr (-> path slurp core/file-content-sans-ns
-                    readers/indexing-push-back-reader)
-            dialect (or dialect (core/file->dialect path))
-            rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
-            syms (atom #{})
-            collect-symbol (fn [form]
-                             (when (symbol? form)
-                               (swap! syms conj (ctor-call->str form)))
-                             form)]
-        (loop [form (reader/read rdr-opts rdr)]
-          (when (not= form :eof)
-            (walk/prewalk collect-symbol form)
-            (recur (reader/read rdr-opts rdr))))
-        (set (map (partial fix-ns-of-backquoted-symbols libspecs) @syms))))))
-
 (defn- remove-unused-requires [symbols-in-file current-ns libspecs]
   (map (partial remove-unused-syms-and-specs symbols-in-file current-ns)
        libspecs))
-
-(defn- get-classes-used-in-typehints [path]
-  (util/with-additional-ex-data [:file path]
-    (let [rdr (-> path slurp core/file-content-sans-ns readers/indexing-push-back-reader)
-          rdr-opts {:read-cond :allow :features #{:clj} :eof :eof}
-          types (atom [])
-          conj-type (fn [form]
-                      (when-let [t (:tag (meta form))] (swap! types conj (str t)))
-                      form)]
-      (loop [form (reader/read rdr-opts rdr)]
-        (when (not= form :eof)
-          (walk/prewalk conj-type form)
-          (recur (reader/read rdr-opts rdr))))
-      (set @types))))
 
 (defn- prune-libspecs
   [libspecs symbols-in-file current-ns]
@@ -169,27 +109,23 @@
   [imports symbols-in-file]
   (filter (partial class-in-use? symbols-in-file) imports))
 
-(defn prune-clj-or-cljs-dependencies
-  ([parsed-ns path]
-   (prune-clj-or-cljs-dependencies parsed-ns path nil))
-  ([parsed-ns path dialect]
-   (let [dialect (or dialect (core/file->dialect path))
-         {current-ns :ns} parsed-ns
-         required-libspecs (some-> parsed-ns dialect :require)
-         required-macro-libspecs (some-> parsed-ns :cljs :require-macros)
-         symbols-in-file (into (get-classes-used-in-typehints path)
-                               (get-symbols-used-in-file path current-ns
-                                                         (into required-libspecs
-                                                               required-macro-libspecs)
-                                                         dialect))]
-     {dialect (merge {:require
-                      (prune-libspecs required-libspecs  symbols-in-file current-ns)
-                      :import (prune-imports (some-> parsed-ns dialect :import)
-                                             symbols-in-file)}
-                     (when (= dialect :cljs)
-                       {:require-macros
-                        (prune-libspecs required-macro-libspecs symbols-in-file
-                                        current-ns)}))})))
+(defn- prune-clj-or-cljs-dependencies
+  [parsed-ns path dialect]
+  (let [current-ns (:ns parsed-ns)
+        required-libspecs (some-> parsed-ns dialect :require)
+        required-macro-libspecs (some-> parsed-ns :cljs :require-macros)
+        symbols-in-file (->> (symbols-in-file/symbols-in-file path parsed-ns
+                                                              dialect)
+                             (map str)
+                             set)]
+    {dialect (merge {:require
+                     (prune-libspecs required-libspecs symbols-in-file current-ns)
+                     :import (prune-imports (some-> parsed-ns dialect :import)
+                                            symbols-in-file)}
+                    (when (= dialect :cljs)
+                      {:require-macros
+                       (prune-libspecs required-macro-libspecs symbols-in-file
+                                       current-ns)}))}))
 
 (defn- prune-cljc-dependencies [parsed-ns path]
   (merge
@@ -200,5 +136,5 @@
   (let [dialect (core/file->dialect path)]
     (merge (if (= dialect :cljc)
              (prune-cljc-dependencies parsed-ns path)
-             (prune-clj-or-cljs-dependencies parsed-ns path))
+             (prune-clj-or-cljs-dependencies parsed-ns path dialect))
            {:source-dialect dialect})))
