@@ -10,8 +10,9 @@
   * Remove any duplication in the :require and :import form.
   * Remove any unused required namespaces or imported classes.
   * Returns nil when nothing is changed, so the client knows not to do anything."
-  (:require [refactor-nrepl.config :as config]
-            [refactor-nrepl.core :as core]
+  (:require [refactor-nrepl
+             [config :as config]
+             [core :as core]]
             [refactor-nrepl.ns
              [dependencies :refer [extract-dependencies]]
              [ns-parser :as ns-parser]
@@ -40,6 +41,8 @@
                                            (:prefix-rewriting config/*config*))}
     (let [ns-form (core/read-ns-form path)
           _ (validate ns-form)
-          new-ns-form (-> path extract-dependencies (rebuild-ns-form ns-form))]
+          new-ns-form (if (get config/*config* :prune-ns-form)
+                        (-> path extract-dependencies (rebuild-ns-form ns-form))
+                        (-> path ns-parser/parse-ns (rebuild-ns-form ns-form)))]
       (when-not (= ns-form new-ns-form)
         new-ns-form))))

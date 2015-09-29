@@ -2,11 +2,19 @@
 
 ;; NOTE: Update the readme whenever this map is changed
 (def ^:dynamic *config*
-  {:prefix-rewriting true ; Should clean-ns favor prefix forms in the ns macro?
+  {
    ;; Verbose setting for debugging.  The biggest effect this has is
    ;; to not catch any exceptions to provide meaningful error
    ;; messages for the client.
+
    :debug false
+
+   ;; When true clean-ns will remove unused symbols, otherwise just
+   ;; sort etc
+   :prune-ns-form true
+
+   ;; Should clean-ns favor prefix forms in the ns macro?
+   :prefix-rewriting true
    })
 
 (defn opts-from-msg [msg]

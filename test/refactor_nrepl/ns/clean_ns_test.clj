@@ -1,11 +1,9 @@
 (ns refactor-nrepl.ns.clean-ns-test
-  (:require [clojure.string :as str]
-            [clojure.test :refer :all]
-            [refactor-nrepl.ns
-             [clean-ns :refer [clean-ns]]]
+  (:require [clojure.test :refer :all]
+            [refactor-nrepl.config :as config]
             [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.pprint :refer [pprint-ns]]
-            [refactor-nrepl.util :as util])
+            [refactor-nrepl.ns.clean-ns :refer [clean-ns]]
+            [refactor-nrepl.ns.pprint :refer [pprint-ns]])
   (:import java.io.File))
 
 (defn- absolute-path [^String path]
@@ -19,6 +17,8 @@
 (def ns2 (clean-msg "test/resources/ns2.clj"))
 (def ns2-cleaned (core/read-ns-form (absolute-path "test/resources/ns2_cleaned.clj")))
 (def ns2-meta (clean-msg "test/resources/ns2_meta.clj"))
+(def ns3 (clean-msg "test/resources/ns3.clj"))
+(def ns3-rebuilt (core/read-ns-form (absolute-path "test/resources/ns3_rebuilt.clj")))
 (def ns-with-exclude (clean-msg "test/resources/ns_with_exclude.clj"))
 (def ns-with-unused-deps (clean-msg "test/resources/unused_deps.clj"))
 (def ns-without-unused-deps (core/read-ns-form
@@ -161,6 +161,12 @@
         new-cljs-ns (core/ns-form-from-string :cljs new-ns)]
     (is (= cljc-ns-cleaned-clj new-clj-ns))
     (is (= cljc-ns-cleaned-cljs new-cljs-ns))))
+
+(deftest respects-no-prune-option
+  (config/with-config {:prune-ns-form false}
+    (let [new-require (core/get-ns-component (clean-ns ns3) :require)
+          expected-require (core/get-ns-component ns3-rebuilt :require)]
+      (is (= expected-require new-require)))))
 
 ;; Order of stuff in maps aren't stable across versions which messes
 ;; with pretty-printing

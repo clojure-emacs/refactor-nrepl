@@ -41,8 +41,17 @@ Configuration settings are passed along with each msg, currently the recognized 
 
 ```clj
 {
-:prefix-rewriting true ; Should clean-ns favor prefix forms in the ns macro?
-:debug false ; verbose setting for debugging.
+ ;; Verbose setting for debugging.  The biggest effect this has is
+ ;; to not catch any exceptions to provide meaningful error
+ ;; messages for the client.
+ :debug false
+
+ ;; When true clean-ns will remove unused symbols, otherwise just
+ ;; sort etc
+ :prune-ns-form true
+
+ ;; Should clean-ns favor prefix forms in the ns macro?
+ :prefix-rewriting true
 }
 ```
 
