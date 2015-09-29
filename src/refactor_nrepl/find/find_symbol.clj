@@ -220,10 +220,10 @@
 
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (core/throw-unless-clj-file file)
-  (or
-   ;; find-macro is first because find-global-symbol returns garb for macros
-   (find-macro (core/fully-qualify name ns))
-   (and (seq file) (not-empty (find-local-symbol file name line column)))
-   (find-global-symbol file ns name dir (and ignore-errors
-                                             (or (not (coll? ignore-errors))
-                                                 (not-empty ignore-errors))))))
+  (let [macros (future (find-macro (core/fully-qualify name ns)))
+        globals (future (find-global-symbol file ns name dir
+                                            (= ignore-errors "true")))]
+    (or
+     (not-empty (find-local-symbol file name line column)) ; this is the fastest one
+     @macros ; find-macro first because find-global-symbol returns garb for macros
+     @globals)))
