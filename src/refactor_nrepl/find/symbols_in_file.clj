@@ -52,10 +52,13 @@
                               (when (symbol? form)
                                 (swap! syms conj (normalize-ctor-call form)))
                               ;; Classes used in typehints
-                              (when-let [t (:tag (meta form))] (swap! syms conj t))
+                              (when-let [t (:tag (meta form))]
+                                (swap! syms conj t))
                               form)]
          (loop [form (reader/read rdr-opts rdr)]
            (when (not= form :eof)
              (walk/prewalk collect-symbol form)
              (recur (reader/read rdr-opts rdr))))
-         (set (map (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)) @syms)))))))
+         (->> @syms
+              (map (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)))
+              set))))))
