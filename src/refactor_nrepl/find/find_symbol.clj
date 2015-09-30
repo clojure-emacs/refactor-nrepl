@@ -112,13 +112,13 @@
         locs (concat locs
                      (some->
                       (libspecs/referred-syms-by-file&fullname)
-                      (get-in [:clj (str file) fully-qualified-name]);; :clj cljs is not supported yet anyway
+                      (get-in [:clj (str file) fully-qualified-name])
                       meta
                       ((fn [{:keys [line column end-line end-column]}]
-                          (list {:line-beg line
-                                 :line-end end-line
-                                 :col-beg column
-                                 :col-end end-column})))))
+                         (list {:line-beg line
+                                :line-end end-line
+                                :col-beg column
+                                :col-end end-column})))))
         gather (fn [info]
                  (merge info
                         {:file (.getCanonicalPath file)

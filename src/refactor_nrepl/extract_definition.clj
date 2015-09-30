@@ -91,7 +91,7 @@
 (defn extract-definition
   "Returns the definition of SYMBOL to facilitate inlining."
   [msg]
-  (let [occurrences (find-symbol msg )]
+  (let [occurrences (find-symbol msg)]
     (if-let [definition-occurrence (find-definition occurrences)]
       {:definition (merge {:definition (-extract-definition definition-occurrence)}
                           definition-occurrence)

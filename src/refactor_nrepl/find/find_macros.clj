@@ -195,7 +195,6 @@
         (recur (zip/right zipper))))
     @occurrences))
 
-
 (defn- fully-qualified-name? [fully-qualified-name]
   (when (core/prefix fully-qualified-name)
     fully-qualified-name))
