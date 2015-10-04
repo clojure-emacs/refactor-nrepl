@@ -96,12 +96,31 @@
                    (when (= dialect :cljs)
                      {:require-macros (update-libspecs require-macros old-ns new-ns)}))})))
 
-(defn- create-new-ns-form
+(defn- clean-var-entry
+  [ns-entry]
+  (-> (val ns-entry)
+      str
+      (str/replace "#'" "")))
+
+(defn- clean-interned-syms! [ns-name old-ns]
+  (doseq [[sym _]
+          (->> (ns-aliases ns-name)
+               (filter #(= (str old-ns) (clean-var-entry %))))]
+    (ns-unalias ns-name sym))
+  (doseq [[sym _]
+          (->> (ns-refers ns-name)
+               (filter #(.startsWith (clean-var-entry %) (str old-ns))))]
+    (ns-unmap ns-name sym)))
+
+(defn- create-new-ns-form!
   "Reads file and returns an updated ns."
   [file old-ns new-ns]
   (let [ns-form (core/read-ns-form file)
+        ns-name (second ns-form)
         parsed-ns (ns-parser/parse-ns file)
         deps (update-references-in-deps parsed-ns old-ns new-ns)]
+    (when (find-ns ns-name)
+      (clean-interned-syms! ns-name old-ns))
     (pprint-ns (rebuild-ns-form deps ns-form))))
 
 (defn- update-file-content-sans-ns
@@ -121,7 +140,7 @@
 (defn- update-dependent
   "New content for a dependent file."
   [file old-ns new-ns]
-  (str (create-new-ns-form file old-ns new-ns)
+  (str (create-new-ns-form! file old-ns new-ns)
        "\n"
        (update-file-content-sans-ns file old-ns new-ns)))
 
