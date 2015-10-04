@@ -1,14 +1,16 @@
 (ns refactor-nrepl.ns.clean-ns
-  "Contains functionality for cleaning namespaces.
+  "Contains functionality for cleaning ns forms.
 
-  * Eliminate :use clauses
-  * Sort required libraries, imports and vectors of referred symbols
+  * Eliminate :use, or :use-macro clauses.
+  * Sort required libraries, imports and vectors of referred symbols.
   * Rewrite to favor prefix form, e.g. [clojure [string test]] instead
-  of two separate libspecs
+    of two separate libspecs.
   * Raise errors if any inconsistencies are found (e.g. a libspec with more than
-  one alias.
-  * Remove any duplication in the :require and :import form.
+    one alias).
+  * Remove any duplication in the :require, :require-macros, :use-maros
+    and :import form.
   * Remove any unused required namespaces or imported classes.
+  * Remove any unused referred symbols.
   * Returns nil when nothing is changed, so the client knows not to do anything."
   (:require [refactor-nrepl
              [config :as config]
