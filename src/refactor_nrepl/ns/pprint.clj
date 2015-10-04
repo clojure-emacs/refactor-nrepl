@@ -79,25 +79,14 @@
   (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
                        ", " "\n")))
 
-(defn- get-ns-meta
-  "If there's a docstring in the ns form it will get copied into the
-  meta along with everything in the namespaces' attr map.  In order to
-  avoid duplication we have to remove some of the keys in the metadata
-  map before printing."
-  [path]
-  (let [meta? (-> path slurp (.replaceFirst "\\^\\{" "\\{")
-                  core/ns-form-from-string second)]
-    (when (map? meta?)
-      meta?)))
-
 (defn pprint-ns
-  [[_ name & more :as ns-form] path]
+  [[_ name & more :as ns-form]]
   (let [docstring? (when (string? (first more)) (first more))
         attrs? (when (map? (second more)) (second more))
         forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
                     :else (rest more))
-        ns-meta (get-ns-meta path)]
+        ns-meta (meta ns-form)]
     (-> (with-out-str
           (printf "(ns ")
           (when (seq ns-meta) (pprint-meta ns-meta))

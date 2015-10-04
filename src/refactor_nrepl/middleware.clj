@@ -71,7 +71,7 @@
   (reply transport msg :status :done :dependency (hotload-dependency msg)))
 
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
-  (reply transport msg :ns (some-> msg clean-ns (pprint-ns path)) :status :done))
+  (reply transport msg :ns (some-> msg clean-ns pprint-ns) :status :done))
 
 (defn- find-used-locals-reply [{:keys [transport] :as msg}]
   (reply transport msg :used-locals (find-used-locals msg)))

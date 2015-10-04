@@ -31,6 +31,18 @@
   (assert-no-exclude-clause (core/get-ns-component ns-form :use))
   ns-form)
 
+(defn- read-ns-meta-from-file
+  "Retrieve the metadata for the ns, if there is any.
+
+  This is preferable to just doing (meta the-ns-form) because the
+  compiler, as well as libraries like clojure.test, add quite a bit of
+  metadata which shouldn't be printed back out."
+  [path]
+  (let [meta? (-> path slurp (.replaceFirst "\\^\\{" "\\{")
+                  core/ns-form-from-string second)]
+    (when (map? meta?)
+      meta?)))
+
 (defn clean-ns [{:keys [path]}]
   {:pre [(seq path) (string? path) (core/source-file? path)]}
   ;; Prefix notation not supported in cljs.
@@ -39,7 +51,7 @@
                                                  (core/cljc-file? path))
                                            false
                                            (:prefix-rewriting config/*config*))}
-    (let [ns-form (core/read-ns-form path)
+    (let [ns-form (with-meta (core/read-ns-form path) (read-ns-meta-from-file path))
           _ (validate ns-form)
           new-ns-form (if (get config/*config* :prune-ns-form)
                         (-> path ns-parser/parse-ns (prune-dependencies path)

@@ -102,7 +102,7 @@
   (let [ns-form (core/read-ns-form file)
         parsed-ns (ns-parser/parse-ns file)
         deps (update-references-in-deps parsed-ns old-ns new-ns)]
-    (pprint-ns (rebuild-ns-form deps ns-form) (.getAbsolutePath file))))
+    (pprint-ns (rebuild-ns-form deps ns-form))))
 
 (defn- update-file-content-sans-ns
   "Any fully qualified references to old-ns has to be replaced with new-ns."

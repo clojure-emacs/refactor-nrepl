@@ -38,7 +38,7 @@
     (is (= combined-requires requires))))
 
 (deftest meta-preserved
-  (let [cleaned (pprint-ns (clean-ns ns2-meta) (:path ns2-meta))]
+  (let [cleaned (pprint-ns (clean-ns ns2-meta))]
     (is (.contains cleaned "^{:author \"Trurl and Klapaucius\"
 :doc \"test ns with meta\"}"))))
 
@@ -137,7 +137,7 @@
 
 (deftest test-pprint-artifact-ns
   (let [path (.getAbsolutePath (File. "test/resources/artifacts_pprinted_no_indentation"))
-        actual (pprint-ns artifact-ns path)
+        actual (pprint-ns (with-meta artifact-ns nil))
         expected (slurp path)]
     (is (= expected actual))))
 
@@ -172,6 +172,6 @@
 ;; with pretty-printing
 (when (= (clojure-version) "1.7.0")
   (deftest test-pprint
-    (let [ns-str (pprint-ns (clean-ns ns1) (:path ns1))
+    (let [ns-str (pprint-ns (clean-ns ns1))
           ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_no_indentation")))]
       (is (= ns1-str ns-str)))))

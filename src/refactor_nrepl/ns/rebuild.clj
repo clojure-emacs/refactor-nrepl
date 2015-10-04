@@ -284,8 +284,10 @@
 
 (defn rebuild-ns-form
   [deps old-ns-form]
-  (-> old-ns-form
-      drop-dependency-clauses
-      reverse
-      (into (build-dep-forms deps))
-      reverse))
+  (with-meta
+    (-> old-ns-form
+        drop-dependency-clauses
+        reverse
+        (into (build-dep-forms deps))
+        reverse)
+    (meta old-ns-form)))
