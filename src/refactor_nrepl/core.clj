@@ -4,6 +4,7 @@
             [clojure.string :as str]
             [clojure.tools.namespace.parse :as parse]
             [clojure.tools.reader.reader-types :as readers]
+            [clojure.string :as str]
             [me.raynes.fs :as fs]
             [refactor-nrepl.util :refer [normalize-to-unix-path]])
   (:import [java.io File FileReader PushbackReader StringReader]))
@@ -12,6 +13,11 @@
   "Retrieve the symbol naming the ns from file-content."
   [file-content]
   (second (parse/read-ns-decl (PushbackReader. (java.io.StringReader. file-content)))))
+
+(defn ns-name-from-readable
+  "Call slurp on readable and extract the ns-name from the content."
+  [readable]
+  (-> readable slurp ns-from-string))
 
 (defn dirs-on-classpath
   "Return all dirs on classpath, filtering out our inlined deps
@@ -136,9 +142,20 @@
 (defn get-ns-component
   "Extracts a sub-component from the ns declaration.
 
-type is a toplevel keyword in the ns form e.g. :require or :use."
+  type is a toplevel keyword in the ns form e.g. :require or :use."
   [ns type]
   (some->> (index-of-component ns type) (nth ns)))
+
+(defn strip-reader-macros
+  "Strip reader macros like #' and . (as in '(Date.)') from
+  symbol-or-string."
+  [symbol-or-string]
+  (let [s (-> symbol-or-string
+              str
+              (str/replace "#'" ""))]
+    (if (.endsWith s ".")
+      (.substring s 0 (dec (.length s)))
+      s)))
 
 (defn prefix
   "java.util.Date -> java.util
@@ -196,7 +213,7 @@ type is a toplevel keyword in the ns form e.g. :require or :use."
   can't successfully read an ns form."
   ([path] (path->namespace nil path))
   ([no-error path] (try
-                     (some->> path (read-ns-form) second find-ns)
+                     (some->> path read-ns-form second find-ns)
                      (catch Exception e
                        (when-not no-error
                          (throw e))))))

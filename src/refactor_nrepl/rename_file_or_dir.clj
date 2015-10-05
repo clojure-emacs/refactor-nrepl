@@ -96,31 +96,12 @@
                    (when (= dialect :cljs)
                      {:require-macros (update-libspecs require-macros old-ns new-ns)}))})))
 
-(defn- clean-var-entry
-  [ns-entry]
-  (-> (val ns-entry)
-      str
-      (str/replace "#'" "")))
-
-(defn- clean-interned-syms! [ns-name old-ns]
-  (doseq [[sym _]
-          (->> (ns-aliases ns-name)
-               (filter #(= (str old-ns) (clean-var-entry %))))]
-    (ns-unalias ns-name sym))
-  (doseq [[sym _]
-          (->> (ns-refers ns-name)
-               (filter #(.startsWith (clean-var-entry %) (str old-ns))))]
-    (ns-unmap ns-name sym)))
-
 (defn- create-new-ns-form!
   "Reads file and returns an updated ns."
   [file old-ns new-ns]
   (let [ns-form (core/read-ns-form file)
-        ns-name (second ns-form)
         parsed-ns (ns-parser/parse-ns file)
         deps (update-references-in-deps parsed-ns old-ns new-ns)]
-    (when (find-ns ns-name)
-      (clean-interned-syms! ns-name old-ns))
     (pprint-ns (rebuild-ns-form deps ns-form))))
 
 (defn- update-file-content-sans-ns
@@ -186,6 +167,33 @@
     [new-path]
     (conj dependents new-path)))
 
+(defn- unmap-old-ns-symbols!
+  "After renaming old-ns all symbols in the dependent ns ns-name still
+  resolves to the wrong thing.  This unmaps those symbols so
+  find-symbol doesn't get confused."
+  [ns-name old-ns]
+  (doseq [[sym _]
+          (->> (ns-refers ns-name)
+               (filter #(.startsWith (core/strip-reader-macros (val %))
+                                     (str old-ns))))]
+    (ns-unmap ns-name sym)))
+
+(defn- unalias-old-ns!
+  "After renaming old-ns the aliases in the dependent ns ns-name is
+  out of date.  This unaliases so find-symbol doesn't get confused."
+  [ns-name old-ns]
+  (doseq [[sym _]
+          (->> (ns-aliases ns-name)
+               (filter #(= (str old-ns) (core/strip-reader-macros (val %)))))]
+    (ns-unalias ns-name sym)))
+
+(defn- prune-stale-mappings! [dependents old-ns]
+  (doseq [f dependents
+          :let [dependent-ns (core/ns-name-from-readable f)]
+          :when (find-ns dependent-ns)]
+    (unalias-old-ns! dependent-ns old-ns)
+    (unmap-old-ns-symbols! dependent-ns old-ns)))
+
 (defn- rename-source-file
   "Move file from old to new, updating any dependents."
   [old-path new-path]
@@ -200,6 +208,7 @@
     (rename-file! old-path new-path)
     (update-ns! new-path old-ns)
     (update-dependents! @new-dependents)
+    (prune-stale-mappings! dependents old-ns)
     (calculate-affected-files old-path new-path (keys @new-dependents))))
 
 (defn- merge-paths
