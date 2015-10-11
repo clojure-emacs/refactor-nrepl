@@ -12,6 +12,7 @@
                  ^:source-dep [org.clojure/tools.namespace  "0.3.0-alpha1"]
                  ^:source-dep [org.clojure/tools.reader "0.10.0-alpha3"]
                  ^:source-dep [org.clojure/java.classpath "0.2.2"]
+                 ^:source-dep [lein-cljfmt "0.3.0"]
                  ^:source-dep [me.raynes/fs "1.4.6"]
                  ^:source-dep [rewrite-clj "0.4.13-SNAPSHOT"]
                  ^:source-dep [cljs-tooling "0.1.7"]

@@ -3,6 +3,7 @@
              [pprint :refer [pprint]]
              [string :as str]]
             [refactor-nrepl.core :as core :refer [prefix-form?]]
+            [cljfmt.core :as fmt]
             [rewrite-clj.zip :as zip]))
 
 (defn- libspec-vectors-last [libspecs]
@@ -119,4 +120,5 @@
                       (form-is? form :import) (pprint-import-form form)
                       :else (pprint form))))
             forms)))
-        (.replaceAll "\r" ""))))
+        (.replaceAll "\r" "")
+        fmt/reformat-string)))
