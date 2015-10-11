@@ -1,10 +1,11 @@
 (ns refactor-nrepl.ns.pprint
-  (:require [clojure
+  (:require [cljfmt.core :as fmt]
+            [clojure
              [pprint :refer [pprint]]
              [string :as str]]
-            [refactor-nrepl.core :as core :refer [prefix-form?]]
-            [cljfmt.core :as fmt]
-            [rewrite-clj.zip :as zip]))
+            [refactor-nrepl.core :as core :refer [prefix-form?]])
+
+  (:import java.util.regex.Pattern))
 
 (defn- libspec-vectors-last [libspecs]
   (vec (concat (remove sequential? libspecs)
@@ -121,4 +122,5 @@
                       :else (pprint form))))
             forms)))
         (.replaceAll "\r" "")
-        fmt/reformat-string)))
+        fmt/reformat-string
+        (.replaceAll (Pattern/quote "#? @") "#?@"))))
