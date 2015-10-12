@@ -2,6 +2,7 @@
   (:require [clojure
              [set :as set]
              [string :as str]]
+            [clojure.java.io :as io]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.parse :as parse]
             [refactor-nrepl
@@ -231,12 +232,32 @@
   [{:keys [line-beg line-end col-beg col-end name file match]}]
   [line-beg line-end col-beg col-end name file match])
 
+(defn- spurious?
+  "True if the occurrence doesn't exist at the given coordinates."
+  [{:keys [file line-beg col-beg col-end name match] :as occ}]
+  ;; coordinates are wrong for def forms, they match the beginning of
+  ;; the form not the first mention of the symbol being defined
+  (when-not (.startsWith match "(def")
+    (let [thing-in-file (->> file
+                             io/reader
+                             line-seq
+                             (drop (dec line-beg))
+                             first
+                             (drop (dec col-beg))
+                             (take (- col-end col-beg))
+                             (apply str))]
+      (not= (core/suffix thing-in-file)
+            (core/suffix name)))))
+
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (core/throw-unless-clj-file file)
   (let [macros (future (find-macro (core/fully-qualify name ns)))
-        globals (future (find-global-symbol file ns name dir
-                                            (= ignore-errors "true")))]
+        globals (future (remove spurious? (distinct (find-global-symbol file ns name dir
+                                                                        (= ignore-errors "true")))))]
     (or
-     (not-empty (find-local-symbol file name line column)) ; this is the fastest one
-     @macros ; find-macro first because find-global-symbol returns garb for macros
+     ;; find-local-symbol is the fastest of the three
+     (not-empty (remove spurious? (distinct (find-local-symbol file name line column))))
+     ;; find-macros has to be checked first because find-global-symbol
+     ;; can return spurious hits for some macro definitions
+     @macros
      @globals)))
