@@ -21,7 +21,7 @@
   (reset! artifacts/artifacts {})
   (with-redefs
     [artifacts/get-artifacts-from-clojars! (constantly clojars-artifacts)
-     artifacts/get-all-clj-artifacts! (constantly clojure-artifacts)
+     artifacts/get-mvn-artifacts! (constantly clojure-artifacts)
      artifacts/get-versions! (constantly clojure-versions)]
 
     (is (#'artifacts/stale-cache?))
