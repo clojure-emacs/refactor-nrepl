@@ -40,7 +40,7 @@
          start (if (fs/directory? path-or-file-in-project)
                  path-or-file-in-project
                  (fs/parent path-or-file-in-project))
-         names-at-root #{"project.clj" "build.boot"}
+         names-at-root #{"project.clj" "build.boot" "build.gradle" "pom.xml"}
          known-root-file? (fn [f] (some (fn [known-root-name]
                                           (.endsWith (.getCanonicalPath f)
                                                      known-root-name))
