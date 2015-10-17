@@ -36,19 +36,23 @@
         (neg? (- millis-per-day (- last-modified (.getTime (java.util.Date.)))))
         true)))
 
-(defn- get-all-clj-artifacts!
+(defn- get-mvn-artifacts!
   "All the artifacts under org.clojure in mvn central"
-  []
-  (let [search-url "http://search.maven.org/solrsearch/select?q=g:%22org.clojure%22+AND+p:%22jar%22&rows=2000&wt=json"
+  [group-id]
+  (let [search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
+        search-suffix "%22+AND+p:%22jar%22&rows=2000&wt=json"
+        search-url (str search-prefix group-id search-suffix)
         {:keys [_ _ body _]} @(http/get search-url {:as :text})
         search-result (json/parse-string body true)]
     (map :a (-> search-result :response :docs))))
 
 (defn- get-versions!
   "Gets all the versions from an artifact belonging to the org.clojure."
-  [artifact]
-  (let [{:keys [_ _ body _]} @(http/get (str "http://search.maven.org/solrsearch/select?"
-                                             "q=g:%22org.clojure%22+AND+a:%22"
+  [group-id artifact]
+  (let [search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
+        {:keys [_ _ body _]} @(http/get (str search-prefix
+                                             group-id
+                                             "%22+AND+a:%22"
                                              artifact
                                              "%22&core=gav&rows=200&wt=json")
                                         {:as :text})]
@@ -58,24 +62,26 @@
          (map :v)
          doall)))
 
-(defn- collate-artifact-and-versions [artifact]
+(defn- collate-artifact-and-versions [group-id artifact]
   (->> artifact
-       get-versions!
-       (vector (str "org.clojure/" artifact))))
+       (get-versions! group-id)
+       (vector (str group-id "/" artifact))))
 
 (defn- add-artifact [[artifact versions]]
   (swap! artifacts update-in [artifact] (constantly versions)))
 
-(defn- add-artifacts [artifacts]
+(defn- add-artifacts [group-id artifacts]
   (->> artifacts
        (partition-all 2)
        (map #(future (->> %
-                          (map collate-artifact-and-versions)
+                          (map (partial collate-artifact-and-versions group-id))
                           (map add-artifact)
                           dorun)))))
 
 (defn- get-artifacts-from-mvn-central! []
-  (add-artifacts (get-all-clj-artifacts!)))
+  (let [group-ids #{"com.cognitect" "org.clojure"}]
+    (mapcat (fn [group-id] (add-artifacts group-id (get-mvn-artifacts! group-id)))
+            group-ids)))
 
 (defn- update-artifact-cache! []
   (let [mvn-central-futures (get-artifacts-from-mvn-central!)
