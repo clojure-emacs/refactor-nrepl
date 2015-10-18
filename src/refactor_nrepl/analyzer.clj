@@ -89,18 +89,38 @@
         (when-let [new-ast-or-err (try (build-ast ns aliases) (catch Throwable th th))]
           (update-ast-cache file-content ns new-ast-or-err))))))
 
+(defn- throw-ast-in-bad-state
+  [file-content msg]
+  (throw (IllegalStateException.
+              (str (first (parse-ns file-content)) " is in a bad state! Error: " msg))))
+
 (defn ns-ast
   "Build AST for a namespace"
   [file-content]
-  (let [ast-or-err (cachable-ast file-content)]
+  (let [ast-or-err (cachable-ast file-content)
+        error? (instance? Throwable ast-or-err)
+        debug (:debug config/*config*)
+        first-level-errors (and (coll? ast-or-err)
+                                (->> (map :result ast-or-err)
+                                     (remove nil?)
+                                     (filter #(.. (type %)
+                                                  (getName)
+                                                  (endsWith "clojure.tools.analyzer.jvm.ExceptionThrown")))
+                                     seq))]
+
     (cond
-      (and (instance? Throwable ast-or-err)
-           (:debug config/*config*))
+      (and error? debug)
       (throw ast-or-err)
 
-      (instance? Throwable ast-or-err)
-      (throw (IllegalStateException.
-              (str (first (parse-ns file-content)) " is in a bad state! Error: " (.getMessage ast-or-err))))
+      error?
+      (throw-ast-in-bad-state file-content (.getMessage ast-or-err))
+
+      (and first-level-errors debug)
+      (throw (.-e (first first-level-errors)))
+
+      first-level-errors
+      (throw-ast-in-bad-state file-content (str/join "; " (->> (map #(.-e %) first-level-errors)
+                                                               (map #(.getMessage %)))))
 
       :default
       ast-or-err)))
