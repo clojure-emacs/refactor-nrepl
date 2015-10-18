@@ -10,7 +10,8 @@
             [clojure.walk :as walk]
             [refactor-nrepl
              [config :as config]
-             [core :as core]])
+             [core :as core]]
+            [clojure.string :as str])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
 
@@ -55,13 +56,30 @@
 (defn- ns-on-cp? [ns]
   (io/resource (ajutils/ns->relpath ns)))
 
+(defn- shadow-unresolvable-symbol-handler [symbol-ns symbol-name symbol-ast]
+  {:op :const
+   :form (:form symbol-ast)
+   :literal? true
+   :type :string
+   :val (if symbol-ns
+          (str symbol-ns "/" symbol-name)
+          symbol-name)
+   :children []})
+
+(defn- shadow-wrong-tag-handler [tag-key origination-ast]
+  nil)
+
 (defn- build-ast
   [ns aliases]
   (when (ns-on-cp? ns)
-    (binding [ana/macroexpand-1 noop-macroexpand-1
-              *file* (-> ns ajutils/ns-resource ajutils/source-path)
-              reader/*data-readers* *data-readers*]
-      (assoc-in (aj/analyze-ns ns) [0 :alias-info] aliases))))
+    (let [opts {:passes-opts
+                {:validate/unresolvable-symbol-handler shadow-unresolvable-symbol-handler
+                 :validate/throw-on-arity-mismatch false
+                 :validate/wrong-tag-handler shadow-wrong-tag-handler}}]
+      (binding [ana/macroexpand-1 noop-macroexpand-1
+                *file* (-> ns ajutils/ns-resource ajutils/source-path)
+                reader/*data-readers* *data-readers*]
+        (assoc-in (aj/analyze-ns ns (aj/empty-env) opts) [0 :alias-info] aliases)))))
 
 (defn- cachable-ast [file-content]
   (let [[ns aliases] (parse-ns file-content)]
