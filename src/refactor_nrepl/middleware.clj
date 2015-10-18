@@ -52,14 +52,15 @@
   (reply transport msg :candidates (resolve-missing msg) :status :done))
 
 (defn- find-symbol-reply [{:keys [transport] :as msg}]
-  (with-errors-being-passed-on transport msg
-    (let [occurrences (find-symbol msg)]
-      (doseq [occurrence occurrences
-              :let [response (serialize-response msg occurrence)]]
-        (transport/send transport
-                        (response-for msg :occurrence response)))
-      (transport/send transport (response-for msg :count (count occurrences)
-                                              :status :done)))))
+  (config/with-config msg
+    (with-errors-being-passed-on transport msg
+      (let [occurrences (find-symbol msg)]
+        (doseq [occurrence occurrences
+                :let [response (serialize-response msg occurrence)]]
+          (transport/send transport
+                          (response-for msg :occurrence response)))
+        (transport/send transport (response-for msg :count (count occurrences)
+                                                :status :done))))))
 
 (defn- artifact-list-reply [{:keys [transport] :as msg}]
   (reply transport msg :artifacts (artifact-list msg) :status :done))
