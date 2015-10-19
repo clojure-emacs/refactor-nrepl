@@ -1,5 +1,7 @@
 (ns resources.ns1-cleaned
-  "This is a docstring for the ns"
+  "This is a docstring for the ns
+
+  It contains an \"escaped string\"."
   {:author "Winnie the pooh"}
   (:refer-clojure :exclude [macroexpand-1 read read-string])
   (:gen-class

@@ -97,7 +97,7 @@
             (println)
             (print ")"))
           (when docstring?
-            (printf "\"%s\"" docstring?)
+            (printf "\"%s\"" (str/escape docstring? {\" "\\\""}))
             (if (or (seq attrs?) (seq forms))
               (print "\n")
               (print ")")))
