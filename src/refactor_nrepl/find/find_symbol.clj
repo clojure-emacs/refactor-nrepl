@@ -102,13 +102,13 @@
          (str/join "\n")
          str/trim)))
 
-(defn- find-symbol-in-file [fully-qualified-name block-on-errors file]
+(defn- find-symbol-in-file [fully-qualified-name ignore-errors file]
   (let [file-content (slurp file)
         locs (try (->> (ana/ns-ast file-content)
                        (find-symbol-in-ast fully-qualified-name)
                        (filter :line-beg))
                   (catch Exception e
-                    (when block-on-errors
+                    (when-not ignore-errors
                       (throw e))))
         locs (concat locs
                      (some->
@@ -129,7 +129,7 @@
                                   (:line-end  info))}))]
     (map gather locs)))
 
-(defn- find-global-symbol [file ns var-name clj-dir block-on-errors]
+(defn- find-global-symbol [file ns var-name clj-dir ignore-errors]
   (let [dir (or clj-dir ".")
         namespace (or ns (core/ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
@@ -137,7 +137,7 @@
                                (str/join "/" [namespace var-name]))]
     (->> dir
          (core/find-in-dir (some-fn core/clj-file? core/cljc-file?))
-         (mapcat (partial find-symbol-in-file fully-qualified-name block-on-errors)))))
+         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [line-beg col-beg]}]
@@ -249,10 +249,10 @@
       (not= (core/suffix thing-in-file)
             (core/suffix name)))))
 
-(defn find-symbol [{:keys [file ns name dir line column block-on-errors]}]
+(defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (core/throw-unless-clj-file file)
   (let [macros (future (find-macro (core/fully-qualify name ns)))
-        globals (->> (find-global-symbol file ns name dir (= block-on-errors "true"))
+        globals (->> (find-global-symbol file ns name dir (= ignore-errors "true"))
                      distinct
                      (remove spurious?)
                      future)]

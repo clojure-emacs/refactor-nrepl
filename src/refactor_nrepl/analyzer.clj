@@ -99,14 +99,7 @@
   [file-content]
   (let [ast-or-err (cachable-ast file-content)
         error? (instance? Throwable ast-or-err)
-        debug (:debug config/*config*)
-        first-level-errors (and (coll? ast-or-err)
-                                (->> (map :result ast-or-err)
-                                     (remove nil?)
-                                     (filter #(.. (type %)
-                                                  (getName)
-                                                  (endsWith "clojure.tools.analyzer.jvm.ExceptionThrown")))
-                                     seq))]
+        debug (:debug config/*config*)]
 
     (cond
       (and error? debug)
@@ -114,13 +107,6 @@
 
       error?
       (throw-ast-in-bad-state file-content (.getMessage ast-or-err))
-
-      (and first-level-errors debug)
-      (throw (.-e (first first-level-errors)))
-
-      first-level-errors
-      (throw-ast-in-bad-state file-content (str/join "; " (->> (map #(.-e %) first-level-errors)
-                                                               (map #(.getMessage %)))))
 
       :default
       ast-or-err)))
