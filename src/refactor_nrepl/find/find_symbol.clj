@@ -252,8 +252,10 @@
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (core/throw-unless-clj-file file)
   (let [macros (future (find-macro (core/fully-qualify name ns)))
-        globals (future (remove spurious? (distinct (find-global-symbol file ns name dir
-                                                                        (= ignore-errors "true")))))]
+        globals (->> (find-global-symbol file ns name dir (= ignore-errors "true"))
+                     distinct
+                     (remove spurious?)
+                     future)]
     (or
      ;; find-local-symbol is the fastest of the three
      (not-empty (remove spurious? (distinct (find-local-symbol file name line column))))
