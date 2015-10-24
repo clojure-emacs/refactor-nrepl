@@ -77,7 +77,6 @@
 (defn- find-used-locals-reply [{:keys [transport] :as msg}]
   (reply transport msg :used-locals (find-used-locals msg)))
 
-
 (defn- version-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :version (plugin/version)))
 

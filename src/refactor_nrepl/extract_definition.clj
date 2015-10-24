@@ -1,9 +1,9 @@
 (ns refactor-nrepl.extract-definition
   (:require [clojure.string :as str]
+            [refactor-nrepl
+             [core :refer [suffix]]
+             [s-expressions :as sexp]]
             [refactor-nrepl.find.find-symbol :refer [find-symbol]]
-            [refactor-nrepl.core :refer [suffix]]
-            [refactor-nrepl.s-expressions :as sexp]
-            [refactor-nrepl.util :as util]
             [rewrite-clj.zip :as zip])
   (:import [java.io PushbackReader StringReader]
            java.util.regex.Pattern))
