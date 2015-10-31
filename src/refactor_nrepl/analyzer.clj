@@ -9,8 +9,8 @@
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.walk :as walk]
             [refactor-nrepl
-             [config :as config]
-             [core :as core]]
+             [config :as config]]
+            [refactor-nrepl.ns.tracker :as tracker]
             [clojure.string :as str])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
@@ -121,7 +121,7 @@
                              "OK"))))))
 
 (defn warm-ast-cache []
-  (doseq [f (core/find-in-project core/clj-file?)]
+  (doseq [f (tracker/project-files-in-topo-order)]
     (try
       (ns-ast (slurp f))
       (catch Throwable th))) ;noop, ast-status will be reported separately
