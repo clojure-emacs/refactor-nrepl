@@ -1,10 +1,8 @@
 (ns refactor-nrepl.rename-file-or-dir
   (:require [clojure.string :as str]
-            [clojure.tools.namespace.file :as file]
             [me.raynes.fs :as fs]
-            [refactor-nrepl.core :as core]
             [refactor-nrepl
-             [config :as config]
+             [core :as core]
              [util :as util]]
             [refactor-nrepl.ns
              [ns-parser :as ns-parser]
