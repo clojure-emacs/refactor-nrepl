@@ -55,9 +55,11 @@
                                            (:prefix-rewriting config/*config*))}
     (let [ns-form (with-meta (core/read-ns-form path) (read-ns-meta-from-file path))
           _ (validate ns-form)
-          new-ns-form (if (get config/*config* :prune-ns-form)
-                        (-> path ns-parser/parse-ns (prune-dependencies path)
-                            (rebuild-ns-form ns-form))
-                        (-> path ns-parser/parse-ns (rebuild-ns-form ns-form)))]
+          deps-preprocessor (if (get config/*config* :prune-ns-form)
+                              #(prune-dependencies % path)
+                              identity)
+          new-ns-form (-> (ns-parser/parse-ns path)
+                          deps-preprocessor
+                          (rebuild-ns-form ns-form))]
       (when-not (= ns-form new-ns-form)
         new-ns-form))))

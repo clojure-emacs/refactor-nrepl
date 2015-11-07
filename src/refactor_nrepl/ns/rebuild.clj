@@ -215,35 +215,6 @@
     (when (seq import-form)
       (cons :import import-form))))
 
-(defn- drop-index [col idx]
-  (filter identity (map-indexed #(if (not= %1 idx) %2) col)))
-
-(defn- remove-clause
-  [ns-form key]
-  (if-let [idx (index-of-component ns-form key)]
-    (drop-index ns-form idx)
-    ns-form))
-
-(defn- update-require-clause
-  [ns-form new-require-form]
-  (if-let [idx (and new-require-form (or (index-of-component ns-form :require)
-                                         (index-of-component ns-form :use)
-                                         (count ns-form)))]
-    (apply list (assoc (vec ns-form) idx new-require-form))
-    (drop-index ns-form (index-of-component ns-form :require))))
-
-(defn- update-import-clause
-  [ns-form new-import-form]
-  (if-let [idx (and new-import-form (index-of-component ns-form :import))]
-    (apply list (assoc (vec ns-form) idx new-import-form))
-    (drop-index ns-form (index-of-component ns-form :import))))
-
-(defn- update-clause [ns-form new-form & keys]
-  (let [idx (apply #(or %) (map (partial index-of-component ns-form) keys))]
-    (if (and idx new-form)
-      (apply list (assoc (vec ns-form) idx new-form))
-      (drop-index ns-form idx))))
-
 (defn- build-require-macros-form [libspecs]
   (when-let [require-form (build-require-form libspecs)]
     (cons :require-macros (rest require-form))))
