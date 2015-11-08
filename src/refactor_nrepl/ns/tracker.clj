@@ -6,9 +6,13 @@
             [refactor-nrepl.core :as core]))
 
 (defn build-tracker
-  "Build a tracker for the project."
-  []
-  (file/add-files (tracker/tracker) (core/find-in-project core/source-file?)))
+  "Build a tracker for the project.
+
+  If file-predicate is provided, use that instead of `core/source-file?`"
+  ([]
+   (build-tracker core/source-file?))
+  ([file-predicate]
+   (file/add-files (tracker/tracker) (core/find-in-project file-predicate))))
 
 (defn get-dependents
   "Get the dependent files for ns from tracker."
@@ -20,7 +24,7 @@
       file)))
 
 (defn project-files-in-topo-order []
-  (let [tracker (file/add-files (tracker/tracker) (core/find-in-project core/clj-file?))
+  (let [tracker (build-tracker core/clj-file?)
         nses (dep/topo-sort (:clojure.tools.namespace.track/deps tracker))
         filemap (:clojure.tools.namespace.file/filemap tracker)
         ns2file (zipmap (vals filemap) (keys filemap))]
