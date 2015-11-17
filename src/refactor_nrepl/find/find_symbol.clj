@@ -125,8 +125,8 @@
                         {:file (.getCanonicalPath file)
                          :name fully-qualified-name
                          :match (match file-content
-                                  (:line-beg info)
-                                  (:line-end  info))}))]
+                                       (:line-beg info)
+                                       (:line-end  info))}))]
     (map gather locs)))
 
 (defn- find-global-symbol [file ns var-name clj-dir ignore-errors]
@@ -214,8 +214,8 @@
                          {:name var-name
                           :file (.getCanonicalPath (java.io.File. file))
                           :match (match file-content
-                                   (:line-beg %)
-                                   (:line-end %))})
+                                        (:line-beg %)
+                                        (:line-end %))})
                  (find-nodes var-name
                              [top-level-form-ast]
                              #(and (#{:local :binding} (:op %))
@@ -251,7 +251,7 @@
 
 (defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
   (core/throw-unless-clj-file file)
-  (let [macros (future (find-macro (core/fully-qualify name ns)))
+  (let [macros (future (find-macro (core/fully-qualify ns name)))
         globals (->> (find-global-symbol file ns name dir (= ignore-errors "true"))
                      distinct
                      (remove spurious?)

@@ -7,10 +7,11 @@
     of two separate libspecs.
   * Raise errors if any inconsistencies are found (e.g. a libspec with more than
     one alias).
-  * Remove any duplication in the :require, :require-macros, :use-maros
+  * Remove any duplication in the :require, :require-macros, :use-macros
     and :import form.
   * Remove any unused required namespaces or imported classes.
   * Remove any unused referred symbols.
+  * Prune, or remove if uneeded, the :rename clause
   * Returns nil when nothing is changed, so the client knows not to do anything."
   (:require [refactor-nrepl
              [config :as config]
@@ -53,8 +54,8 @@
                                                  (core/cljc-file? path))
                                            false
                                            (:prefix-rewriting config/*config*))}
-    (let [ns-form (with-meta (core/read-ns-form path) (read-ns-meta-from-file path))
-          _ (validate ns-form)
+    (let [ns-form (with-meta (validate (core/read-ns-form path))
+                    (read-ns-meta-from-file path))
           deps-preprocessor (if (get config/*config* :prune-ns-form)
                               #(prune-dependencies % path)
                               identity)

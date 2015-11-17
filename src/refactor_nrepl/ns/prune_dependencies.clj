@@ -26,8 +26,7 @@
           ;; fully qualified reference in file even though symbol is referred
           ;; This happens as a side-effect of using the symbol in a
           ;; backquoted form when writing macros
-          (set (map (fn [symbol-from-refer]
-                      (str ns "/" symbol-from-refer))
+          (set (map (partial core/fully-qualify ns)
                     (concat refer require-macros refer-macros)))
           (map str (concat refer require-macros refer-macros))) symbol-in-file))
    ;; Used as a fully qualified symbol
@@ -35,19 +34,24 @@
    ;; Aliased symbol in use
    (and as (.startsWith symbol-in-file (str as "/")))))
 
+(defn- libspec-in-use-with-rename?
+  [{:keys [rename] :as libspec} symbols-in-file]
+  (some (set symbols-in-file) (map str (vals rename))))
+
 (defn- libspec-in-use?
   [{:keys [ns as refer] :as libspec} symbols-in-file current-ns]
-  (when (if (= refer :all)
-          (some (partial libspec-in-use-with-refer-all? libspec current-ns)
-                symbols-in-file)
-          (some (partial libspec-in-use-without-refer-all? libspec)
-                symbols-in-file))
+  (when (or (if (= refer :all)
+              (some (partial libspec-in-use-with-refer-all? libspec current-ns)
+                    symbols-in-file)
+              (some (partial libspec-in-use-without-refer-all? libspec)
+                    symbols-in-file))
+            (libspec-in-use-with-rename? libspec symbols-in-file))
     libspec))
 
 (defn- referred-symbol-in-use?
   [symbol-ns used-syms sym]
   (some (fn [sym-from-file]
-          ((into #{(str sym)} [(str symbol-ns "/" sym)])
+          ((into #{(str sym)} [(core/fully-qualify symbol-ns sym)])
            sym-from-file))
         used-syms))
 
@@ -99,9 +103,18 @@
   (map (partial remove-unused-syms-and-specs symbols-in-file current-ns)
        libspecs))
 
+(defn- remove-unused-renamed-symbols
+  [symbols-in-file {:keys [rename] :as libspec}]
+  (assoc libspec :rename
+         (into {}
+               (for [[sym alias] rename
+                     :when (symbols-in-file (str alias))]
+                 [sym alias]))))
+
 (defn- prune-libspecs
   [libspecs symbols-in-file current-ns]
   (->> libspecs
+       (map (partial remove-unused-renamed-symbols symbols-in-file))
        (remove-unused-requires symbols-in-file current-ns)
        (filter (complement nil?))))
 

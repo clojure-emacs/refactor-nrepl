@@ -249,7 +249,7 @@
 
 (defn ^String fully-qualify
   "Create a fully qualified name from name and ns."
-  [name ns]
+  [ns name]
   (let [prefix (str ns)
         suffix (suffix name)]
     (when-not (and (seq prefix) (seq suffix))

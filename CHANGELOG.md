@@ -4,6 +4,7 @@
 
 ### New features
 
+* Add support for `:rename` clauses in clean ns.
 * Add cljc support to `clean-ns`.
 * Add cljs support to `clean-ns`.
 * `rename-file-or-dir` now knows how to move cljs files.

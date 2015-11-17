@@ -130,7 +130,8 @@
                                 refer)])
                     (when refer-macros
                       [:refer-macros (vec (sort-referred-symbols refer-macros))])
-                    (when rename [:rename (into (sorted-map) (:rename libspec))])
+                    (when (not-empty rename)
+                      [:rename (into (sorted-map) (:rename libspec))])
                     (flatten (seq flags)))))))
 
 (defn- create-libspec-vectors-without-prefix

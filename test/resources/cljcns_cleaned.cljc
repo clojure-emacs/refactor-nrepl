@@ -6,7 +6,7 @@
       [(:require clojure.data clojure.edn
                  [clojure.instant :as inst :reload true]
                  [clojure.pprint :refer [cl-format formatter get-pretty-writer]]
-                 [clojure.string :refer :all :rename {replace foo reverse bar} :reload-all true]
+                 [clojure.string :refer :all :reload-all true]
                  [clojure.test :refer :all]
                  clojure.test.junit
                  [clojure.walk :refer [postwalk prewalk]]

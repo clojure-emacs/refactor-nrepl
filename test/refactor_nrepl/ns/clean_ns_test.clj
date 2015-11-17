@@ -20,6 +20,8 @@
 (def ns3 (clean-msg "test/resources/ns3.clj"))
 (def ns3-rebuilt (core/read-ns-form (absolute-path "test/resources/ns3_rebuilt.clj")))
 (def ns-with-exclude (clean-msg "test/resources/ns_with_exclude.clj"))
+(def ns-with-rename (clean-msg "test/resources/ns_with_rename.clj"))
+(def ns-with-rename-cleaned (core/read-ns-form "test/resources/ns_with_rename_cleaned.clj"))
 (def ns-with-unused-deps (clean-msg "test/resources/unused_deps.clj"))
 (def ns-without-unused-deps (core/read-ns-form
                              (absolute-path "test/resources/unused_removed.clj")))
@@ -42,25 +44,24 @@
     (is (.contains cleaned "^{:author \"Trurl and Klapaucius\"
       :doc \"test ns with meta\"}"))))
 
-(deftest preserves-removed-use
+(deftest rewrites-use-to-require
   (let [requires (core/get-ns-component (clean-ns ns2) :use)
         combined-requires (core/get-ns-component ns2-cleaned :require)]
     (is (reduce
          #(or %1 (= %2 '[clojure
-                         [edn :refer :all :rename {read-string rs read rd}]
+                         [edn :refer :all :rename {read-string rs}]
                          [instant :refer :all]
                          [pprint :refer [cl-format fresh-line get-pretty-writer]]
-                         [string :refer :all :rename {replace foo reverse bar}]
+                         [string :refer :all]
                          [test :refer :all]]))
          false
          (tree-seq sequential? identity combined-requires)))))
 
-(deftest removes-use-with-rename-clause
+(deftest keeps-clause-with-rename
   (let [requires (core/get-ns-component (clean-ns ns2) :use)
         combined-requires (core/get-ns-component ns2-cleaned :require)]
     (is (reduce
-         #(or %1 (= %2 '[edn :refer :all :rename {read-string rs
-                                                  read rd}]))
+         #(or %1 (= %2 '[edn :refer :all :rename {read-string rs}]))
          false
          (tree-seq sequential? identity combined-requires)))))
 
@@ -167,6 +168,9 @@
     (let [new-require (core/get-ns-component (clean-ns ns3) :require)
           expected-require (core/get-ns-component ns3-rebuilt :require)]
       (is (= expected-require new-require)))))
+
+(deftest does-not-remove-ns-with-rename
+  (is (= (nthrest ns-with-rename-cleaned 2) (nthrest (clean-ns ns-with-rename) 2))))
 
 ;; Order of stuff in maps aren't stable across versions which messes
 ;; with pretty-printing

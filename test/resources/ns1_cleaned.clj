@@ -11,7 +11,7 @@
   (:require [clojure data edn
              [instant :as inst :reload true]
              [pprint :refer [cl-format formatter get-pretty-writer]]
-             [string :refer :all :rename {replace foo reverse bar} :reload-all true]
+             [string :refer :all :reload-all true]
              [test :refer :all]
              [walk :refer [postwalk prewalk]]
              xml]

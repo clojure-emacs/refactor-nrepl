@@ -30,8 +30,8 @@
   (let [prepend-prefix (fn add-prefix [prefix libspec]
                          (if (sequential? libspec)
                            (apply vector
-                             (symbol (str prefix "." (first libspec)))
-                             (rest libspec))
+                                  (symbol (str prefix "." (first libspec)))
+                                  (rest libspec))
                            (symbol (str prefix "." libspec))))
         normalize-libspec-vector (fn [libspec]
                                    (if (core/prefix-form? libspec)
