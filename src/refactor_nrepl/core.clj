@@ -4,7 +4,6 @@
             [clojure.string :as str]
             [clojure.tools.namespace.parse :as parse]
             [clojure.tools.reader.reader-types :as readers]
-            [clojure.string :as str]
             [me.raynes.fs :as fs]
             [refactor-nrepl.util :refer [normalize-to-unix-path]])
   (:import [java.io File FileReader PushbackReader StringReader]))
@@ -234,16 +233,33 @@
      (read rdr-opts rdr)
      (slurp rdr))))
 
+(defn extract-ns-meta
+  "Retrieve the metadata for the ns, if there is any.
+
+  This is preferable to just doing (meta the-ns-form) because the
+  compiler, as well as libraries like clojure.test, add quite a bit of
+  metadata which shouldn't be printed back out."
+  [file-content]
+  (let [meta? (-> file-content (.replaceFirst "\\^\\{" "\\{")
+                  (StringReader.)
+                  (PushbackReader.)
+                  parse/read-ns-decl
+                  second)]
+    (when (map? meta?)
+      meta?)))
+
 (defn ns-form-from-string
   ([file-content]
    (try
-     (parse/read-ns-decl (PushbackReader. (StringReader. file-content)))
+     (with-meta (parse/read-ns-decl (PushbackReader. (StringReader. file-content)))
+       (extract-ns-meta file-content))
      (catch Exception e
        (throw (IllegalArgumentException. "Malformed ns form!")))))
   ([dialect file-content]
    (let [rdr-opts {:read-cond :allow :features #{dialect}}]
      (try
-       (parse/read-ns-decl (PushbackReader. (StringReader. file-content)) rdr-opts)
+       (with-meta (parse/read-ns-decl (PushbackReader. (StringReader. file-content)) rdr-opts)
+         (extract-ns-meta file-content))
        (catch Exception e
          (throw (IllegalArgumentException. "Malformed ns form!")))))))
 
