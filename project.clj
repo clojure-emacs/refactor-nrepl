@@ -19,7 +19,7 @@
                  ^:source-dep [version-clj "0.1.2"]]
   :plugins [[thomasa/mranderson "0.4.6"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
-  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.9.1"]]}
+  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.10.0"]]}
              :test {:dependencies [[print-foo "1.0.1"]]
                     :src-paths ["test/resources"]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
