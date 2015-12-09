@@ -4,7 +4,7 @@
 
   {:ns my-ns
    :as my-alias
-   :refer [referred symbols here] ;; or :all
+   :refer [referred symbols here] ; or :all
    :rename {:rename :spec}
    :only [only these symbols]
 

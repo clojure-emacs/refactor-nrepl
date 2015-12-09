@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changes
+
+`resolve-missing` now returns a map instead of an alist.
+
 ### New features
 
 * Add support for `:rename` clauses in clean ns.
