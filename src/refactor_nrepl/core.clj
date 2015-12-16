@@ -79,6 +79,16 @@
                             pred
                             (complement build-artifact?)))))
 
+(defn data-file? [path-or-file]
+  "True of f is named like a clj file but represents data.
+
+E.g. true for data_readers.clj"
+  (let [path (.getPath (io/file path-or-file))
+        data-files #{"data_readers.clj" "project.clj" "boot.clj"}]
+    (reduce (fn [acc data-file] (or acc (.endsWith path data-file)))
+            false
+            data-files)))
+
 (defn cljc-file?
   [path-or-file]
   (.endsWith (.getPath (io/file path-or-file)) ".cljc"))
@@ -89,10 +99,13 @@
 
 (defn clj-file?
   [path-or-file]
-  (.endsWith (.getPath (io/file path-or-file)) ".clj"))
+  (and (not (data-file? path-or-file))
+       (.endsWith (.getPath (io/file path-or-file)) ".clj")))
 
 (defn source-file?
-  "True for clj, cljs or cljc files."
+  "True for clj, cljs or cljc files.
+
+  A list of data files are excluded, e.g. data_readers.clj."
   [path-or-file]
   ((some-fn cljc-file? cljs-file? clj-file?) (io/file path-or-file)))
 
