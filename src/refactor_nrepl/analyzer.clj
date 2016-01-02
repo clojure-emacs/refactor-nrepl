@@ -77,7 +77,6 @@
                  :validate/throw-on-arity-mismatch false
                  :validate/wrong-tag-handler shadow-wrong-tag-handler}}]
       (binding [ana/macroexpand-1 noop-macroexpand-1
-                *file* (-> ns ajutils/ns-resource ajutils/source-path)
                 reader/*data-readers* *data-readers*]
         (assoc-in (aj/analyze-ns ns (aj/empty-env) opts) [0 :alias-info] aliases)))))
 
