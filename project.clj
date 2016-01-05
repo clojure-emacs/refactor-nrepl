@@ -9,7 +9,7 @@
                  ^:source-dep [cheshire "5.4.0"]
                  ^:source-dep [alembic "0.3.2"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.9"]
-                 ^:source-dep [org.clojure/tools.namespace  "0.3.0-alpha1"]
+                 ^:source-dep [org.clojure/tools.namespace  "0.3.0-alpha3"]
                  ^:source-dep [org.clojure/tools.reader "0.10.0-alpha3"]
                  ^:source-dep [org.clojure/java.classpath "0.2.2"]
                  ^:source-dep [lein-cljfmt "0.3.0"]
