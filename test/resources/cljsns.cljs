@@ -1,6 +1,7 @@
 (ns resources.cljsns
   (:require [cljs.test :refer-macros [is deftest]]
             [cljs.test :refer-macros [is]]
+            [cljsjs.js-yaml] ; this one should not be pruned as it contains externs
             [clojure.string :refer [split-lines join]]
             [cljs.pprint :as pprint]
             [clojure.set :as set])
@@ -17,7 +18,7 @@
 
 (deftest tt
   (testing "whatever"
-      (is (= 1 1))))
+    (is (= 1 1))))
 
 (defn foo []
   `(join "foo bar"))

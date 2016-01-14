@@ -1,6 +1,7 @@
 (ns resources.cljsns
   (:require [cljs.pprint :as pprint]
             [cljs.test :refer-macros [deftest is]]
+            cljsjs.js-yaml
             [clojure.set :as set]
             [clojure.string :refer [join split-lines]])
   (:require-macros cljs.analyzer.api

@@ -99,9 +99,8 @@
                 (= (:refer libspec) :all))
     (:refer libspec)))
 
-(defn- remove-unused-requires [symbols-in-file current-ns libspecs]
-  (map (partial remove-unused-syms-and-specs symbols-in-file current-ns)
-       libspecs))
+(defn- remove-unused-requires [symbols-in-file current-ns libspec]
+  (remove-unused-syms-and-specs symbols-in-file current-ns libspec))
 
 (defn- remove-unused-renamed-symbols
   [symbols-in-file {:keys [rename] :as libspec}]
@@ -111,11 +110,22 @@
                      :when (symbols-in-file (str alias))]
                  [sym alias]))))
 
+(defn- libspec-should-never-be-pruned? [libspec]
+  ;; The symbols of cljsjs namespaces are externs, and unknowable for now,
+  ;; so we just ignore these libspecs
+  (.startsWith (str (:ns libspec)) "cljsjs"))
+
+(defn- prune-libspec [symbols-in-file current-ns libspec]
+  (if (libspec-should-never-be-pruned? libspec)
+    libspec
+    (some->> libspec
+             (remove-unused-renamed-symbols symbols-in-file)
+             (remove-unused-requires symbols-in-file current-ns))))
+
 (defn- prune-libspecs
   [libspecs symbols-in-file current-ns]
   (->> libspecs
-       (map (partial remove-unused-renamed-symbols symbols-in-file))
-       (remove-unused-requires symbols-in-file current-ns)
+       (map (partial prune-libspec symbols-in-file current-ns))
        (filter (complement nil?))))
 
 (defn- prune-imports

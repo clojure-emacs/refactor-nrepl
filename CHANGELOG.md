@@ -13,17 +13,17 @@
 * Make `find-symbol` able to handle macros.
 
 ### Bugs fixed
-
-[clojure-emacs/clj-refactor.el#223](https://github.com/clojure-emacs/clj-refactor.el/issues/223) Fix clean-ns removing metadata when file starts with a comment.
-[#103](https://github.com/clojure-emacs/refactor-nrepl/issues/108) `find-symbol` failes in projects with `cljc` files.
-[#106](https://github.com/clojure-emacs/refactor-nrepl/issues/106) Failure to build ASTs when namespaced keywords are present in the project.
+* [clojure-emacs/clj-refactor.el#223](https://github.com/clojure-emacs/clj-refactor.el/issues/223) Fix clean-ns removing metadata when file starts with a comment.
+* [#103](https://github.com/clojure-emacs/refactor-nrepl/issues/108) `find-symbol` failes in projects with `cljc` files.
+* [#106](https://github.com/clojure-emacs/refactor-nrepl/issues/106) Failure to build ASTs when namespaced keywords are present in the project.
 
 ### Changes
 
+* [clojure-emacs/clj-refactor.el#275](https://github.com/clojure-emacs/clj-refactor.el/issues/275) clean-ns will no longer prune cljsjs requires.
 * New option for `clean-ns`, `prune-ns-form`, to avoid pruning the ns-form.
 * Get rid of the client namespace
 
-* [#118](https://github.com/clojure-emacs/refactor-nrepl/issues/118)Improve the `find-symbol` reply.  It's now a map instead of a
+* [#118](https://github.com/clojure-emacs/refactor-nrepl/issues/118) Improve the `find-symbol` reply.  It's now a map instead of a
   vector.
 * Remove `find-debug-fns`.  None of us ever used this and there's some
   overlap with `find-usages`.
