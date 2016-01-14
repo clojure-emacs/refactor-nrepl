@@ -91,7 +91,9 @@
 (defn- throw-ast-in-bad-state
   [file-content msg]
   (throw (IllegalStateException.
-              (str (first (parse-ns file-content)) " is in a bad state! Error: " msg))))
+          (str "refactor-nrepl is unable to build an AST for "
+               (first (parse-ns file-content))
+               ". tools.analyzer encountered the following problem: " msg))))
 
 (defn ns-ast
   "Build AST for a namespace"
