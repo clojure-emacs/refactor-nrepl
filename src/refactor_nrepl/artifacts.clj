@@ -19,11 +19,15 @@
 (defn get-artifacts-from-clojars!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
-  (->> "https://clojars.org/repo/all-jars.clj"
-       java.net.URL.
-       io/reader
-       line-seq
-       (map edn/read-string)))
+  (try
+    (->> "https://clojars.org/repo/all-jars.clj"
+         java.net.URL.
+         io/reader
+         line-seq
+         (map edn/read-string))
+    (catch Exception _
+      ;; In the event clojars is down just return an empty vector. See #136.
+      [])))
 
 (defn add-artifacts-from-clojars! []
   (->> (get-artifacts-from-clojars!)
