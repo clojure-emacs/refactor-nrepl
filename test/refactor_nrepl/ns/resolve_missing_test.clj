@@ -1,7 +1,8 @@
 (ns refactor-nrepl.ns.resolve-missing-test
   (:require [cemerick.piggieback :as piggieback]
-            [clojure.edn :as edn]
-            [clojure.test :as t]
+            [clojure
+             [edn :as edn]
+             [test :as t]]
             [clojure.tools.nrepl :as nrepl]
             [clojure.tools.nrepl.server :as server]
             [refactor-nrepl.middleware :as middleware]))
@@ -68,12 +69,17 @@
 
 (t/deftest resolve-missing-test
   (t/testing "Finds functions is regular namespaces"
-    (let [response (message {:op :resolve-missing :symbol 'print-doc})
-          [[namespace type]] (edn/read-string (:candidates response))]
-      (t/is (= 'cljs.repl namespace))
+    (let [{:keys [error] :as response} (message {:op :resolve-missing :symbol 'print-doc})
+          {:keys [name type]} (edn/read-string (:candidates response))]
+      (when error
+        (println error)
+        (throw (RuntimeException. error)))
+      (t/is (= 'cljs.repl name))
       (t/is (= :ns type)))
     (t/testing "Finds macros"
-      (let [response (message {:op :resolve-missing :symbol 'dir})
-            [[namespace type]] (edn/read-string (:candidates response))]
-        (t/is (= 'cljs.repl namespace))
+      (let [{:keys [error] :as response} (message {:op :resolve-missing :symbol 'dir})
+            {:keys [name type]} (edn/read-string (:candidates response))]
+        (when error
+          (throw (RuntimeException. error)))
+        (t/is (= 'cljs.repl name))
         (t/is (= :macro type))))))

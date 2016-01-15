@@ -156,12 +156,11 @@ classpath.  This symbol can be qualified, e.g. `walk/postwalk` or
 is a qualified reference to a clojure var and the second a reference
 to a static java method.
 
-The return value `candidates` is an alist of `((candidate1 . type1)
-(candidate2 . type2) ...)` where type is in `#{:type :class :ns
+The return value `candidates` is a list of `({:name candidate.ns :type :ns} {:name candidate.package :type :type} ...)` where type is in `#{:type :class :ns
 :macro}` so we can branch on the various ways to make the symbol
 available.  `:type` means the symbol resolved to a var created by
-`defrecord` or `deftype`, `:class` also includes interfaces.  `:macro`
-is only used if the op is called in a cljs context.
+`defrecord` or `deftype`, `:class` is for Java classes but also includes interfaces.  `:macro`
+is only used if the op is called in a cljs context and means the var resolved to macro.
 
 ### hotload-dependency
 
