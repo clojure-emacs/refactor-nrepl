@@ -134,7 +134,7 @@ The `clean-ns` op will perform the following cleanups on an ns form:
 * Remove any duplication in the :require and :import form.
 * Prune or remove any `:rename` clause.
 
-The `clean-ns` requires a `path` which is the absolute path to the file containing the `ns` to be operated upon.
+The `clean-ns` requires a `path` which is the path to the file containing the `ns` to be operated upon.
 
 The return value, `ns` is the entire `(ns ..)` form in prestine condition, or `nil` if nothing was done (so the client doesn't update the timestamp on files when nothing actually needs doing).
 
