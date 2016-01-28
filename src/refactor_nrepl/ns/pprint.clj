@@ -78,8 +78,10 @@
 
 (defn pprint-meta
   [m]
-  (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
-                       ", " "\n")))
+  (if-let [shorthand-meta (::core/shorthand-meta m)]
+    (print (str "^" shorthand-meta " "))
+    (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
+                         ", " "\n"))))
 
 (defn pprint-ns
   [[_ name & more :as ns-form]]

@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.clean-ns
+(ns ^:clean refactor-nrepl.ns.clean-ns
   "Contains functionality for cleaning ns forms.
 
   * Eliminate :use, or :use-macro clauses.
@@ -19,7 +19,8 @@
             [refactor-nrepl.ns
              [ns-parser :as ns-parser]
              [prune-dependencies :refer [prune-dependencies]]
-             [rebuild :refer [rebuild-ns-form]]]))
+             [rebuild :refer [rebuild-ns-form]]]
+            [clojure.string :as str]))
 
 (defn- assert-no-exclude-clause
   [use-form]

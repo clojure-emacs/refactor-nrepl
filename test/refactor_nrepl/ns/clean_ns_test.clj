@@ -34,6 +34,9 @@
 (def cljc-ns-cleaned-clj (core/read-ns-form (absolute-path "test/resources/cljcns_cleaned.cljc")))
 (def cljc-ns-cleaned-cljs (core/read-ns-form :cljs (absolute-path "test/resources/cljcns_cleaned.cljc")))
 
+(def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
+(def ns-with-shorthand-meta-cleaned (core/read-ns-form (absolute-path  "test/resources/ns_with_shorthand_meta_cleaned.clj")))
+
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
         combined-requires (core/get-ns-component ns2-cleaned :require)]
@@ -179,3 +182,7 @@
     (let [ns-str (pprint-ns (clean-ns ns1))
           ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_and_pprinted")))]
       (is (= ns1-str ns-str)))))
+
+(deftest preserves-shorthand-meta
+  (let [cleaned (pprint-ns (clean-ns ns-with-shorthand-meta))]
+    (is (re-find #"\^:automation" cleaned))))

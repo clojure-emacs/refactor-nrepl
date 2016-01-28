@@ -5,7 +5,8 @@
             [clojure.tools.namespace.parse :as parse]
             [clojure.tools.reader.reader-types :as readers]
             [me.raynes.fs :as fs]
-            [refactor-nrepl.util :refer [normalize-to-unix-path]])
+            [refactor-nrepl.util :refer [normalize-to-unix-path]]
+            [refactor-nrepl.s-expressions :as sexp])
   (:import [java.io File FileReader PushbackReader StringReader]))
 
 (defn ns-from-string
@@ -253,13 +254,17 @@ E.g. true for data_readers.clj"
   compiler, as well as libraries like clojure.test, add quite a bit of
   metadata which shouldn't be printed back out."
   [file-content]
-  (let [meta? (-> file-content (.replaceFirst "\\^\\{" "\\{")
+  (let [ns-string (sexp/get-next-sexp file-content)
+        meta? (-> ns-string (.replaceFirst "\\^\\{" "\\{")
                   (StringReader.)
                   (PushbackReader.)
                   parse/read-ns-decl
-                  second)]
-    (when (map? meta?)
-      meta?)))
+                  second)
+        shorthand-meta?  (second (re-find #"\^:([^\s]+)\s" ns-string))]
+    (cond
+      (map? meta?) meta?
+      shorthand-meta? {::shorthand-meta (keyword shorthand-meta?)}
+      :else nil)))
 
 (defn ns-form-from-string
   ([file-content]
