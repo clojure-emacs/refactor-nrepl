@@ -23,7 +23,7 @@
 
 ### Changes
 
-*[#132](https://github.com/clojure-emacs/refactor-nrepl/issues/132)
+* [#132](https://github.com/clojure-emacs/refactor-nrepl/issues/132)
 When the middleware is started with the wrong Clojure version we now
 warn and exclude the middleware instead of failing catastrophically.
 * `resolve-missing` now returns a map instead of an alist.
