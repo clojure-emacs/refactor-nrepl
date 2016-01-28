@@ -35,7 +35,6 @@
 (def cljc-ns-cleaned-cljs (core/read-ns-form :cljs (absolute-path "test/resources/cljcns_cleaned.cljc")))
 
 (def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
-(def ns-with-shorthand-meta-cleaned (core/read-ns-form (absolute-path  "test/resources/ns_with_shorthand_meta_cleaned.clj")))
 
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
