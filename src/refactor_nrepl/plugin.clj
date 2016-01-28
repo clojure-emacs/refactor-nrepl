@@ -1,5 +1,10 @@
 (ns refactor-nrepl.plugin
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [leiningen.core.main :as lein]))
+
+(def ^:private external-dependencies
+  ;; For whatever reason it didn't work to look for cider-nrepl here.
+  {'org.clojure/clojure "1.7.0"})
 
 (defn version []
   (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
@@ -12,11 +17,32 @@
                  v))
     v))
 
-(defn middleware [project]
-  (-> project
-      (update-in [:dependencies]
-                 (fnil into [])
-                 [['refactor-nrepl (version)]])
-      (update-in [:repl-options :nrepl-middleware]
-                 (fnil into [])
-                 '[refactor-nrepl.middleware/wrap-refactor])))
+(defn- version-ok?
+  [dependencies artifact version-string]
+  (or (->> dependencies
+           (some (fn [[id v]]
+                   (and (= id artifact)
+                        (lein/version-satisfies? v version-string)))))
+      (lein/warn (str "Warning: refactor-nrepl requires " artifact " "
+                      version-string " or greater."))))
+
+(defn- external-dependencies-ok? [dependencies]
+  (reduce (fn [acc [artifact version-string]]
+            (and (version-ok? dependencies artifact version-string) acc))
+          true
+          external-dependencies))
+
+(defn middleware
+  [{:keys [dependencies] :as project}]
+  (if (external-dependencies-ok? dependencies)
+    (-> project
+        (update-in [:dependencies]
+                   (fnil into [])
+                   [['refactor-nrepl (version)]])
+        (update-in [:repl-options :nrepl-middleware]
+                   (fnil into [])
+                   '[refactor-nrepl.middleware/wrap-refactor]))
+    (do
+      (lein/warn (str "Warning: refactor-nrepl middleware won't be "
+                      "activated due to missing dependencies."))
+      project)))

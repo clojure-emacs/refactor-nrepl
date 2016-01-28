@@ -23,6 +23,9 @@
 
 ### Changes
 
+*[#132](https://github.com/clojure-emacs/refactor-nrepl/issues/132)
+When the middleware is started with the wrong Clojure version we now
+warn and exclude the middleware instead of failing catastrophically.
 * `resolve-missing` now returns a map instead of an alist.
 * [clojure-emacs/clj-refactor.el#275](https://github.com/clojure-emacs/clj-refactor.el/issues/275) clean-ns will no longer prune cljsjs requires.
 * New option for `clean-ns`, `prune-ns-form`, to avoid pruning the ns-form.

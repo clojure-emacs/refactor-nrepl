@@ -25,6 +25,7 @@
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :dependencies [[org.clojure/clojurescript "1.7.48"]
                                   [com.cemerick/piggieback "0.2.1"]
+                                  [leiningen-core "2.5.3"]
                                   [commons-io/commons-io "2.4"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
