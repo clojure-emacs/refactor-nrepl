@@ -200,6 +200,25 @@ E.g. true for data_readers.clj"
 
       :else (-> fully-qualified-name str (.split "\\.") last))))
 
+(defn extract-ns-meta
+  "Retrieve the metadata for the ns, if there is any.
+
+  This is preferable to just doing (meta the-ns-form) because the
+  compiler, as well as libraries like clojure.test, add quite a bit of
+  metadata which shouldn't be printed back out."
+  [file-content]
+  (let [ns-string (sexp/get-next-sexp file-content)
+        meta? (-> ns-string (.replaceFirst "\\^\\{" "\\{")
+                  (StringReader.)
+                  (PushbackReader.)
+                  parse/read-ns-decl
+                  second)
+        shorthand-meta?  (second (re-find #"\^:([^\s]+)\s" ns-string))]
+    (cond
+      (map? meta?) meta?
+      shorthand-meta? {::shorthand-meta (keyword shorthand-meta?)}
+      :else nil)))
+
 (defn read-ns-form
   "Read the ns form found at PATH.
 
@@ -208,14 +227,14 @@ E.g. true for data_readers.clj"
    (with-open [file-reader (FileReader. path)]
      (if-let [ns-form (parse/read-ns-decl (readers/indexing-push-back-reader
                                            (PushbackReader. file-reader)))]
-       ns-form
+       (with-meta ns-form (extract-ns-meta (slurp path)))
        (throw (IllegalStateException. (str "No ns form at " path))))))
   ([dialect path]
    (with-open [file-reader (FileReader. path)]
      (if-let [ns-form (parse/read-ns-decl (readers/indexing-push-back-reader
                                            (PushbackReader. file-reader))
                                           {:read-cond :allow :features #{dialect}})]
-       ns-form
+       (with-meta ns-form (extract-ns-meta (slurp path)))
        (throw (IllegalStateException. (str "No ns form at " path)))))))
 
 (defn path->namespace
@@ -246,25 +265,6 @@ E.g. true for data_readers.clj"
          rdr (PushbackReader. (StringReader. file-content))]
      (read rdr-opts rdr)
      (slurp rdr))))
-
-(defn extract-ns-meta
-  "Retrieve the metadata for the ns, if there is any.
-
-  This is preferable to just doing (meta the-ns-form) because the
-  compiler, as well as libraries like clojure.test, add quite a bit of
-  metadata which shouldn't be printed back out."
-  [file-content]
-  (let [ns-string (sexp/get-next-sexp file-content)
-        meta? (-> ns-string (.replaceFirst "\\^\\{" "\\{")
-                  (StringReader.)
-                  (PushbackReader.)
-                  parse/read-ns-decl
-                  second)
-        shorthand-meta?  (second (re-find #"\^:([^\s]+)\s" ns-string))]
-    (cond
-      (map? meta?) meta?
-      shorthand-meta? {::shorthand-meta (keyword shorthand-meta?)}
-      :else nil)))
 
 (defn ns-form-from-string
   ([file-content]
