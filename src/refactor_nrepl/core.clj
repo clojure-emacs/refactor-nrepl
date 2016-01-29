@@ -80,10 +80,11 @@
                             pred
                             (complement build-artifact?)))))
 
-(defn data-file? [path-or-file]
+(defn data-file?
   "True of f is named like a clj file but represents data.
 
-E.g. true for data_readers.clj"
+  E.g. true for data_readers.clj"
+  [path-or-file]
   (let [path (.getPath (io/file path-or-file))
         data-files #{"data_readers.clj" "project.clj" "boot.clj"}]
     (reduce (fn [acc data-file] (or acc (.endsWith path data-file)))
