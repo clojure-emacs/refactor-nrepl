@@ -4,7 +4,7 @@
             [clojure.tools.nrepl.server :as nrserver]
             [refactor-nrepl middleware
              [client :refer :all]
-             [plugin :as plugin]]
+             [core :as core]]
             [clojure.string :as str])
   (:import java.io.File
            org.apache.commons.io.FileUtils))
@@ -235,5 +235,5 @@
                                 :line 12 :column 6))))))
 
 (deftest test-version
-  (is (= (str (plugin/version))
+  (is (= (str (core/version))
          (version :transport (connect :port 7777)))))

@@ -9,6 +9,17 @@
             [refactor-nrepl.s-expressions :as sexp])
   (:import [java.io File FileReader PushbackReader StringReader]))
 
+(defn version []
+  (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
+                  "project.clj")
+              slurp
+              read-string
+              (nth 2))]
+    (assert (string? v)
+            (str "Something went wrong, version is not a string: "
+                 v))
+    v))
+
 (defn ns-from-string
   "Retrieve the symbol naming the ns from file-content."
   [file-content]

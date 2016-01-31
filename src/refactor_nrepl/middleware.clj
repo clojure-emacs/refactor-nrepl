@@ -8,6 +8,7 @@
             [refactor-nrepl.artifacts :refer
              [artifact-list artifact-versions hotload-dependency]]
             [refactor-nrepl.config :as config]
+            [refactor-nrepl.core :as core]
             [refactor-nrepl.extract-definition :refer [extract-definition]]
             [refactor-nrepl.find.find-locals :refer [find-used-locals]]
             [refactor-nrepl.find.find-symbol :refer [find-symbol]]
@@ -15,7 +16,6 @@
             [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
             [refactor-nrepl.ns.pprint :refer [pprint-ns]]
             [refactor-nrepl.ns.resolve-missing :refer [resolve-missing]]
-            [refactor-nrepl.plugin :as plugin]
             [refactor-nrepl.rename-file-or-dir :refer [rename-file-or-dir]]
             [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
 
@@ -78,7 +78,7 @@
   (reply transport msg :used-locals (find-used-locals msg)))
 
 (defn- version-reply [{:keys [transport] :as msg}]
-  (reply transport msg :status :done :version (plugin/version)))
+  (reply transport msg :status :done :version (core/version)))
 
 (defn- warm-ast-cache-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done

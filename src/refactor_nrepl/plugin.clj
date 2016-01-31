@@ -1,21 +1,11 @@
 (ns refactor-nrepl.plugin
-  (:require [clojure.java.io :as io]
-            [leiningen.core.main :as lein]))
+  (:require
+   [refactor-nrepl.core :as core]
+   [leiningen.core.main :as lein]))
 
 (def ^:private external-dependencies
   ;; For whatever reason it didn't work to look for cider-nrepl here.
   {'org.clojure/clojure "1.7.0"})
-
-(defn version []
-  (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
-                  "project.clj")
-              slurp
-              read-string
-              (nth 2))]
-    (assert (string? v)
-            (str "Something went wrong, version is not a string: "
-                 v))
-    v))
 
 (defn- version-ok?
   [dependencies artifact version-string]
@@ -38,7 +28,7 @@
     (-> project
         (update-in [:dependencies]
                    (fnil into [])
-                   [['refactor-nrepl (version)]])
+                   [['refactor-nrepl (core/version)]])
         (update-in [:repl-options :nrepl-middleware]
                    (fnil into [])
                    '[refactor-nrepl.middleware/wrap-refactor]))
