@@ -26,8 +26,8 @@ Add the following in `~/.boot/profile.boot`:
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies* conj
-       '[refactor-nrepl "1.1.0"]
-       '[cider/cider-nrepl "0.9.1"])
+       '[refactor-nrepl "2.0.0"]
+       '[cider/cider-nrepl "0.10.2"])
 
 (swap! boot.repl/*default-middleware* conj
        'refactor-nrepl.middleware/wrap-refactor)
