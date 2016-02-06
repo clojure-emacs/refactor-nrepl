@@ -14,8 +14,8 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "1.1.0"]
-          [cider/cider-nrepl "0.9.1"]]
+:plugins [[refactor-nrepl "2.0.0"]
+          [cider/cider-nrepl "0.10.2"]]
 ```
 
 ### Adding the middleware via Boot

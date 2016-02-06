@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.0.0
+
 ### New features
 
 * Add support for `:rename` clauses in clean ns.
