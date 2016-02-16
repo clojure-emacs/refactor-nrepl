@@ -7,7 +7,7 @@
             [me.raynes.fs :as fs]
             [refactor-nrepl.util :refer [normalize-to-unix-path]]
             [refactor-nrepl.s-expressions :as sexp])
-  (:import [java.io File FileReader PushbackReader StringReader]))
+  (:import [java.io FileReader PushbackReader StringReader]))
 
 (defn version []
   (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
@@ -303,3 +303,7 @@
               (str "Can't create a fully qualified symbol from: '" prefix
                    "' and  '" suffix "'"))))
     (str prefix "/" suffix)))
+
+(defn normalize-var-name
+  [sym-str]
+  (str/replace sym-str #"#'.*/" ""))

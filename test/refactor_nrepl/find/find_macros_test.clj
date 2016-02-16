@@ -50,7 +50,7 @@
   (with-redefs [refactor-nrepl.find.find-macros/put-cached-macro-definitions
                 (fn [& _] (throw (ex-info "Cache miss!" {})))]
     (is (found? #"defmacro my-macro" (find-macro "com.example.macro-def/my-macro"))))
-  (reset! @#'refactor-nrepl.find.find-macros/cache {})
+  (reset! @#'refactor-nrepl.find.find-macros/macro-defs-cache {})
   (with-redefs [refactor-nrepl.find.find-macros/put-cached-macro-definitions
                 (fn [& _] (throw (Exception. "Expected!")))]
     (is (thrown-with-msg? Exception #"Expected!"

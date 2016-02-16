@@ -87,7 +87,7 @@ This op finds occurrences of a single symbol.
 
 `ns` The ns where the symbol is defined.
 
-`name` The name of the symbol
+`name` The name of the symbol.
 
 `line` The line number where the symbol occurrs, counting from 1.
 
@@ -142,7 +142,7 @@ Pretty-printing the `(ns ..)` form is surprisingly difficult.  The current imple
 
 In the event of an error `clean-ns` will return `error` which is an error message intended for display to the user.
 
-**Warning**: The `clean -ns` op dependes on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
+**Warning**: The `clean-ns` op dependes on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
 
 This op can be [configured](#configuration).
 
@@ -267,6 +267,16 @@ project. The reply looks like this:
  :cljs {set (clojure.set), pprint (cljs.pprint)}}
 ```
 The list of suggestions is sorted by frequency in decreasing order, so the first element is always the best suggestion.
+
+### find-used-publics
+
+In case namespace B depends on namespace A this operation finds occurrences of symbols in namespace B defined in namespace A.
+
+`file` The absolute path to the file being analyzed (namespace B).
+
+`used-ns` The namespace that defines symbols we are searching for (namespace A).
+
+Possible application of this operation to refactor a `:refer :all` style require into a refer or aliased style require.
 
 ### Errors
 

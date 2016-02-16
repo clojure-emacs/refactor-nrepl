@@ -5,13 +5,16 @@
             [clojure.tools.nrepl.misc :refer [response-for]]
             [clojure.tools.nrepl.transport :as transport]
             [refactor-nrepl.analyzer :refer [warm-ast-cache]]
-            [refactor-nrepl.artifacts :refer
+            [refactor-nrepl.artifacts
+             :refer
              [artifact-list artifact-versions hotload-dependency]]
             [refactor-nrepl.config :as config]
             [refactor-nrepl.core :as core]
             [refactor-nrepl.extract-definition :refer [extract-definition]]
             [refactor-nrepl.find.find-locals :refer [find-used-locals]]
             [refactor-nrepl.find.find-symbol :refer [find-symbol]]
+            [refactor-nrepl.find.find-used-publics :refer [find-used-publics]]
+            [refactor-nrepl.find.find-macros :refer [warm-macro-occurrences-cache]]
             [refactor-nrepl.ns.clean-ns :refer [clean-ns]]
             [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
             [refactor-nrepl.ns.pprint :refer [pprint-ns]]
@@ -84,6 +87,10 @@
   (reply transport msg :status :done
          :ast-statuses (serialize-response msg (warm-ast-cache))))
 
+(defn- warm-macro-occurrences-cache-reply [{:keys [transport] :as msg}]
+  (warm-macro-occurrences-cache)
+  (reply transport msg :status :done))
+
 (defn- stubs-for-interface-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
          :functions (serialize-response msg (stubs-for-interface msg))))
@@ -100,6 +107,9 @@
          :namespace-aliases (serialize-response msg (namespace-aliases))
          :status :done))
 
+(defn- find-used-publics-reply [{:keys [transport] :as msg}]
+  (reply transport msg :used-publics (serialize-response msg (find-used-publics msg)) :status :done))
+
 (def refactor-nrepl-ops
   {
    "artifact-list" artifact-list-reply
@@ -113,8 +123,10 @@
    "rename-file-or-dir" rename-file-or-dir-reply
    "resolve-missing" resolve-missing-reply
    "stubs-for-interface" stubs-for-interface-reply
+   "find-used-publics" find-used-publics-reply
    "version" version-reply
    "warm-ast-cache" warm-ast-cache-reply
+   "warm-macro-occurrences-cache" warm-macro-occurrences-cache-reply
    })
 
 (defn wrap-refactor

@@ -9,12 +9,17 @@
             [refactor-nrepl.ns
              [ns-parser :as ns-parser]
              [tracker :as tracker]]
-            [rewrite-clj.zip :as zip])
+            [rewrite-clj.zip :as zip]
+            [clojure.string :as str]
+            [clojure.java.io :as io])
   (:import clojure.lang.LineNumberingPushbackReader
            [java.io BufferedReader File FileReader StringReader]))
 
 ;; The structure here is {path [timestamp macros]}
-(def ^:private cache (atom {}))
+(def ^:private macro-defs-cache (atom {}))
+
+;; structure {path {macro-name {timestamp occurrences}}}
+(def ^:private macro-occurrences-cache (atom {}))
 
 (defn- keep-lines
   "Keep the first n lines of s."
@@ -61,14 +66,14 @@
               (recur macros (reader/read opts rdr)))))))))
 
 (defn- get-cached-macro-definitions [f]
-  (when-let [[ts v] (get @cache (.getAbsolutePath f))]
+  (when-let [[ts v] (get @macro-defs-cache (.getAbsolutePath f))]
     (when (= ts (.lastModified f))
       v)))
 
 (defn- put-cached-macro-definitions [f]
   (let [defs (find-macro-definitions-in-file f)
         ts (.lastModified f)]
-    (swap! cache assoc-in [(.getAbsolutePath f)] [ts defs])
+    (swap! macro-defs-cache assoc-in [(.getAbsolutePath f)] [ts defs])
     defs))
 
 (defn- get-macro-definitions-in-file-with-caching [f]
@@ -181,7 +186,11 @@
              (node->occurrence path macro-name offset zip-node))))
   zip-node)
 
-(defn- find-usages-in-file [macro ^File path]
+(defn- fully-qualified-name? [fully-qualified-name]
+  (when (core/prefix fully-qualified-name)
+    fully-qualified-name))
+
+(defn- find-usages-in-file* [macro ^File path]
   (let [zipper (-> path slurp core/file-content-sans-ns zip/of-string)
         occurrences (atom [])]
     (zip/postwalk zipper
@@ -195,9 +204,13 @@
         (recur (zip/right zipper))))
     @occurrences))
 
-(defn- fully-qualified-name? [fully-qualified-name]
-  (when (core/prefix fully-qualified-name)
-    fully-qualified-name))
+(defn find-usages-in-file [macro ^File path]
+  (let [cache-key [(str path) macro (.lastModified path)]]
+    (if-let [cached-occs (get-in @macro-occurrences-cache cache-key)]
+      cached-occs
+      (let [occurrences (find-usages-in-file* macro path)]
+        (swap! macro-occurrences-cache assoc-in cache-key occurrences)
+        occurrences))))
 
 (defn find-macro
   "Finds all occurrences of the macro, including the definition, in
@@ -217,3 +230,26 @@
                (into #{})
                (remove nil?)
                (sort-by :line-beg)))))
+
+(defn find-used-macros
+  "Finds used macros of the namespace given as `used-ns` in the file."
+  [file used-ns]
+  (->> (symbol used-ns)
+       ns-publics
+       (filter (comp :macro meta val))
+       (map val)
+       (map str)
+       (map core/normalize-var-name)
+       set
+       (map #(assoc {} :name %))
+       (mapcat #(find-usages-in-file % (io/file file)))
+       (map #(select-keys % [:name :line-beg :line-end :col-beg :col-end :file]))))
+
+(defn warm-macro-occurrences-cache []
+  (let [tracker (tracker/build-tracker)]
+    (doseq [f (tracker/project-files-in-topo-order)]
+      (when-let [ns-for-file (core/path->namespace :no-error f)]
+        (doseq [dep-ns (-> (:clojure.tools.namespace.track/deps tracker)
+                           :dependencies
+                           (get (ns-name ns-for-file)))]
+          (dorun (find-used-macros f dep-ns)))))))

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### New features
+
+* Add `find-used-publics` which list occurrences of symbols defined in namespace A in namespace B.
+
 ## 2.0.0
 
 ### New features
