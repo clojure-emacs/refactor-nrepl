@@ -70,7 +70,7 @@
 (t/deftest resolve-missing-test
   (t/testing "Finds functions is regular namespaces"
     (let [{:keys [error] :as response} (message {:op :resolve-missing :symbol 'print-doc})
-          {:keys [name type]} (edn/read-string (:candidates response))]
+          {:keys [name type]} (first (edn/read-string (:candidates response)))]
       (when error
         (println error)
         (throw (RuntimeException. error)))
@@ -78,7 +78,7 @@
       (t/is (= :ns type)))
     (t/testing "Finds macros"
       (let [{:keys [error] :as response} (message {:op :resolve-missing :symbol 'dir})
-            {:keys [name type]} (edn/read-string (:candidates response))]
+            {:keys [name type]} (first (edn/read-string (:candidates response)))]
         (when error
           (throw (RuntimeException. error)))
         (t/is (= 'cljs.repl name))

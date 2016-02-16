@@ -42,17 +42,17 @@
   (let [all-ns (remove (partial = 'cljs.core) (keys (cljs-ana/all-ns env)))
         ns-by-vars (->> all-ns
                         (mapcat (fn [ns]
-                                  (map (fn [sym] {sym {:name ns :type :ns}})
+                                  (map (fn [sym] {sym (list {:name ns :type :ns})})
                                        (ns-publics-cljs env ns))))
                         (remove empty?)
-                        (reduce merge))
+                        (apply merge-with into))
         ns-by-macros (->> all-ns
                           (mapcat (fn [ns]
-                                    (map (fn [sym] {sym {:name ns :type :macro}})
+                                    (map (fn [sym] {sym (list {:name ns :type :macro})})
                                          (ns-public-macros-cljs ns))))
                           (remove empty?)
-                          (reduce merge))]
-    (merge ns-by-vars ns-by-macros)))
+                          (apply merge-with into))]
+    (merge-with into ns-by-vars ns-by-macros)))
 
 (defn resolve-missing [{sym :symbol :as msg}]
   (when (or (not (string? sym)) (str/blank? sym))
