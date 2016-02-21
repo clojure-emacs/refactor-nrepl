@@ -244,7 +244,9 @@
   (let [rdr-cond (symbol "#?@")
         clj-forms (build-clj-or-cljs-dep-forms deps :clj)
         cljs-forms (build-clj-or-cljs-dep-forms deps :cljs)]
-    (if (and clj-forms clj-forms)
+    (if (and clj-forms
+             cljs-forms
+             (not= clj-forms cljs-forms))
       (list rdr-cond `(:clj ~(vec clj-forms) :cljs ~(vec cljs-forms)))
       (or clj-forms cljs-forms))))
 

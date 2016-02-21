@@ -34,6 +34,9 @@
 (def cljc-ns-cleaned-clj (core/read-ns-form (absolute-path "test/resources/cljcns_cleaned.cljc")))
 (def cljc-ns-cleaned-cljs (core/read-ns-form :cljs (absolute-path "test/resources/cljcns_cleaned.cljc")))
 
+(def cljc-ns-same-clj-cljs (clean-msg "test/resources/cljcns_same_clj_cljs.cljc"))
+(def cljc-ns-same-clj-cljs-cleaned (core/read-ns-form (absolute-path "test/resources/cljcns_same_clj_cljs_cleaned.cljc")))
+
 (def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
 
 (deftest combines-requires
@@ -164,6 +167,10 @@
         new-cljs-ns (core/ns-form-from-string :cljs new-ns)]
     (is (= cljc-ns-cleaned-clj new-clj-ns))
     (is (= cljc-ns-cleaned-cljs new-cljs-ns))))
+
+(deftest does-not-use-read-conditionals-when-ns-are-equal
+  (is (= (clean-ns cljc-ns-same-clj-cljs)
+         cljc-ns-same-clj-cljs-cleaned)))
 
 (deftest respects-no-prune-option
   (config/with-config {:prune-ns-form false}
