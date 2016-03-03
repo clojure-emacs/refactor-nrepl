@@ -9,7 +9,7 @@
   (:import (clojure.lang IMapEntry IRecord)
            (java.util.regex Pattern)))
 
-(def ^:dynamic *cache* nil)
+(def ^:dynamic *cache* (atom {}))
 
 (defmacro ^:private caching [key & body]
   `(if *cache*
