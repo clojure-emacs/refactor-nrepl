@@ -1,4 +1,4 @@
-(ns ^:clean refactor-nrepl.ns.clean-ns
+(ns refactor-nrepl.ns.clean-ns
   "Contains functionality for cleaning ns forms.
 
   * Eliminate :use, or :use-macro clauses.
