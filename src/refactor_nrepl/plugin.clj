@@ -16,15 +16,17 @@
       (lein/warn (str "Warning: refactor-nrepl requires " artifact " "
                       version-string " or greater."))))
 
-(defn- external-dependencies-ok? [dependencies]
-  (reduce (fn [acc [artifact version-string]]
-            (and (version-ok? dependencies artifact version-string) acc))
-          true
-          external-dependencies))
+(defn- external-dependencies-ok? [dependencies exclusions]
+  (let [exclusions (set exclusions)]
+    (reduce (fn [acc [artifact version-string]]
+              (or (exclusions artifact)
+                  (and (version-ok? dependencies artifact version-string) acc)))
+            true
+            external-dependencies)))
 
 (defn middleware
-  [{:keys [dependencies] :as project}]
-  (if (external-dependencies-ok? dependencies)
+  [{:keys [dependencies exclusions] :as project}]
+  (if (external-dependencies-ok? dependencies exclusions)
     (-> project
         (update-in [:dependencies]
                    (fnil into [])
