@@ -1,5 +1,7 @@
 (ns refactor-nrepl.s-expressions
-  (:require [rewrite-clj.zip :as zip]))
+  (:require [rewrite-clj.parser :as zip-parser]
+            [rewrite-clj.reader :as zip-reader]
+            [rewrite-clj.zip :as zip]))
 
 (defn all-zlocs
   "Generate a seq of all zlocs in a depth-first manner"
@@ -11,11 +13,14 @@
       (not (zip/sexpr zloc)) ; comment node
       (string? (zip/sexpr zloc))))
 
-(defn get-next-sexp [file-content]
-  (let [zloc (zip/of-string file-content)]
-    (some (fn [zloc] (when-not (comment-or-string-or-nil? zloc)
-                       (zip/string zloc)))
-          (take-while (complement nil?) (iterate zip/right zloc)))))
+(defn get-first-sexp [file-content]
+  (let [reader (zip-reader/string-reader file-content)]
+    (loop [sexp (zip-parser/parse reader)]
+      (let [zloc (zip/edn sexp)]
+        (if (and zloc (not (comment-or-string-or-nil? zloc)))
+          (zip/string zloc)
+          (when (.peek-char reader)
+            (recur (zip-parser/parse reader))))))))
 
 (defn get-last-sexp [file-content]
   (let [zloc (->> file-content zip/of-string zip/rightmost)]

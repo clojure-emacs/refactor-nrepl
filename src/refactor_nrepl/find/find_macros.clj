@@ -168,7 +168,7 @@
   ((active-bindings zip-node) macro-sym))
 
 (defn- content-offset [path]
-  (-> path slurp sexp/get-next-sexp str/split-lines count))
+  (-> path slurp sexp/get-first-sexp str/split-lines count))
 
 (defn- collect-occurrences
   [occurrences macro ^File path zip-node]

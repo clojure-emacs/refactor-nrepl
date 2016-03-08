@@ -219,7 +219,7 @@
   compiler, as well as libraries like clojure.test, add quite a bit of
   metadata which shouldn't be printed back out."
   [file-content]
-  (let [ns-string (sexp/get-next-sexp file-content)
+  (let [ns-string (sexp/get-first-sexp file-content)
         meta? (-> ns-string (.replaceFirst "\\^\\{" "\\{")
                   (StringReader.)
                   (PushbackReader.)
