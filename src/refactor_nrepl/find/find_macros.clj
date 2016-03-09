@@ -246,10 +246,12 @@
        (map #(select-keys % [:name :line-beg :line-end :col-beg :col-end :file]))))
 
 (defn warm-macro-occurrences-cache []
-  (let [tracker (tracker/build-tracker)]
-    (doseq [f (tracker/project-files-in-topo-order)]
-      (when-let [ns-for-file (core/path->namespace :no-error f)]
-        (doseq [dep-ns (-> (:clojure.tools.namespace.track/deps tracker)
-                           :dependencies
-                           (get (ns-name ns-for-file)))]
-          (dorun (find-used-macros f dep-ns)))))))
+  ;; TODO rewrite this, it's completely broken
+  ;; See https://github.com/clojure-emacs/refactor-nrepl/issues/150
+  #_(let [tracker (tracker/build-tracker)]
+      (doseq [f (tracker/project-files-in-topo-order)]
+        (when-let [ns-for-file (core/path->namespace :no-error f)]
+          (doseq [dep-ns (-> (:clojure.tools.namespace.track/deps tracker)
+                             :dependencies
+                             (get (ns-name ns-for-file)))]
+            (dorun (find-used-macros f dep-ns)))))))
