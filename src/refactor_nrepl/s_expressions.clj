@@ -14,13 +14,10 @@
       (string? (zip/sexpr zloc))))
 
 (defn get-first-sexp [file-content]
-  (let [reader (zip-reader/string-reader file-content)]
-    (loop [sexp (zip-parser/parse reader)]
-      (let [zloc (zip/edn sexp)]
-        (if (and zloc (not (comment-or-string-or-nil? zloc)))
-          (zip/string zloc)
-          (when (.peek-char reader)
-            (recur (zip-parser/parse reader))))))))
+  (let [zloc (zip/of-string file-content)]
+    (some (fn [zloc] (when-not (comment-or-string-or-nil? zloc)
+                       (zip/string zloc)))
+          (take-while (complement nil?) (iterate zip/right zloc)))))
 
 (defn get-last-sexp [file-content]
   (let [zloc (->> file-content zip/of-string zip/rightmost)]
