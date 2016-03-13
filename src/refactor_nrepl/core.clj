@@ -91,7 +91,18 @@
                             pred
                             (complement build-artifact?)))))
 
-(defn data-file?
+(defn- read-ns-form
+  ([path]
+   (with-open [file-reader (FileReader. path)]
+     (parse/read-ns-decl (readers/indexing-push-back-reader
+                          (PushbackReader. file-reader)))))
+  ([dialect path]
+   (with-open [file-reader (FileReader. path)]
+     (parse/read-ns-decl (readers/indexing-push-back-reader
+                          (PushbackReader. file-reader))
+                         {:read-cond :allow :features #{dialect}}))))
+
+(defn- data-file?
   "True of f is named like a clj file but represents data.
 
   E.g. true for data_readers.clj"
@@ -104,21 +115,28 @@
 
 (defn cljc-file?
   [path-or-file]
-  (.endsWith (.getPath (io/file path-or-file)) ".cljc"))
+  (let [path (.getPath (io/file path-or-file))]
+    (and (.endsWith path ".cljc")
+         (read-ns-form path))))
 
 (defn cljs-file?
   [path-or-file]
-  (.endsWith (.getPath (io/file path-or-file)) ".cljs"))
+  (let [path (.getPath (io/file path-or-file))]
+    (and (.endsWith path ".cljs")
+         (read-ns-form path))))
 
 (defn clj-file?
   [path-or-file]
-  (and (not (data-file? path-or-file))
-       (.endsWith (.getPath (io/file path-or-file)) ".clj")))
+  (let [path (.getPath (io/file path-or-file))]
+    (and (not (data-file? path-or-file))
+         (.endsWith path ".clj")
+         (read-ns-form path))))
 
 (defn source-file?
   "True for clj, cljs or cljc files.
 
-  A list of data files are excluded, e.g. data_readers.clj."
+  A list of data files are excluded, e.g. data_readers.clj.
+  Files without ns form are excluded too."
   [path-or-file]
   ((some-fn cljc-file? cljs-file? clj-file?) (io/file path-or-file)))
 
@@ -231,23 +249,18 @@
       shorthand-meta? {::shorthand-meta (keyword shorthand-meta?)}
       :else nil)))
 
-(defn read-ns-form
+(defn read-ns-form-with-meta
   "Read the ns form found at PATH.
 
   Dialect is either :clj or :cljs."
   ([path]
-   (with-open [file-reader (FileReader. path)]
-     (if-let [ns-form (parse/read-ns-decl (readers/indexing-push-back-reader
-                                           (PushbackReader. file-reader)))]
-       (with-meta ns-form (extract-ns-meta (slurp path)))
-       (throw (IllegalStateException. (str "No ns form at " path))))))
+   (if-let [ns-form (read-ns-form path)]
+     (with-meta ns-form (extract-ns-meta (slurp path)))
+     (throw (IllegalStateException. (str "No ns form at " path)))))
   ([dialect path]
-   (with-open [file-reader (FileReader. path)]
-     (if-let [ns-form (parse/read-ns-decl (readers/indexing-push-back-reader
-                                           (PushbackReader. file-reader))
-                                          {:read-cond :allow :features #{dialect}})]
-       (with-meta ns-form (extract-ns-meta (slurp path)))
-       (throw (IllegalStateException. (str "No ns form at " path)))))))
+   (if-let [ns-form (read-ns-form dialect path)]
+     (with-meta ns-form (extract-ns-meta (slurp path)))
+     (throw (IllegalStateException. (str "No ns form at " path))))))
 
 (defn path->namespace
   "Read the ns form found at PATH and return the namespace object for
@@ -257,7 +270,7 @@
   can't successfully read an ns form."
   ([path] (path->namespace nil path))
   ([no-error path] (try
-                     (some->> path read-ns-form second find-ns)
+                     (some->> path read-ns-form-with-meta second find-ns)
                      (catch Exception e
                        (when-not no-error
                          (throw e))))))

@@ -104,7 +104,7 @@
   ([path] (parse-clj-or-cljs-ns path nil))
   ([path dialect]
    (let [dialect (or dialect (core/file->dialect path))
-         ns-form (core/read-ns-form dialect path)]
+         ns-form (core/read-ns-form-with-meta dialect path)]
      {dialect (merge {:require (get-libspecs ns-form)
                       :import (get-imports ns-form)}
                      (when (= dialect :cljs)
@@ -119,7 +119,7 @@
    (if (core/cljc-file? (io/file path-or-file))
      (parse-cljc-ns path-or-file)
      (parse-clj-or-cljs-ns path-or-file))
-   :ns (second (core/read-ns-form path-or-file))
+   :ns (second (core/read-ns-form-with-meta path-or-file))
    :source-dialect (core/file->dialect path-or-file)))
 
 (defn get-libspecs-from-file
@@ -137,6 +137,6 @@
   ([dialect ^File f]
    (some->> f
             .getAbsolutePath
-            (core/read-ns-form dialect)
+            (core/read-ns-form-with-meta dialect)
             ((juxt get-libspecs get-required-macros))
             (mapcat identity))))

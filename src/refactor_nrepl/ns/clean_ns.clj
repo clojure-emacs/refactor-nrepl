@@ -43,7 +43,7 @@
                                                  (core/cljc-file? path))
                                            false
                                            (:prefix-rewriting config/*config*))}
-    (let [ns-form (validate (core/read-ns-form path))
+    (let [ns-form (validate (core/read-ns-form-with-meta path))
           deps-preprocessor (if (get config/*config* :prune-ns-form)
                               #(prune-dependencies % path)
                               identity)

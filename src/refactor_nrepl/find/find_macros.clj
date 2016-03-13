@@ -176,7 +176,7 @@
         macro-name (str (:name macro))
         sym (:string-value node)
         path (.getAbsolutePath path)
-        ns-form (core/read-ns-form path)
+        ns-form (core/read-ns-form-with-meta path)
         libspecs (ns-parser/get-libspecs ns-form)
         current-ns (str (second ns-form))
         offset (content-offset path)]

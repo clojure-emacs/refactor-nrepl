@@ -97,7 +97,7 @@
 (defn- create-new-ns-form!
   "Reads file and returns an updated ns."
   [file old-ns new-ns]
-  (let [ns-form (core/read-ns-form file)
+  (let [ns-form (core/read-ns-form-with-meta file)
         parsed-ns (ns-parser/parse-ns file)
         deps (update-references-in-deps parsed-ns old-ns new-ns)]
     (pprint-ns (rebuild-ns-form deps ns-form))))

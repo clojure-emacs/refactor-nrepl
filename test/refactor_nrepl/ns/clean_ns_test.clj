@@ -13,29 +13,29 @@
   {:path (absolute-path path)})
 
 (def ns1 (clean-msg "test/resources/ns1.clj"))
-(def ns1-cleaned (core/read-ns-form (absolute-path "test/resources/ns1_cleaned.clj")))
+(def ns1-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/ns1_cleaned.clj")))
 (def ns2 (clean-msg "test/resources/ns2.clj"))
-(def ns2-cleaned (core/read-ns-form (absolute-path "test/resources/ns2_cleaned.clj")))
+(def ns2-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/ns2_cleaned.clj")))
 (def ns2-meta (clean-msg "test/resources/ns2_meta.clj"))
 (def ns3 (clean-msg "test/resources/ns3.clj"))
-(def ns3-rebuilt (core/read-ns-form (absolute-path "test/resources/ns3_rebuilt.clj")))
+(def ns3-rebuilt (core/read-ns-form-with-meta (absolute-path "test/resources/ns3_rebuilt.clj")))
 (def ns-with-exclude (clean-msg "test/resources/ns_with_exclude.clj"))
 (def ns-with-rename (clean-msg "test/resources/ns_with_rename.clj"))
-(def ns-with-rename-cleaned (core/read-ns-form "test/resources/ns_with_rename_cleaned.clj"))
+(def ns-with-rename-cleaned (core/read-ns-form-with-meta "test/resources/ns_with_rename_cleaned.clj"))
 (def ns-with-unused-deps (clean-msg "test/resources/unused_deps.clj"))
-(def ns-without-unused-deps (core/read-ns-form
+(def ns-without-unused-deps (core/read-ns-form-with-meta
                              (absolute-path "test/resources/unused_removed.clj")))
 (def cljs-file (clean-msg "test/resources/file.cljs"))
 (def ns-referencing-macro (absolute-path "test/resources/ns_referencing_macro.clj"))
 (def cljs-ns (clean-msg "test/resources/cljsns.cljs"))
-(def cljs-ns-cleaned (core/read-ns-form (absolute-path "test/resources/cljsns_cleaned.cljs")))
+(def cljs-ns-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/cljsns_cleaned.cljs")))
 
 (def cljc-ns (clean-msg "test/resources/cljcns.cljc"))
-(def cljc-ns-cleaned-clj (core/read-ns-form (absolute-path "test/resources/cljcns_cleaned.cljc")))
-(def cljc-ns-cleaned-cljs (core/read-ns-form :cljs (absolute-path "test/resources/cljcns_cleaned.cljc")))
+(def cljc-ns-cleaned-clj (core/read-ns-form-with-meta (absolute-path "test/resources/cljcns_cleaned.cljc")))
+(def cljc-ns-cleaned-cljs (core/read-ns-form-with-meta :cljs (absolute-path "test/resources/cljcns_cleaned.cljc")))
 
 (def cljc-ns-same-clj-cljs (clean-msg "test/resources/cljcns_same_clj_cljs.cljc"))
-(def cljc-ns-same-clj-cljs-cleaned (core/read-ns-form (absolute-path "test/resources/cljcns_same_clj_cljs_cleaned.cljc")))
+(def cljc-ns-same-clj-cljs-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/cljcns_same_clj_cljs_cleaned.cljc")))
 
 (def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
 
@@ -84,7 +84,7 @@
 
 (deftest throws-on-malformed-ns
   (is (thrown? IllegalStateException
-               (core/read-ns-form (.getAbsolutePath
+               (core/read-ns-form-with-meta (.getAbsolutePath
                                    (File. "test/resources/clojars-artifacts.edn"))))))
 
 (deftest preserves-other-elements
