@@ -91,7 +91,7 @@
                             pred
                             (complement build-artifact?)))))
 
-(defn- read-ns-form
+(defn read-ns-form
   ([path]
    (with-open [file-reader (FileReader. path)]
      (parse/read-ns-decl (readers/indexing-push-back-reader

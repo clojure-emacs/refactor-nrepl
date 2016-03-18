@@ -18,9 +18,6 @@
 ;; The structure here is {path [timestamp macros]}
 (def ^:private macro-defs-cache (atom {}))
 
-;; structure {path {macro-name {timestamp occurrences}}}
-(def ^:private macro-occurrences-cache (atom {}))
-
 (defn- keep-lines
   "Keep the first n lines of s."
   [s n]
@@ -135,25 +132,27 @@
   (= (zip/tag node) :token))
 
 (defn- macro-found?
-  [sym macro-name libspecs current-ns]
+  [sym libspecs current-ns macro-name]
   (let [macro-prefix (core/prefix macro-name)
         macro-suffix (core/suffix macro-name)
         alias? ((get-ns-aliases libspecs) macro-prefix)]
-    (or
-     ;; locally defined macro
-     (and (= current-ns macro-prefix)
-          (= sym macro-suffix))
-     ;; fully qualified
-     (= sym macro-name)
-     ;; aliased
-     (when alias? (= sym (str alias? "/" macro-suffix)))
-     ;; referred
-     (when (macro-referred? libspecs macro-name)
-       (= sym macro-suffix))
-     ;; I used to have a clause here for (:use .. :rename {...})
-     ;; but :use is ;; basically deprecated and nobody used :rename to
-     ;; begin with so I dropped it when the test failed.
-     )))
+    (when
+        (or
+         ;; locally defined macro
+         (and (= current-ns macro-prefix)
+              (= sym macro-suffix))
+         ;; fully qualified
+         (= sym macro-name)
+         ;; aliased
+         (when alias? (= sym (str alias? "/" macro-suffix)))
+         ;; referred
+         (when (macro-referred? libspecs macro-name)
+           (= sym macro-suffix))
+         ;; I used to have a clause here for (:use .. :rename {...})
+         ;; but :use is ;; basically deprecated and nobody used :rename to
+         ;; begin with so I dropped it when the test failed.
+         )
+      macro-name)))
 
 (defn- active-bindings
   "Find all the bindings above the current zip-node."
@@ -171,46 +170,38 @@
   (-> path slurp sexp/get-first-sexp str/split-lines count))
 
 (defn- collect-occurrences
-  [occurrences macro ^File path zip-node]
+  [occurrences macros ^File path zip-node]
   (let [node (zip/node zip-node)
-        macro-name (str (:name macro))
+        macro-names (map (comp str :name) macros)
         sym (:string-value node)
         path (.getAbsolutePath path)
-        ns-form (core/read-ns-form-with-meta path)
+        ns-form (core/read-ns-form path)
         libspecs (ns-parser/get-libspecs ns-form)
         current-ns (str (second ns-form))
-        offset (content-offset path)]
-    (when (and (macro-found? sym macro-name libspecs current-ns)
-               (not (macro-shadowed? sym zip-node)))
+        offset (content-offset path)
+        found-macro-name (some (partial macro-found? sym libspecs current-ns) macro-names)]
+    (when (and found-macro-name (not (macro-shadowed? sym zip-node)))
       (swap! occurrences conj
-             (node->occurrence path macro-name offset zip-node))))
+             (node->occurrence path found-macro-name offset zip-node))))
   zip-node)
 
 (defn- fully-qualified-name? [fully-qualified-name]
   (when (core/prefix fully-qualified-name)
     fully-qualified-name))
 
-(defn- find-usages-in-file* [macro ^File path]
+(defn- find-usages-in-file [macros ^File path]
   (let [zipper (-> path slurp core/file-content-sans-ns zip/of-string)
         occurrences (atom [])]
     (zip/postwalk zipper
                   token-node?
-                  (partial collect-occurrences occurrences macro path))
+                  (partial collect-occurrences occurrences macros path))
     (loop [zipper (zip/right zipper)]
       (when zipper
         (zip/postwalk zipper
                       token-node?
-                      (partial collect-occurrences occurrences macro path))
+                      (partial collect-occurrences occurrences macros path))
         (recur (zip/right zipper))))
     @occurrences))
-
-(defn find-usages-in-file [macro ^File path]
-  (let [cache-key [(str path) macro (.lastModified path)]]
-    (if-let [cached-occs (get-in @macro-occurrences-cache cache-key)]
-      cached-occs
-      (let [occurrences (find-usages-in-file* macro path)]
-        (swap! macro-occurrences-cache assoc-in cache-key occurrences)
-        occurrences))))
 
 (defn find-macro
   "Finds all occurrences of the macro, including the definition, in
@@ -226,7 +217,7 @@
                :file
                File.
                (conj dependents)
-               (mapcat (partial find-usages-in-file macro-def))
+               (mapcat (partial find-usages-in-file [macro-def]))
                (into #{})
                (remove nil?)
                (sort-by :line-beg)))))
@@ -234,24 +225,18 @@
 (defn find-used-macros
   "Finds used macros of the namespace given as `used-ns` in the file."
   [file used-ns]
-  (->> (symbol used-ns)
-       ns-publics
-       (filter (comp :macro meta val))
-       (map val)
-       (map str)
-       (map core/normalize-var-name)
-       set
-       (map #(assoc {} :name %))
-       (mapcat #(find-usages-in-file % (io/file file)))
-       (map #(select-keys % [:name :line-beg :line-end :col-beg :col-end :file]))))
+  (some->> (symbol used-ns)
+           ns-publics
+           (filter (comp :macro meta val))
+           (map val)
+           (map str)
+           (map core/normalize-var-name)
+           set
+           (map #(assoc {} :name %))
+           seq
+           (#(find-usages-in-file % (io/file file)))
+           (map #(select-keys % [:name :line-beg :line-end :col-beg :col-end :file]))))
 
 (defn warm-macro-occurrences-cache []
-  ;; TODO rewrite this, it's completely broken
-  ;; See https://github.com/clojure-emacs/refactor-nrepl/issues/150
-  #_(let [tracker (tracker/build-tracker)]
-      (doseq [f (tracker/project-files-in-topo-order)]
-        (when-let [ns-for-file (core/path->namespace :no-error f)]
-          (doseq [dep-ns (-> (:clojure.tools.namespace.track/deps tracker)
-                             :dependencies
-                             (get (ns-name ns-for-file)))]
-            (dorun (find-used-macros f dep-ns)))))))
+  ;noop, will be removed with release 2.2.0
+  )
