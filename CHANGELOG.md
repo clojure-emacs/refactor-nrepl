@@ -5,6 +5,16 @@
 ### New features
 
 * Add `find-used-publics` which list occurrences of symbols defined in namespace A in namespace B.
+* [#145](https://github.com/clojure-emacs/refactor-nrepl/issues/145) Enable caching for resolve missing
+* Add support for skipping excluded dependencies. This patch tweaks the dependency checker, so that refactor-nrepl will activate itself normally if one of its dependencies is listed in a project's :exclusions. This enables a user to for instance exclude org.clojure/clojure and provide a fork, thus taking on all responsibility for providing an adequate version.
+
+
+### Bugs fixed
+
+* Fix resolve-missing for cljs. Before this fix, the cljs-path returned only a single candidate. That's because every candidate was merged together. We now use `merge-with into` to generate a list of candidates instead.
+* [#147](https://github.com/clojure-emacs/refactor-nrepl/issues/147) Avoid needless .cljc namespace reader macro usage
+* [#133](https://github.com/clojure-emacs/refactor-nrepl/issues/133) Filter out clojure source files without ns form when indexing/analyzing so projects whith such files are supported.
+
 
 ## 2.0.0
 
