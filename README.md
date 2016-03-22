@@ -14,8 +14,8 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "2.0.0"]
-          [cider/cider-nrepl "0.10.2"]]
+:plugins [[refactor-nrepl "2.2.0"]
+          [cider/cider-nrepl "0.11.0"]]
 ```
 
 ### Adding the middleware via Boot
@@ -26,8 +26,8 @@ Add the following in `~/.boot/profile.boot`:
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies* conj
-       '[refactor-nrepl "2.0.0"]
-       '[cider/cider-nrepl "0.10.2"])
+       '[refactor-nrepl "2.2.0"]
+       '[cider/cider-nrepl "0.11.0"])
 
 (swap! boot.repl/*default-middleware* conj
        'refactor-nrepl.middleware/wrap-refactor)

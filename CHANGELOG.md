@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.2.0
+
 ### New features
 
 * Add `find-used-publics` which list occurrences of symbols defined in namespace A in namespace B.
@@ -13,6 +15,9 @@
 
 * Fix resolve-missing for cljs. Before this fix, the cljs-path returned only a single candidate. That's because every candidate was merged together. We now use `merge-with into` to generate a list of candidates instead.
 * [#147](https://github.com/clojure-emacs/refactor-nrepl/issues/147) Avoid needless .cljc namespace reader macro usage
+
+### Changes
+
 * [#133](https://github.com/clojure-emacs/refactor-nrepl/issues/133) Filter out clojure source files without ns form when indexing/analyzing so projects whith such files are supported.
 
 
