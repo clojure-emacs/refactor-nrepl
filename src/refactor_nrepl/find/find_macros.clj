@@ -50,7 +50,8 @@
   [f]
   (util/with-additional-ex-data [:file (.getAbsolutePath f)]
     (with-open [file-rdr (FileReader. f)]
-      (binding [*ns* (or (core/path->namespace :no-error f) *ns*)]
+      (binding [*ns* (or (core/path->namespace :no-error f) *ns*)
+                reader/*data-readers* *data-readers*]
         (let [rdr (LineNumberingPushbackReader. file-rdr)
               opts {:read-cond :allow :features #{:clj} :eof :eof}]
           (loop [macros [], form (reader/read opts rdr)]
