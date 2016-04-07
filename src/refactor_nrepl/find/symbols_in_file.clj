@@ -41,7 +41,8 @@
   ([path parsed-ns] (symbols-in-file path parsed-ns :clj))
   ([path parsed-ns dialect]
    (util/with-additional-ex-data [:file path]
-     (binding [*ns* (or (find-ns (symbol (:ns parsed-ns))) *ns*)]
+     (binding [*ns* (or (find-ns (symbol (:ns parsed-ns))) *ns*)
+               reader/*data-readers* *data-readers*]
        (let [rdr (-> path slurp core/file-content-sans-ns
                      readers/indexing-push-back-reader)
              dialect (or dialect (core/file->dialect path))
