@@ -44,14 +44,21 @@ Configuration settings are passed along with each msg, currently the recognized 
  ;; Verbose setting for debugging.  The biggest effect this has is
  ;; to not catch any exceptions to provide meaningful error
  ;; messages for the client.
+
  :debug false
 
- ;; When true clean-ns will remove unused symbols, otherwise just
+ ;; When true `clean-ns` will remove unused symbols, otherwise just
  ;; sort etc
  :prune-ns-form true
 
- ;; Should clean-ns favor prefix forms in the ns macro?
+ ;; Should `clean-ns` favor prefix forms in the ns macro?
  :prefix-rewriting true
+
+ ;; Some libspecs are side-effecting and shouldn't be pruned by `clean-ns`
+ ;; even if they're otherwise unused.
+ ;; This seq of strings will be used as regexp patterns to match
+ ;; against the libspec name.
+ :libspec-whitelist ["^cljsjs"]
 }
 ```
 
