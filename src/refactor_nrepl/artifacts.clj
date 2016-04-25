@@ -8,6 +8,7 @@
             [clojure.tools.namespace.find :as find]
             [org.httpkit.client :as http]
             [refactor-nrepl.ns.slam.hound.search :as slamhound]
+            [refactor-nrepl.ns.slam.hound.regrow :as slamhound-regrow]
             [version-clj.core :as versions])
   (:import java.util.Date
            java.util.jar.JarFile))
@@ -120,7 +121,8 @@
           ;; A failure here isn't a big deal, it only means that resolve-missing
           ;; isn't going to work until the namespace has been loaded manually.
           )))
-    (slamhound/reset)))
+    (slamhound/reset)
+    (slamhound-regrow/clear-cache!)))
 
 (defn- ensure-quality-coordinates [coordinates]
   (let [coords (->> coordinates read-string (take 2) vec)]

@@ -10,6 +10,14 @@
            (java.util.regex Pattern)))
 
 (def ^:dynamic *cache* (atom {}))
+(def ^:dynamic *dirty-ns* (atom #{}))
+
+(defn wrap-clojure-repl [f]
+  (fn [& args]
+    (swap! *dirty-ns* conj *ns*)
+    (apply f args)))
+
+(alter-var-root #'clojure.main/repl wrap-clojure-repl)
 
 (defmacro ^:private caching [key & body]
   `(if *cache*
@@ -20,23 +28,56 @@
          v#))
      (do ~@body)))
 
+(defn cache-with-dirty-tracking
+  "The function to be cached, f, should have two signatures. A zero-operand
+  signature which computes the result for all namespaces, and a two-operand
+  version which takes the previously computed result and a list of dirty
+  namespaces, and returns an updated result."
+  [key f]
+  (if *cache*
+    (if-let [cached (get @*cache* key)]
+      (if-let [dirty (seq @*dirty-ns*)]
+        (key (swap! *cache* assoc key (f cached dirty)))
+        cached)
+      (key (swap! *cache* assoc key (f))))
+    (f)))
+
+(defn clear-cache! []
+  (when *cache*
+    (reset! *cache* {})
+    (reset! *dirty-ns* #{})))
+
+(defn- all-ns-imports*
+  ([]
+   (all-ns-imports* {} (all-ns)))
+  ([init namespaces]
+   (reduce (fn [imports ns]
+             (assoc imports ns (ns-imports ns)))
+           init namespaces)))
+
 (defn- all-ns-imports []
-  (caching :all-ns-imports
-    (mapv ns-imports (all-ns))))
+  (cache-with-dirty-tracking :all-ns-imports all-ns-imports*))
 
 (defn- ns->symbols []
   (caching :ns->symbols
     (let [xs (all-ns)]
       (zipmap xs (mapv (comp set keys ns-publics) xs)))))
 
+(defn- symbols->ns-syms*
+  ([]
+   (symbols->ns-syms* {} (all-ns)))
+  ([init namespaces]
+   (reduce
+    (fn [m ns] (let [ns-sym (ns-name ns)]
+                 (reduce
+                  (fn [m k]
+                    (assoc m k (conj (or (m k) #{}) ns-sym)))
+                  m (keys (ns-publics ns)))))
+    init namespaces)))
+
 (defn- symbols->ns-syms []
-  (caching :symbols->ns
-    (reduce
-      (fn [m ns] (let [ns-sym (ns-name ns)]
-                   (reduce
-                     (fn [m k] (assoc m k (conj (or (m k) #{}) ns-sym)))
-                     m (keys (ns-publics ns)))))
-      {} (all-ns))))
+  (cache-with-dirty-tracking :symbols->ns-syms symbols->ns-syms*))
+
 
 (defn- walk
   "Adapted from clojure.walk/walk and clojure.walk/prewalk; this version
@@ -86,7 +127,7 @@
             (if-let [^Class cls (get imports missing-sym)]
               (conj s (symbol (.getCanonicalName cls)))
               s))
-          #{} (all-ns-imports)))
+          #{} (vals (all-ns-imports))))
 
 (defn- alias-candidates [type missing body]
   (set
