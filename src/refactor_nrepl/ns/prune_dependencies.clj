@@ -3,7 +3,8 @@
             [refactor-nrepl
              [core :as core]
              [util :as util]]
-            [refactor-nrepl.find.symbols-in-file :as symbols-in-file]))
+            [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
+            [refactor-nrepl.config :as config]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]
@@ -110,10 +111,14 @@
                      :when (symbols-in-file (str alias))]
                  [sym alias]))))
 
+;; Some namespaces, e.g. those containing only protocol extensions,
+;; are side-effecting at load but might look unused and otherwise be
+;; pruned.
 (defn- libspec-should-never-be-pruned? [libspec]
-  ;; The symbols of cljsjs namespaces are externs, and unknowable for now,
-  ;; so we just ignore these libspecs
-  (.startsWith (str (:ns libspec)) "cljsjs"))
+  (let [ns-name (str (:ns libspec))]
+    (some (fn [^String pattern]
+            (re-find (re-pattern pattern) ns-name))
+            (:libspec-whitelist config/*config*))))
 
 (defn- prune-libspec [symbols-in-file current-ns libspec]
   (if (libspec-should-never-be-pruned? libspec)
