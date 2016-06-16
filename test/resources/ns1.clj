@@ -24,6 +24,10 @@
            java.io.FilenameFilter
            java.io.Closeable
            [java.util Date Date Calendar]
+           [refactor.nrepl
+            SomeClass$InnerClass$InnerInnerClassOne
+            SomeClass$InnerClass$InnerInnerClassTwo
+            SomeClass$InnerClass$InnerInnerClassThree]
            (java.util Date Calendar)))
 
 (defmacro tt [writer]
@@ -43,6 +47,8 @@
   (clojure.test.junit/with-junit-output "")
   (escape)
   ::inst/namespaced-keyword-prevents-pruning
+  (SomeClass$InnerClass$InnerInnerClassOne.)
+  (SomeClass$InnerClass$InnerInnerClassTwo.)
   (clojure.data/diff)
   (clojure.edn/read-string)
   (clojure.xml/emit "")

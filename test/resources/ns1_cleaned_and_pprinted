@@ -16,4 +16,5 @@
              [walk :refer [postwalk prewalk]]]
             clojure.test.junit)
   (:import [java.io Closeable FilenameFilter PushbackReader]
-           [java.util Calendar Date Random]))
+           [java.util Calendar Date Random]
+           [refactor.nrepl SomeClass$InnerClass$InnerInnerClassOne SomeClass$InnerClass$InnerInnerClassTwo]))

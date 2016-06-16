@@ -89,7 +89,7 @@
   (or
    ;; fully.qualified.Class
    (symbols-in-file c)
-   ;; OnlyClassName or Class$Enum/Value
+   ;; OnlyClassName, Class$Enum/Value or Class$Innerclass$InnerInnerClass
    ((set (map core/suffix symbols-in-file)) (core/suffix c))
    ;; Static/fieldOrMethod
    ((set (map static-method-or-field-access->Classname symbols-in-file))
@@ -167,5 +167,3 @@
              (prune-cljc-dependencies parsed-ns path)
              (prune-clj-or-cljs-dependencies parsed-ns path dialect))
            {:source-dialect dialect})))
-
-::sexp/foo
