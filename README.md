@@ -110,23 +110,6 @@ When the final `occurrence` has been sent a final message is sent with `count`, 
 
 Clients are advised to set `ignore-errors` on only for find usages as the rest of the operations built on find-symbol supposed to modify the project as well therefore can be destructive if some namespaces can not be analyzed.
 
-#### find usages (application of find symbols)
-
-Finds occurrences of symbols like defs and defns both where they are defined (if available) and where they are used and prints them.
-
-Example call from the repl:
-```clojure
-(refactor-nrepl.client/find-symbol :ns 'leiningen.gargamel :name "gargamel-changelog")
-```
-
-#### rename symbols (application of find symbols)
-
-Finds and renames occurrences of symbols like defs and defns both where they are defined -- if it makes sense -- and where they are used. Uses the same backend function: find symbols. Replacing the occurrences is implemented in the client.
-
-```clojure
-(refactor-nrepl.client/rename-symbol :ns 'leiningen.gargamel :name "gargamel-changelog" :new-name "garg-cl")
-```
-
 ### clean-ns
 
 The `clean-ns` op will perform the following cleanups on an ns form:
