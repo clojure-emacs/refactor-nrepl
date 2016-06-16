@@ -1,7 +1,8 @@
 (ns refactor-nrepl.find.symbols-in-file
-  (:require [clojure.tools.reader :as reader]
+  (:require [clojure
+             [walk :as walk]]
+            [clojure.tools.reader :as reader]
             [clojure.tools.reader.reader-types :as readers]
-            [clojure.walk :as walk]
             [refactor-nrepl
              [core :as core]
              [util :as util]]))
@@ -37,6 +38,11 @@
   This includes all regular symbols like foo, but also ctor calls like
   Foo. (returned as Foo), and classes used in typehints.
 
+  Note: Because it was convenient at the time this function also
+  returns fully qualified keywords mapped to symbol.  This means that
+  if the file contains `:prefix/kw` the symbol
+  `fully.resolved.prefix/kw` is included in the set.
+
   Dialect defaults to :clj."
   ([path parsed-ns] (symbols-in-file path parsed-ns :clj))
   ([path parsed-ns dialect]
@@ -55,6 +61,11 @@
                               ;; Classes used in typehints
                               (when-let [t (:tag (meta form))]
                                 (swap! syms conj t))
+                              (when (and (keyword? form)
+                                         (core/fully-qualified? form))
+                                (swap! syms conj
+                                       (symbol (core/prefix form)
+                                               (core/suffix form))))
                               form)]
          (loop [form (reader/read rdr-opts rdr)]
            (when (not= form :eof)

@@ -42,7 +42,7 @@
   (compose-fixtures)
   (clojure.test.junit/with-junit-output "")
   (escape)
-  (inst/read-instant-date)
+  ::inst/namespaced-keyword-prevents-pruning
   (clojure.data/diff)
   (clojure.edn/read-string)
   (clojure.xml/emit "")

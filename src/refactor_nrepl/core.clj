@@ -203,10 +203,11 @@
 (defn prefix
   "java.util.Date -> java.util
 
-  clojure.walk/walk -> clojure.walk"
+  clojure.walk/walk -> clojure.walk
+  :clojure.core/kw -> kw"
   [fully-qualified-name]
   (if(re-find #"/" (str fully-qualified-name))
-    (-> fully-qualified-name str (.split "/") first)
+    (-> fully-qualified-name str (.split "/") first (str/replace #"^:" ""))
     (let [parts (-> fully-qualified-name str (.split "\\.") butlast)]
       (when (seq parts)
         (str/join "." parts)))))
@@ -320,3 +321,8 @@
 (defn normalize-var-name
   [sym-str]
   (str/replace sym-str #"#'.*/" ""))
+
+(defn fully-qualified?
+  [symbol-or-keyword]
+  (when (prefix symbol-or-keyword)
+    symbol-or-keyword))

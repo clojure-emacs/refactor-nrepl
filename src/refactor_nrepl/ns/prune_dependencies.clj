@@ -4,7 +4,8 @@
              [core :as core]
              [util :as util]]
             [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
-            [refactor-nrepl.config :as config]))
+            [refactor-nrepl.config :as config]
+            [refactor-nrepl.s-expressions :as sexp]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]
@@ -166,3 +167,5 @@
              (prune-cljc-dependencies parsed-ns path)
              (prune-clj-or-cljs-dependencies parsed-ns path dialect))
            {:source-dialect dialect})))
+
+::sexp/foo
