@@ -34,15 +34,17 @@
 
 ;; could probably be simplified
 
+(def jar-filter
+  (proxy [FilenameFilter] []
+    (accept [d n] (jar? (file n)))))
+
 (defn expand-wildcard
   "Expands a wildcard path entry to its matching .jar files (JDK 1.6+).
   If not expanding, returns the path entry as a single-element vector."
   [#^String path]
   (let [f (File. path)]
     (if (= (.getName f) "*")
-      (-> f .getParentFile
-          (.list (proxy [FilenameFilter] []
-                   (accept [d n] (jar? (file n))))))
+      (.. f getParentFile (list jar-filter))
       [f])))
 
 (defn class-or-ns-name
@@ -106,18 +108,15 @@
        (let [entries (enumeration-seq
                       (StringTokenizer. cp File/pathSeparator))
              locs (mapcat expand-wildcard entries)]
-         (reduce concat (for [loc locs]
-                          (path-class-files loc loc))))
-       ()))
-  ([cp & more]
-     (reduce #(concat %1 (scan-paths %2)) (scan-paths cp) more)))
+         (mapcat #(path-class-files % %) locs))
+       ())))
 
 (defn- get-available-classes
   []
-  (->> (apply scan-paths (System/getProperty "sun.boot.class.path")
-              (System/getProperty "java.ext.dirs")
-              (System/getProperty "java.class.path")
-              (map #(.getName %) (cp/classpath-jarfiles)))
+  (->> (mapcat scan-paths (concat (map #(System/getProperty %) ["sun.boot.class.path"
+                                                                "java.ext.dirs"
+                                                                "java.class.path"])
+                                  (map #(.getName %) (cp/classpath-jarfiles))))
        (remove clojure-fn-file?)
        (map symbol)))
 
