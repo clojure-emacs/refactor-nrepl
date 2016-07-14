@@ -206,8 +206,9 @@
   clojure.walk/walk -> clojure.walk
   :clojure.core/kw -> kw"
   [fully-qualified-name]
-  (if(re-find #"/" (str fully-qualified-name))
-    (-> fully-qualified-name str (.split "/") first (str/replace #"^:" ""))
+  (if (re-find #"/" (str fully-qualified-name))
+    (when-let [ns-name (-> fully-qualified-name str (.split "/") first)]
+      (str/replace ns-name #"^:" ""))
     (let [parts (-> fully-qualified-name str (.split "\\.") butlast)]
       (when (seq parts)
         (str/join "." parts)))))
