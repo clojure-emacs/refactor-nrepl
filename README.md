@@ -15,7 +15,7 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
 
 ```clojure
 :plugins [[refactor-nrepl "2.2.0"]
-          [cider/cider-nrepl "0.11.0"]]
+          [cider/cider-nrepl "0.13.0"]]
 ```
 
 ### Adding the middleware via Boot
@@ -33,6 +33,7 @@ Add the following in `~/.boot/profile.boot`:
        'refactor-nrepl.middleware/wrap-refactor)
 ```
 
+**Please note that you do not need to these things if you are using `cider-jack-in` as cider and clj-refactor injects its own dependencies. That is not the case though if you connect to an already running REPL process. See the [cider documentation](http://cider.readthedocs.io/en/latest/installation/) for more details.**
 
 ### Passing messages to and from refactor-nrepl
 
