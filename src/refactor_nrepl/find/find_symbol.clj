@@ -129,14 +129,13 @@
                                        (:line-end  info))}))]
     (map gather locs)))
 
-(defn- find-global-symbol [file ns var-name clj-dir ignore-errors]
-  (let [dir (or clj-dir ".")
-        namespace (or ns (core/ns-from-string (slurp file)))
+(defn- find-global-symbol [file ns var-name ignore-errors]
+  (let [namespace (or ns (core/ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
                                var-name
                                (str/join "/" [namespace var-name]))]
-    (->> dir
-         (core/find-in-dir (some-fn core/clj-file? core/cljc-file?))
+    (->> (core/dirs-on-classpath)
+         (mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
 
 (defn- get&read-enclosing-sexps
@@ -232,10 +231,10 @@
   [{:keys [line-beg line-end col-beg col-end name file match]}]
   [line-beg line-end col-beg col-end name file match])
 
-(defn find-symbol [{:keys [file ns name dir line column ignore-errors]}]
+(defn find-symbol [{:keys [file ns name line column ignore-errors]}]
   (core/throw-unless-clj-file file)
   (let [macros (future (find-macro (core/fully-qualify ns name)))
-        globals (->> (find-global-symbol file ns name dir (= ignore-errors "true"))
+        globals (->> (find-global-symbol file ns name (= ignore-errors "true"))
                      distinct
                      (remove find-util/spurious?)
                      future)]
