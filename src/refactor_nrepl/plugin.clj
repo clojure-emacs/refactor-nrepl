@@ -13,11 +13,12 @@
                  version)))))
 
 (defn middleware
-  [{:keys [dependencies exclusions] :as project}]
+  [{:keys [dependencies managed-dependencies exclusions] :as project}]
   (if (core/project-root)
     (let [clojure-excluded? (some #(= % 'org.clojure/clojure) exclusions)
           clojure-version (when-not clojure-excluded?
-                            (find-clojure-version dependencies))
+                            (or (find-clojure-version dependencies)
+                                (find-clojure-version managed-dependencies)))
           clojure-version-ok?
           (cond clojure-excluded? true ; up to the user
 
