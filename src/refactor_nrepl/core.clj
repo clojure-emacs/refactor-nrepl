@@ -44,7 +44,7 @@
   If path-or-file-in-project is provided it should be a project file
   to use as a starting point. We search anything above this dir, until
   we reach the file system root. Default value is the property
-  'user.dir'."
+  `user.dir`."
   ([] (project-root (System/getProperty "user.dir")))
   ([path-or-file-in-project]
    (let [path-or-file-in-project (io/file path-or-file-in-project)
