@@ -1,0 +1,3 @@
+(ns keyword-ns)
+
+::foo

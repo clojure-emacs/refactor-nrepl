@@ -4,6 +4,7 @@
             [cljsjs.js-yaml] ; this one should not be pruned as it contains externs
             [clojure.string :refer [split-lines join]]
             [cljs.pprint :as pprint]
+            [resources.keyword-ns :as kw]
             [clojure.set :as set])
   (:require-macros [cljs.test :refer [testing]]
                    [cljs.analyzer.macros :as am]
@@ -33,3 +34,7 @@
 
 (cljs.analyzer.api/no-warn
  :body)
+
+;; Caused reader to crash for cljs
+;; https://github.com/clojure-emacs/clj-refactor.el/issues/353
+::kw/foo

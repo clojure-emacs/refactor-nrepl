@@ -140,3 +140,15 @@
             (core/read-ns-form-with-meta dialect)
             ((juxt get-libspecs get-required-macros))
             (mapcat identity))))
+
+(defn aliases
+  "Return a map of namespace aliases given a seq of libspecs.
+
+  e.g {str clojure.string}"
+  [libspecs]
+  (->> libspecs
+       (map (fn alias [{:keys [ns as] :as libspec}]
+              (when as
+                {as ns})))
+       (remove nil?)
+       (apply merge)))

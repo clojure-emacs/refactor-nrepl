@@ -5,7 +5,9 @@
             [clojure.tools.reader.reader-types :as readers]
             [refactor-nrepl
              [core :as core]
-             [util :as util]]))
+             [util :as util]]
+            [refactor-nrepl.ns.ns-parser :as ns-parser]
+            [clojure.java.io :as io]))
 
 (defn- find-symbol-ns [{:keys [:require :require-macros] :as dependencies} sym]
   (some->> (into require require-macros)
@@ -47,30 +49,36 @@
   ([path parsed-ns] (symbols-in-file path parsed-ns :clj))
   ([path parsed-ns dialect]
    (util/with-additional-ex-data [:file path]
-     (binding [*ns* (or (find-ns (symbol (:ns parsed-ns))) *ns*)
-               reader/*data-readers* *data-readers*]
-       (let [rdr (-> path slurp core/file-content-sans-ns
-                     readers/indexing-push-back-reader)
-             dialect (or dialect (core/file->dialect path))
-             rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
-             syms (atom #{})
-             collect-symbol (fn [form]
-                              ;; Regular symbol
-                              (when (symbol? form)
-                                (swap! syms conj (normalize-ctor-call form)))
-                              ;; Classes used in typehints
-                              (when-let [t (:tag (meta form))]
-                                (swap! syms conj t))
-                              (when (and (keyword? form)
-                                         (core/fully-qualified? form))
-                                (swap! syms conj
-                                       (symbol (core/prefix form)
-                                               (core/suffix form))))
-                              form)]
-         (loop [form (reader/read rdr-opts rdr)]
-           (when (not= form :eof)
-             (walk/prewalk collect-symbol form)
-             (recur (reader/read rdr-opts rdr))))
-         (->> @syms
-              (map (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)))
-              set))))))
+     (let [dialect (or dialect (core/file->dialect path))
+           file-ns (or (find-ns (symbol (:ns parsed-ns))) *ns*)
+           ns-aliases (if (= dialect :cljs)
+                        (ns-parser/aliases
+                         (ns-parser/get-libspecs-from-file :cljs (io/file path)))
+                        (ns-aliases file-ns))]
+       (binding [*ns* file-ns
+                 reader/*data-readers* *data-readers*
+                 clojure.tools.reader/*alias-map* ns-aliases]
+         (let [rdr (-> path slurp core/file-content-sans-ns
+                       readers/indexing-push-back-reader)
+               rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
+               syms (atom #{})
+               collect-symbol (fn [form]
+                                ;; Regular symbol
+                                (when (symbol? form)
+                                  (swap! syms conj (normalize-ctor-call form)))
+                                ;; Classes used in typehints
+                                (when-let [t (:tag (meta form))]
+                                  (swap! syms conj t))
+                                (when (and (keyword? form)
+                                           (core/fully-qualified? form))
+                                  (swap! syms conj
+                                         (symbol (core/prefix form)
+                                                 (core/suffix form))))
+                                form)]
+           (loop [form (reader/read rdr-opts rdr)]
+             (when (not= form :eof)
+               (walk/prewalk collect-symbol form)
+               (recur (reader/read rdr-opts rdr))))
+           (->> @syms
+                (map (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)))
+                set)))))))
