@@ -50,4 +50,6 @@
   [project]
   (if (core/project-root)
     (enable-middleware-if-clj-version-ok project)
-    (warn-no-project)))
+    (do
+      (warn-no-project)
+      project)))
