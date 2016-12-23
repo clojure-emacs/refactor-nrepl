@@ -9,6 +9,14 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 
 ## Usage
 
+### With CIDER and clj-refactor
+
+If you're using CIDER and clj-refator you don't have to do anything
+except call `cider-jack-in`.  The dependencies are injected
+automagically.
+
+Be aware that this isn't the case if you connect to an already running REPL process. See the [cider documentation](http://cider.readthedocs.io/en/latest/installation/) for more details.
+
 ### Adding the middleware via Leiningen
 
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
@@ -32,8 +40,6 @@ Add the following in `~/.boot/profile.boot`:
 (swap! boot.repl/*default-middleware* conj
        'refactor-nrepl.middleware/wrap-refactor)
 ```
-
-**Please note that you do not need to these things if you are using `cider-jack-in` as cider and clj-refactor injects its own dependencies. That is not the case though if you connect to an already running REPL process. See the [cider documentation](http://cider.readthedocs.io/en/latest/installation/) for more details.**
 
 ### Passing messages to and from refactor-nrepl
 
