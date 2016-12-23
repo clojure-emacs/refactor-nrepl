@@ -20,7 +20,8 @@
             [refactor-nrepl.ns.pprint :refer [pprint-ns]]
             [refactor-nrepl.ns.resolve-missing :refer [resolve-missing]]
             [refactor-nrepl.rename-file-or-dir :refer [rename-file-or-dir]]
-            [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
+            [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]
+            [clojure.walk :as walk]))
 
 (defmacro ^:private with-errors-being-passed-on [transport msg & body]
   `(try
@@ -44,10 +45,24 @@
        (transport/send ~transport
                        (response-for ~msg ~(apply hash-map :status :done kvs))))))
 
+(defn- bencode-friendly-data [data]
+  ;; Bencode only supports byte strings, integers, lists and maps.
+  ;; To prevent the bencode serializer in nrepl blowing up we manually
+  ;; convert certain data types.
+  ;; See refactor-nrepl#180 for more details.
+  (walk/postwalk (fn [v]
+                   (cond
+                     (or (keyword? v) (symbol? v))
+                     (str v)
+
+                     (set? v) (list v)
+
+                     :else v))))
+
 (defn- serialize-response [{:keys [serialization-format] :as msg} response]
   (condp = serialization-format
     "edn" (pr-str response)
-    "bencode" response
+    "bencode" (bencode-friendly-data response)
     (pr-str response) ; edn as default
     ))
 
@@ -108,7 +123,8 @@
          :status :done))
 
 (defn- find-used-publics-reply [{:keys [transport] :as msg}]
-  (reply transport msg :used-publics (serialize-response msg (find-used-publics msg)) :status :done))
+  (reply transport msg
+         :used-publics (serialize-response msg (find-used-publics msg)) :status :done))
 
 (def refactor-nrepl-ops
   {
