@@ -57,7 +57,8 @@
 
                      (set? v) (list v)
 
-                     :else v))))
+                     :else v))
+                 data))
 
 (defn- serialize-response [{:keys [serialization-format] :as msg} response]
   (condp = serialization-format
