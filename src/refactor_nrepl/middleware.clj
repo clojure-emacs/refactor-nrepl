@@ -53,7 +53,9 @@
   (walk/postwalk (fn [v]
                    (cond
                      (or (keyword? v) (symbol? v))
-                     (str v)
+                     (if-let [prefix (core/prefix v)]
+                       (core/fully-qualify prefix v)
+                       (name v))
 
                      (set? v) (list v)
 
