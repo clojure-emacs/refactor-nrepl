@@ -41,7 +41,7 @@
 (defn expand-wildcard
   "Expands a wildcard path entry to its matching .jar files (JDK 1.6+).
   If not expanding, returns the path entry as a single-element vector."
-  [#^String path]
+  [^String path]
   (let [f (File. path)]
     (if (= (.getName f) "*")
       (.. f getParentFile (list jar-filter))
@@ -55,43 +55,44 @@
         (.replace path ".class" ""))
       (.replace File/separator ".")))
 
-(def path-class-files nil)
 (defmulti path-class-files
   "Returns a list of classes found on the specified path location
   (jar or directory), each comprised of a map with the following keys:
     :name  Java class or Clojure namespace name
     :loc   Classpath entry (directory or jar) on which the class is located
     :file  Path of the class file, relative to :loc"
-  (fn [#^File f _]
-    (cond (.isDirectory f)           :dir
-          (jar? f)        :jar
+  (fn [^File f _]
+    (cond (.isDirectory f) :dir
+          (jar? f) :jar
           (class-file? (.getName f)) :class)))
 
-(defmethod path-class-files :default
-  [& _] [])
+(defmethod path-class-files :default [& _] [])
 
 (defmethod path-class-files :jar
   ;; Build class info for all jar entry class files.
-  [#^File f #^File loc]
+  [^File f ^File loc]
   (let [lp (.getPath loc)]
     (try
-      (map class-or-ns-name
-           (filter class-file?
-                   (map #(.getName #^JarEntry %)
-                        (enumeration-seq (.entries (JarFile. f))))))
+      (into ()
+            (comp
+             (map #(.getName ^JarEntry %))
+             (filter class-file?)
+             (map class-or-ns-name))
+            (enumeration-seq (.entries (JarFile. f))))
       (catch Exception e []))))          ; fail gracefully if jar is unreadable
 
 (defmethod path-class-files :dir
   ;; Dispatch directories and files (excluding jars) recursively.
-  [#^File d #^File loc]
-  (let [fs (.listFiles d (proxy [FilenameFilter] []
-                           (accept [d n] (not (jar? (file n))))))]
-    (reduce concat (for [f fs] (path-class-files f loc)))))
+  [^File d ^File loc]
+  (let [fs (.listFiles d (reify FilenameFilter
+                           (accept [_ dir name]
+                             (-> name file jar? not))))]
+    (into () (mapcat #(path-class-files % loc)) fs)))
 
 (defmethod path-class-files :class
   ;; Build class info using file path relative to parent classpath entry
   ;; location. Make sure it decends; a class can't be on classpath directly.
-  [#^File f #^File loc]
+  [^File f ^File loc]
   (let [fp (str f), lp (str loc)
         loc-pattern (re-pattern (Pattern/quote (str "^" loc)))]
     (if (re-find loc-pattern fp)                 ; must be descendent of loc
@@ -99,26 +100,28 @@
         [(class-or-ns-name fpr)])
       [])))
 
-(defn scan-paths
-  "Takes one or more classpath strings, scans each classpath entry location, and
-  returns a list of all class file paths found, each relative to its parent
-  directory or jar on the classpath."
-  ([cp]
-     (if cp
-       (let [entries (enumeration-seq
-                      (StringTokenizer. cp File/pathSeparator))
-             locs (mapcat expand-wildcard entries)]
-         (mapcat #(path-class-files % %) locs))
-       ())))
+(defn path-entries-seq
+  "Split a string on the 'path separator', i.e. ':'. Used for splitting multiple
+  classpath entries."
+  [path-str]
+  (enumeration-seq
+   (StringTokenizer. path-str File/pathSeparator)))
 
-(defn- get-available-classes
-  []
-  (->> (mapcat scan-paths (concat (map #(System/getProperty %) ["sun.boot.class.path"
-                                                                "java.ext.dirs"
-                                                                "java.class.path"])
-                                  (map #(.getName %) (cp/classpath-jarfiles))))
-       (remove clojure-fn-file?)
-       (map symbol)))
+(defn all-classpath-entries []
+  (into (map #(System/getProperty %) ["sun.boot.class.path"
+                                      "java.ext.dirs"
+                                      "java.class.path"])
+        (map #(.getName %) (cp/classpath-jarfiles))))
+
+(defn- get-available-classes []
+  (into ()
+        (comp (mapcat path-entries-seq)
+              (mapcat expand-wildcard)
+              (mapcat #(path-class-files % %))
+              (remove clojure-fn-file?)
+              (distinct)
+              (map symbol))
+        (all-classpath-entries)))
 
 (def available-classes
   (get-available-classes))
