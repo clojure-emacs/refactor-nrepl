@@ -4,7 +4,7 @@
 
 ### Bugs fixed
 
-*
+* [#186](https://github.com/clojure-emacs/refactor-nrepl/issues/186) Make sure `resolve-missing` still works, even if a candidate class has missing dependencies.
 * [#185](https://github.com/clojure-emacs/refactor-nrepl/issues/185) Report throwables of type `Error` instead of swallowing them.
 * [clojure-emacs/clj-refactor.el#330](https://github.com/clojure-emacs/clj-refactor.el/issues/332) `clean-ns` removes imported inner inner classes.
 * [clojure-emacs/clj-refactor.el#330](https://github.com/clojure-emacs/clj-refactor.el/issues/330) `clean-ns` ignores namespaced keywords.
