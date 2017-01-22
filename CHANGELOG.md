@@ -4,6 +4,7 @@
 
 ### Bugs fixed
 
+* [#187](https://github.com/clojure-emacs/refactor-nrepl/issues/187) Update clojure.tools.reader so Clojure 1.9 namespaced map literals don't cause parse errors.
 * [#185](https://github.com/clojure-emacs/refactor-nrepl/issues/185) Report throwables of type `Error` instead of swallowing them.
 * [#186](https://github.com/clojure-emacs/refactor-nrepl/issues/186) Make sure `resolve-missing` still works, even if a candidate class has missing dependencies.
 * [#184](https://github.com/clojure-emacs/refactor-nrepl/pull/184) In `resolve-missing`, prevent classpaths with many entries from causing a stack overflow.
