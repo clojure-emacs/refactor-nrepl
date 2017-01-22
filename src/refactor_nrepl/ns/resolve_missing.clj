@@ -25,7 +25,16 @@
 
 (defn- collate-type-info
   [candidates]
-  (map (fn [candidate] {:name candidate :type (get-type candidate)}) candidates))
+  (map (fn [candidate]
+         (try
+           {:name candidate :type (get-type candidate)}
+
+           ;; This happends when class `candidate` depends on a class that is
+           ;; not available on the classpath.
+           (catch NoClassDefFoundError e
+             {:name candidate :type :class})))
+       candidates))
+
 
 (defn- inlined-dependency? [candidate]
   (or (-> candidate str (.startsWith "deps."))
