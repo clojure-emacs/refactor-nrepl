@@ -37,6 +37,9 @@
         ~transport (response-for ~msg :error (.getMessage e#) :status :done)))
      (catch Exception e#
        (transport/send
+        ~transport (response-for ~msg (err-info e# :refactor-nrepl-error))))
+     (catch Error e#
+       (transport/send
         ~transport (response-for ~msg (err-info e# :refactor-nrepl-error))))))
 
 (defmacro ^:private reply [transport msg & kvs]

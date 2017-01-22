@@ -5,6 +5,7 @@
 ### Bugs fixed
 
 *
+* [#185](https://github.com/clojure-emacs/refactor-nrepl/issues/185) Report throwables of type `Error` instead of swallowing them.
 * [clojure-emacs/clj-refactor.el#330](https://github.com/clojure-emacs/clj-refactor.el/issues/332) `clean-ns` removes imported inner inner classes.
 * [clojure-emacs/clj-refactor.el#330](https://github.com/clojure-emacs/clj-refactor.el/issues/330) `clean-ns` ignores namespaced keywords.
 * [#160](https://github.com/clojure-emacs/refactor-nrepl/issues/160) Make `resolve-missing` find newly defined vars and types (clj). Because of a stale cache, newly added vars or types would not be found. This fix takes into account vars/types added by eval-ing code (rescan affected namespace), and by hotloading dependencies (reset the cache).
