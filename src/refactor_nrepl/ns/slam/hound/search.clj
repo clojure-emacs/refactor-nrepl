@@ -41,7 +41,7 @@
 (defn expand-wildcard
   "Expands a wildcard path entry to its matching .jar files (JDK 1.6+).
   If not expanding, returns the path entry as a single-element vector."
-  [#^String path]
+  [^String path]
   (let [f (File. path)]
     (if (= (.getName f) "*")
       (.. f getParentFile (list jar-filter))
@@ -55,29 +55,27 @@
         (.replace path ".class" ""))
       (.replace File/separator ".")))
 
-(def path-class-files nil)
 (defmulti path-class-files
   "Returns a list of classes found on the specified path location
   (jar or directory), each comprised of a map with the following keys:
     :name  Java class or Clojure namespace name
     :loc   Classpath entry (directory or jar) on which the class is located
     :file  Path of the class file, relative to :loc"
-  (fn [#^File f _]
-    (cond (.isDirectory f)           :dir
-          (jar? f)        :jar
+  (fn [^File f _]
+    (cond (.isDirectory f) :dir
+          (jar? f) :jar
           (class-file? (.getName f)) :class)))
 
-(defmethod path-class-files :default
-  [& _] [])
+(defmethod path-class-files :default [& _] [])
 
 (defmethod path-class-files :jar
   ;; Build class info for all jar entry class files.
-  [#^File f #^File loc]
+  [^File f ^File loc]
   (let [lp (.getPath loc)]
     (try
       (into ()
             (comp
-             (map #(.getName #^JarEntry %))
+             (map #(.getName ^JarEntry %))
              (filter class-file?)
              (map class-or-ns-name))
             (enumeration-seq (.entries (JarFile. f))))
@@ -85,15 +83,16 @@
 
 (defmethod path-class-files :dir
   ;; Dispatch directories and files (excluding jars) recursively.
-  [#^File d #^File loc]
-  (let [fs (.listFiles d (proxy [FilenameFilter] []
-                           (accept [d n] (not (jar? (file n))))))]
+  [^File d ^File loc]
+  (let [fs (.listFiles d (reify FilenameFilter
+                           (accept [_ dir name]
+                             (-> name file jar? not))))]
     (into () (mapcat #(path-class-files % loc)) fs)))
 
 (defmethod path-class-files :class
   ;; Build class info using file path relative to parent classpath entry
   ;; location. Make sure it decends; a class can't be on classpath directly.
-  [#^File f #^File loc]
+  [^File f ^File loc]
   (let [fp (str f), lp (str loc)
         loc-pattern (re-pattern (Pattern/quote (str "^" loc)))]
     (if (re-find loc-pattern fp)                 ; must be descendent of loc
