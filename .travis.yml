@@ -9,6 +9,7 @@ script:
   - ./latest-lein source-deps :prefix-exclusions "[\"classlojure\"]"
   - ./latest-lein with-profile +plugin.mranderson/config test
   - ./latest-lein with-profile +1.8,+plugin.mranderson/config test
+  - ./latest-lein with-profile +1.9,+plugin.mranderson/config test
 jdk:
   - openjdk7
   - oraclejdk7
