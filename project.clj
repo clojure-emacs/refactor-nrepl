@@ -23,6 +23,8 @@
              :test {:dependencies [[print-foo "1.0.1"]]
                     :src-paths ["test/resources"]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha14"]
+                                  [org.clojure/clojurescript "1.9.293"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :dependencies [[org.clojure/clojurescript "1.7.48"]
                                   [com.cemerick/piggieback "0.2.1"]
