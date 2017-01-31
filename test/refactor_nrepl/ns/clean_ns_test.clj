@@ -39,6 +39,9 @@
 
 (def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
 
+(def ns-with-keep-metadata (clean-msg "test/resources/ns_with_keep_metadata.clj"))
+(def ns-with-keep-metadata-rebuilt (core/read-ns-form-with-meta (absolute-path "test/resources/ns_with_keep_metadata_rebuilt.clj")))
+
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
         combined-requires (core/get-ns-component ns2-cleaned :require)]
@@ -192,3 +195,8 @@
 (deftest preserves-shorthand-meta
   (let [cleaned (pprint-ns (clean-ns ns-with-shorthand-meta))]
     (is (re-find #"\^:automation" cleaned))))
+
+(deftest respects-keep-metadata
+  (let [new-require (core/get-ns-component (clean-ns ns-with-keep-metadata) :require)
+        expected-require (core/get-ns-component ns-with-keep-metadata-rebuilt :require)]
+    (is (= expected-require new-require))))

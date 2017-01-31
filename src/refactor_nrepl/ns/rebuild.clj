@@ -119,20 +119,22 @@
   [{:keys [ns as refer rename refer-macros] :as libspec}]
   (let [all-flags #{:reload :reload-all :verbose :include-macros}
         flags (util/filter-map #(all-flags (first %)) libspec)]
-    (if (and (not as) (not refer)
-             (empty? flags) (empty? rename) (empty? refer-macros))
-      ns
-      (into [ns]
-            (concat (when as [:as as])
-                    (when refer
-                      [:refer (if (sequential? refer)
-                                (vec (sort-referred-symbols refer))
-                                refer)])
-                    (when refer-macros
-                      [:refer-macros (vec (sort-referred-symbols refer-macros))])
-                    (when (not-empty rename)
-                      [:rename (into (sorted-map) (:rename libspec))])
-                    (flatten (seq flags)))))))
+    (cond->
+        (if (and (not as) (not refer)
+                 (empty? flags) (empty? rename) (empty? refer-macros))
+          ns
+          (into [ns]
+                (concat (when as [:as as])
+                        (when refer
+                          [:refer (if (sequential? refer)
+                                    (vec (sort-referred-symbols refer))
+                                    refer)])
+                        (when refer-macros
+                          [:refer-macros (vec (sort-referred-symbols refer-macros))])
+                        (when (not-empty rename)
+                          [:rename (into (sorted-map) (:rename libspec))])
+                        (flatten (seq flags)))))
+      (-> libspec meta :keep) (with-meta {:refactor-nrepl.core/shorthand-meta :keep}))))
 
 (defn- create-libspec-vectors-without-prefix
   [libspecs]

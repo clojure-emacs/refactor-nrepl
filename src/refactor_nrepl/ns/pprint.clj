@@ -32,6 +32,19 @@
                             (printf "%s " libspec))))))
                   ordered-libspecs))))
 
+(defn pprint-meta
+  [m]
+  (if-let [shorthand-meta (::core/shorthand-meta m)]
+    (print (str "^" shorthand-meta " "))
+    (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
+                         ", " "\n"))))
+
+(defn- pprint-libspec [libspec]
+  (when (seq (meta libspec)) (pprint-meta (meta libspec)))
+  (if (prefix-form? libspec)
+    (pprint-prefix-form libspec)
+    (pprint libspec)))
+
 (defn pprint-require-form
   [[_ & libspecs]]
   (print "(:require ")
@@ -40,12 +53,8 @@
     (fn [idx libspec]
       (if (= idx (dec (count libspecs)))
         (printf "%s)\n" (str/trim-newline
-                         (with-out-str (if (prefix-form? libspec)
-                                         (pprint-prefix-form libspec)
-                                         (pprint libspec)))))
-        (if (prefix-form? libspec)
-          (pprint-prefix-form libspec)
-          (pprint libspec))))
+                         (with-out-str (pprint-libspec libspec))))
+        (pprint-libspec libspec)))
     libspecs)))
 
 (defn- form-is? [form type]
@@ -75,13 +84,6 @@
         (printf "%s)\n" import)
         (println import)))
     imports)))
-
-(defn pprint-meta
-  [m]
-  (if-let [shorthand-meta (::core/shorthand-meta m)]
-    (print (str "^" shorthand-meta " "))
-    (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
-                         ", " "\n"))))
 
 (defn pprint-ns
   [[_ name & more :as ns-form]]

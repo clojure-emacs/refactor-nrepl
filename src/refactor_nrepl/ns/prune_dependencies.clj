@@ -67,13 +67,15 @@
 
 (defn- remove-unused-syms-and-specs
   [used-syms current-ns libspec]
-  (some-> libspec
-          (libspec-in-use? used-syms current-ns)
-          (prune-key :refer used-syms)
-          (prune-key :refer-macros used-syms)
-          (util/dissoc-when (fn empty-and-not-kw [k]
-                              (and (not (keyword k)) (empty? k)))
-                            :refer :refer-macros)))
+  (if (:keep (meta libspec))
+    libspec
+    (some-> libspec
+            (libspec-in-use? used-syms current-ns)
+            (prune-key :refer used-syms)
+            (prune-key :refer-macros used-syms)
+            (util/dissoc-when (fn empty-and-not-kw [k]
+                                (and (not (keyword k)) (empty? k)))
+                              :refer :refer-macros))))
 
 (defn- static-method-or-field-access->Classname
   [symbol-in-file]

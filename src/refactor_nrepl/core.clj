@@ -245,12 +245,16 @@
   metadata which shouldn't be printed back out."
   [file-content]
   (let [ns-string (sexp/get-first-sexp file-content)
-        meta? (-> ns-string (.replaceFirst "\\^\\{" "\\{")
-                  (StringReader.)
-                  (PushbackReader.)
-                  parse/read-ns-decl
-                  second)
-        shorthand-meta?  (second (re-find #"\^:([^\s]+)\s" ns-string))]
+        ns-decl (-> ns-string
+                    (.replaceFirst "\\^\\{" "\\{")
+                    (StringReader.)
+                    (PushbackReader.)
+                    parse/read-ns-decl)
+        meta? (second ns-decl)
+        ns-name (if (symbol? meta?) meta? (first (nnext ns-decl)))
+        shorthand-meta? (-> (java.util.regex.Pattern/compile (str "\\^:([^\\s]+)\\s" ns-name))
+                            (re-find ns-string)
+                            second)]
     (cond
       (map? meta?) meta?
       shorthand-meta? {::shorthand-meta (keyword shorthand-meta?)}

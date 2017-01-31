@@ -19,10 +19,11 @@
 
 (defn- libspec-vector->map
   [libspec]
-  (if (vector? libspec)
-    (let [[ns & specs] libspec]
-      (into {:ns ns} (->> specs (partition 2) (map vec))))
-    {:ns (symbol libspec)}))
+  (-> (if (vector? libspec)
+          (let [[ns & specs] libspec]
+            (into {:ns ns} (->> specs (partition 2) (map vec))))
+        {:ns (symbol libspec)})
+      (with-meta (meta libspec))))
 
 (defn- expand-prefix-specs
   "Eliminate prefix lists."
