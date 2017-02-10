@@ -66,11 +66,13 @@
                  data))
 
 (defn- serialize-response [{:keys [serialization-format] :as msg} response]
-  (condp = serialization-format
-    "edn" (pr-str response)
-    "bencode" (bencode-friendly-data response)
-    (pr-str response) ; edn as default
-    ))
+  (binding [*print-length* nil
+            *print-level* nil]
+    (condp = serialization-format
+      "edn" (pr-str response)
+      "bencode" (bencode-friendly-data response)
+      (pr-str response) ; edn as default
+      )))
 
 (defn resolve-missing-reply [{:keys [transport] :as msg}]
   (reply transport msg :candidates (resolve-missing msg) :status :done))
