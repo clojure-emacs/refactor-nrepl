@@ -107,7 +107,7 @@
       (throw ast-or-err)
 
       error?
-      (throw-ast-in-bad-state file-content (.getMessage ast-or-err))
+      (throw-ast-in-bad-state file-content (.getMessage ^Throwable ast-or-err))
 
       :default
       ast-or-err)))
@@ -118,7 +118,7 @@
                 (->> (vals asts)
                      (mapcat vals)
                      (map #(if (instance? Throwable %)
-                             (list "error" (.getMessage %))
+                             (list "error" (.getMessage ^Throwable %))
                              "OK"))))))
 
 (defn warm-ast-cache []
@@ -128,8 +128,8 @@
       (catch Throwable th))) ;noop, ast-status will be reported separately
   (ast-stats))
 
-(defn node-at-loc? [loc-line loc-column node]
-  (let [{:keys [line end-line column end-column]} (:env node)]
+(defn node-at-loc? [^long loc-line ^long loc-column node]
+  (let [{:keys [^long line ^long end-line ^long column ^long end-column]} (:env node)]
     ;; The node for ::an-ns-alias/foo, when it appeared as a toplevel form,
     ;; had nil as position info
     (and line end-line column end-column

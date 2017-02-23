@@ -56,7 +56,8 @@
     (for [libspecs (vals @libspecs-by-ns)]
       (merge-libspecs libspecs))))
 
-(defn- get-sort-name [dep]
+(defn- get-sort-name
+  ^String [dep]
   (str/lower-case
    (if (sequential? dep)
      (let [name (-> dep first name)

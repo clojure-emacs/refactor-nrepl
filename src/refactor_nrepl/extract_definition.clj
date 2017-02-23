@@ -13,7 +13,7 @@
   (zipmap (take-nth 2 occurrence) (take-nth 2 (rest occurrence))))
 
 (defn- extract-definition-from-def
-  [^String sexp]
+  ^String [^String sexp]
   (let [def-form (read-string sexp)
         docstring? (string? (nth def-form 2 :not-found))
         sexp-sans-delimiters (.substring (str/trim sexp) 1 (dec (.length sexp)))
@@ -25,7 +25,7 @@
     (str/trim (slurp rdr))))
 
 (defn- extract-definition-from-defn
-  [^String sexp]
+  ^String [^String sexp]
   (let [form (read-string sexp)
         fn-name (str (second form))]
     (-> sexp
@@ -33,7 +33,7 @@
         (.replaceFirst (str "\\s*" (Pattern/quote fn-name)) ""))))
 
 (defn- extract-def-from-binding-vector
-  [^String bindings ^String var-name]
+  ^String [^String bindings ^String var-name]
   (let [zipper (zip/of-string bindings)
         zloc (some (fn [zloc] (when (= (symbol var-name) (zip/sexpr zloc)) zloc))
                    (sexp/all-zlocs zipper))]
@@ -41,7 +41,7 @@
       (str/trim (zip/string (zip/right zloc))))))
 
 (defn- -extract-definition
-  [{:keys [match file line-beg col-beg name]}]
+  [{:keys [match file ^long line-beg ^long col-beg name]}]
   (let [literal-sexp (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
                                               col-beg)
         form (read-string literal-sexp)]
@@ -67,7 +67,7 @@
 
 (defn- def?
   "Is the OCCURRENCE the defining form?"
-  [{:keys [file name col-beg line-beg] :as occurrence}]
+  [{:keys [file name ^long col-beg ^long line-beg] :as occurrence}]
   (let [form (read-string (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
                                                    col-beg))
         name (symbol (suffix (read-string name)))]
@@ -78,7 +78,7 @@
 
 (defn- sort-by-linum
   [occurrences]
-  (sort #(- (:line-beg %1) (:line-beg %2)) occurrences))
+  (sort #(- (long (:line-beg %1)) (long (:line-beg %2))) occurrences))
 
 (defn- find-definition [occurrences]
   (some->> occurrences

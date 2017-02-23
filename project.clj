@@ -16,6 +16,7 @@
                  ^:source-dep [rewrite-clj "0.4.13-SNAPSHOT"]
                  ^:source-dep [cljs-tooling "0.1.7"]
                  ^:source-dep [version-clj "0.1.2"]]
+  :global-vars {*warn-on-reflection* true}
   :plugins [[thomasa/mranderson "0.4.7"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.10.0"]

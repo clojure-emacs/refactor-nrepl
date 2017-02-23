@@ -10,7 +10,8 @@
              [s-expressions :as sexp]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]
             [refactor-nrepl.find.util :as find-util]
-            [refactor-nrepl.ns.libspecs :as libspecs]))
+            [refactor-nrepl.ns.libspecs :as libspecs])
+  (:import (java.io File)))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
 
@@ -92,7 +93,7 @@
                          name
                          (alias-info asts)))))
 
-(defn- match [file-content line end-line]
+(defn- match [file-content ^long line ^long end-line]
   (let [line-index (dec line)
         eline (if (number? end-line) end-line line)]
     (->> file-content
@@ -102,7 +103,7 @@
          (str/join "\n")
          str/trim)))
 
-(defn- find-symbol-in-file [fully-qualified-name ignore-errors file]
+(defn- find-symbol-in-file [fully-qualified-name ignore-errors ^File file]
   (let [file-content (slurp file)
         locs (try (->> (ana/ns-ast file-content)
                        (find-symbol-in-ast fully-qualified-name)
@@ -139,7 +140,7 @@
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
 
 (defn- get&read-enclosing-sexps
-  [file-content {:keys [line-beg col-beg]}]
+  [file-content {:keys [^long line-beg ^long col-beg]}]
   (binding [*read-eval* false]
     (let [line (dec line-beg)
           encl-sexp-level1 (or (sexp/get-enclosing-sexp file-content line col-beg) "")
@@ -164,18 +165,18 @@
       res)))
 
 (defn- occurrence-for-optmap-default
-  [var-name [{:keys [line-beg col-beg] :as orig-occurrence} [_ _ level2-string _]]]
+  [var-name [{:keys [line-beg col-beg] :as orig-occurrence} [_ _ ^String level2-string _]]]
   (let [var-positions (re-pos (re-pattern (format "\\W%s\\W" var-name)) level2-string)
-        var-default-pos (first (second var-positions))
-        newline-cnt (reduce (fn [cnt char] (if (= char \newline) (inc cnt) cnt)) 0 (.substring level2-string 0 var-default-pos))
+        ^long var-default-pos (first (second var-positions))
+        newline-cnt (reduce (fn [cnt char] (if (= char \newline) (inc (long cnt)) cnt)) 0 (.substring level2-string 0 var-default-pos))
         prev-newline-position (->> (concat (keys (re-pos #"\n" level2-string))
                                            (keys var-positions))
                                    sort
                                    (take-while (partial not= var-default-pos))
                                    last)
         new-col (if (= 0 newline-cnt)
-                  (- var-default-pos (ffirst var-positions))
-                  (inc (- var-default-pos prev-newline-position)))
+                  (- var-default-pos (long (ffirst var-positions)))
+                  (inc (- (long var-default-pos) (long prev-newline-position))))
         new-occurrence (-> (update-in orig-occurrence [:line-beg] + newline-cnt)
                            (update-in [:line-end] + newline-cnt))]
     (if (= 0 newline-cnt)
@@ -192,7 +193,7 @@
   var-name is the name of the var the user wants to know about
   line is the line number of the symbol
   column is the column of the symbol"
-  [file var-name line column]
+  [^String file var-name line column]
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
