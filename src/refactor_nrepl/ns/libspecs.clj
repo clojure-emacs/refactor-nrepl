@@ -1,6 +1,7 @@
 (ns refactor-nrepl.ns.libspecs
   (:require [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.ns-parser :as ns-parser]))
+            [refactor-nrepl.ns.ns-parser :as ns-parser])
+  (:import [java.io File]))
 
 ;; The structure here is {path {lang [timestamp value]}}
 ;; where lang is either :clj or :cljs
@@ -24,12 +25,12 @@
        (mapcat identity)
        (apply hash-map)))
 
-(defn- get-cached-libspec [f lang]
+(defn- get-cached-libspec [^File f lang]
   (when-let [[ts v] (get-in @cache [(.getAbsolutePath f) lang])]
     (when (= ts (.lastModified f))
       v)))
 
-(defn- put-cached-libspec [f lang]
+(defn- put-cached-libspec [^File f lang]
   (let [libspecs (ns-parser/get-libspecs-from-file lang f)]
     (swap! cache assoc-in [(.getAbsolutePath f) lang]
            [(.lastModified f) libspecs])

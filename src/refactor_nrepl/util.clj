@@ -3,7 +3,7 @@
 
 (defn normalize-to-unix-path
   "Replace use / as separator and lower-case."
-  [path]
+  ^String [^String path]
   (if (.contains (System/getProperty "os.name") "Windows")
     (.replaceAll path (Pattern/quote "\\") "/")
     path))

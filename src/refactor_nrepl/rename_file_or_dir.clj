@@ -27,15 +27,15 @@
                            re-pattern
                            (str/split (str/lower-case path))
                            second))
-        shortest (fn [acc val] (if (< (.length acc) (.length val)) acc val))]
+        shortest (fn [^String acc ^String val] (if (< (.length acc) (.length val)) acc val))]
     (let [relative-paths (->> (core/dirs-on-classpath)
-                              (map (memfn getAbsolutePath))
+                              (map (memfn ^File getAbsolutePath))
                               (map util/normalize-to-unix-path)
                               (map chop-prefix)
                               (remove nil?))]
-      (if-let [p (cond
-                   (= (count relative-paths) 1) (first relative-paths)
-                   (> (count relative-paths) 1) (reduce shortest relative-paths))]
+      (if-let [^String p (cond
+                           (= (count relative-paths) 1) (first relative-paths)
+                           (> (count relative-paths) 1) (reduce shortest relative-paths))]
         (if (.startsWith p "/")
           (.substring p 1)
           p)
@@ -200,7 +200,7 @@
         tracker (tracker/build-tracker)
         dependents (tracker/get-dependents tracker old-ns)
         new-dependents (atom {})]
-    (doseq [f dependents]
+    (doseq [^File f dependents]
       (swap! new-dependents
              assoc (.getAbsolutePath f) (update-dependent f old-ns new-ns)))
     (rename-file! old-path new-path)
@@ -219,7 +219,7 @@
         new-path (util/normalize-to-unix-path new-path)
         old-path (if (.endsWith old-path "/") old-path (str old-path "/"))
         new-path (if (.endsWith new-path "/") new-path (str new-path "/"))]
-    (flatten (for [f (file-seq (File. old-path))
+    (flatten (for [^File f (file-seq (File. old-path))
                    :when (not (fs/directory? f))
                    :let [path (util/normalize-to-unix-path (.getAbsolutePath f))]]
                (-rename-file-or-dir path (merge-paths path old-path new-path))))))

@@ -6,7 +6,7 @@
              [s-expressions :as sexp]
              [core :as core]]))
 
-(defn find-used-locals  [{:keys [file line column]}]
+(defn find-used-locals  [{:keys [file ^long line ^long column]}]
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}

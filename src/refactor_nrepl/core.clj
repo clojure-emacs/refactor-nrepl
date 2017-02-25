@@ -7,7 +7,7 @@
             [me.raynes.fs :as fs]
             [refactor-nrepl.util :refer [normalize-to-unix-path]]
             [refactor-nrepl.s-expressions :as sexp])
-  (:import [java.io FileReader PushbackReader StringReader]))
+  (:import [java.io File FileReader PushbackReader StringReader]))
 
 (defn version []
   (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
@@ -45,18 +45,18 @@
   to use as a starting point. We search anything above this dir, until
   we reach the file system root. Default value is the property
   `user.dir`."
-  ([] (project-root (System/getProperty "user.dir")))
-  ([path-or-file-in-project]
+  (^File [] (project-root (System/getProperty "user.dir")))
+  (^File [path-or-file-in-project]
    (let [path-or-file-in-project (io/file path-or-file-in-project)
          start (if (fs/directory? path-or-file-in-project)
                  path-or-file-in-project
                  (fs/parent path-or-file-in-project))
          names-at-root #{"project.clj" "build.boot" "build.gradle" "pom.xml"}
-         known-root-file? (fn [f] (some (fn [known-root-name]
-                                          (.endsWith (.getCanonicalPath f)
-                                                     known-root-name))
-                                        names-at-root))
-         root-dir? (fn [f] (some known-root-file? (.listFiles f)))
+         known-root-file? (fn [^File f] (some (fn [known-root-name]
+                                                (.endsWith (.getCanonicalPath f)
+                                                           known-root-name))
+                                              names-at-root))
+         root-dir? (fn [^File f] (some known-root-file? (.listFiles f)))
          most-likely-root (io/file (System/getProperty "user.dir"))]
      (if (root-dir? most-likely-root)
        most-likely-root
@@ -72,7 +72,7 @@
                         normalize-to-unix-path
                         (str "/target"))
         parent-paths (map (comp normalize-to-unix-path
-                                (memfn getCanonicalPath))
+                                (memfn ^File getCanonicalPath))
                           (fs/parents f))]
     (and (some #{target-path} parent-paths)
          path-or-file)))
@@ -192,7 +192,7 @@
 (defn strip-reader-macros
   "Strip reader macros like #' and . (as in '(Date.)') from
   symbol-or-string."
-  [symbol-or-string]
+  ^String [symbol-or-string]
   (let [s (-> symbol-or-string
               str
               (str/replace "#'" ""))]

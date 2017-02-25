@@ -15,7 +15,7 @@
   (printf "[%s" name)
   (let [ordered-libspecs (libspec-vectors-last libspecs)]
     (dorun
-     (map-indexed (fn [idx libspec]
+     (map-indexed (fn [^long idx libspec]
                     ;; insert newline after all non-libspec vectors
                     (when (and (vector? libspec)
                                (or (zero? idx)

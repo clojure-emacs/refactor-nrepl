@@ -30,7 +30,7 @@
        (str/join "\n")))
 
 (defn- build-macro-meta
-  [form f]
+  [form ^File f]
   (let [{:keys [line column end-line end-column]} (meta form)
         file-content (slurp f)
         file-ns (core/ns-from-string file-content)
@@ -47,7 +47,7 @@
      :match sexp}))
 
 (defn- find-macro-definitions-in-file
-  [f]
+  [^File f]
   (util/with-additional-ex-data [:file (.getAbsolutePath f)]
     (with-open [file-rdr (FileReader. f)]
       (binding [*ns* (or (core/path->namespace :no-error f) *ns*)
@@ -63,12 +63,12 @@
               :else
               (recur macros (reader/read opts rdr)))))))))
 
-(defn- get-cached-macro-definitions [f]
+(defn- get-cached-macro-definitions [^File f]
   (when-let [[ts v] (get @macro-defs-cache (.getAbsolutePath f))]
     (when (= ts (.lastModified f))
       v)))
 
-(defn- put-cached-macro-definitions [f]
+(defn- put-cached-macro-definitions [^File f]
   (let [defs (find-macro-definitions-in-file f)
         ts (.lastModified f)]
     (swap! macro-defs-cache assoc-in [(.getAbsolutePath f)] [ts defs])
@@ -117,10 +117,10 @@
   "line-offset is the offset in the file where we start searching.
   This is after the ns but clj-rewrite keeps tracking of any following
   whitespace."
-  [path macro-name line-offset zip-node]
+  [path macro-name ^long line-offset zip-node]
   (let [node (zip/node zip-node)
-        val (:string-value node)
-        {:keys [row col]} (meta node)]
+        ^String val (:string-value node)
+        {:keys [^long row ^long col]} (meta node)]
     {:match (zip/string (zip/up zip-node))
      :name macro-name
      :line-beg (dec (+ row line-offset))

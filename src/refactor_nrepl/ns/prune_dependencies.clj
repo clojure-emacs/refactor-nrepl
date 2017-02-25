@@ -32,9 +32,9 @@
                     (concat refer require-macros refer-macros)))
           (map str (concat refer require-macros refer-macros))) symbol-in-file))
    ;; Used as a fully qualified symbol
-   (.startsWith symbol-in-file (str ns "/"))
+   (.startsWith ^String symbol-in-file (str ns "/"))
    ;; Aliased symbol in use
-   (and as (.startsWith symbol-in-file (str as "/")))))
+   (and as (.startsWith ^String symbol-in-file (str as "/")))))
 
 (defn- libspec-in-use-with-rename?
   [{:keys [rename] :as libspec} symbols-in-file]
