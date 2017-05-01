@@ -6,7 +6,7 @@
   :dependencies [[org.clojure/tools.nrepl "0.2.12"]
                  ^:source-dep [http-kit "2.1.19"]
                  ^:source-dep [cheshire "5.4.0"]
-                 ^:source-dep [alembic "0.3.2"]
+                 ^:source-dep [clojure-emacs/alembic "0.3.3"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.6.9"]
                  ^:source-dep [org.clojure/tools.namespace  "0.3.0-alpha3"]
                  ^:source-dep [org.clojure/tools.reader "1.0.0-beta4"]
