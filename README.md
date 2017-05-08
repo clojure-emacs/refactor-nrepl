@@ -85,6 +85,9 @@ Configuration settings are passed along with each msg, currently the recognized 
  ;; This seq of strings will be used as regexp patterns to match
  ;; against the libspec name.
  :libspec-whitelist ["^cljsjs"]
+
+ ;; Regexes matching paths that are to be ignored
+ :ignore-paths []
 }
 ```
 

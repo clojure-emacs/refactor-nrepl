@@ -6,7 +6,8 @@
             [clojure.tools.reader.reader-types :as readers]
             [me.raynes.fs :as fs]
             [refactor-nrepl.util :refer [normalize-to-unix-path]]
-            [refactor-nrepl.s-expressions :as sexp])
+            [refactor-nrepl.s-expressions :as sexp]
+            [refactor-nrepl.config :as config])
   (:import [java.io File FileReader PushbackReader StringReader]))
 
 (defn version []
@@ -30,13 +31,23 @@
   [readable]
   (-> readable slurp ns-from-string))
 
+(defn ignore-dir-on-classpath?
+  [^String path]
+  (or (.endsWith path "target/srcdeps")
+      (reduce (fn [acc x]
+                (if (re-find x path)
+                  (reduced true)
+                  acc))
+              false
+              (:ignore-paths config/*config*))))
+
 (defn dirs-on-classpath
   "Return all dirs on classpath, filtering out our inlined deps
-  directory."
+  directory and paths matching :ignore-paths specified in config."
   []
   (->> (cp/classpath)
        (filter fs/directory?)
-       (remove #(-> % str normalize-to-unix-path (.endsWith "target/srcdeps")))))
+       (remove #(-> % str normalize-to-unix-path ignore-dir-on-classpath?))))
 
 (defn project-root
   "Return the project root directory.
