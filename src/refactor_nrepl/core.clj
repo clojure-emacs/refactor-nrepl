@@ -261,10 +261,10 @@
                   (PushbackReader.)
                   parse/read-ns-decl
                   second)
-        shorthand-meta?  (second (re-find #"\^:([^\s]+)\s" ns-string))]
+        shorthand-meta?  (re-seq #"\^:([^\s]+)\s" ns-string)]
     (cond
       (map? meta?) meta?
-      shorthand-meta? {::shorthand-meta (keyword shorthand-meta?)}
+      shorthand-meta? {::shorthand-meta-coll (map (comp keyword second) shorthand-meta?)}
       :else nil)))
 
 (defn read-ns-form-with-meta

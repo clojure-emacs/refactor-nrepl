@@ -39,6 +39,8 @@
 
 (def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
 
+(def ns-with-multiple-shorthand-meta (clean-msg "test/resources/ns_with_multiple_shorthand_meta.clj"))
+
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
         combined-requires (core/get-ns-component ns2-cleaned :require)]
@@ -192,3 +194,8 @@
 (deftest preserves-shorthand-meta
   (let [cleaned (pprint-ns (clean-ns ns-with-shorthand-meta))]
     (is (re-find #"\^:automation" cleaned))))
+
+(deftest preservres-multiple-shortand-meta
+  (let [cleaned (pprint-ns (clean-ns ns-with-multiple-shorthand-meta))]
+    (is (re-find #"\^:automation" cleaned))
+    (is (re-find #"\^:multiple" cleaned))))

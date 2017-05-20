@@ -78,8 +78,9 @@
 
 (defn pprint-meta
   [m]
-  (if-let [shorthand-meta (::core/shorthand-meta m)]
-    (print (str "^" shorthand-meta " "))
+  (if-let [shorthand-meta-coll (::core/shorthand-meta-coll m)]
+    (doseq [shorthand-meta shorthand-meta-coll]
+      (print (str "^" shorthand-meta " ")))
     (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
                          ", " "\n"))))
 
