@@ -43,7 +43,7 @@
 
 (def ns-with-inner-classes (clean-msg "test/resources/ns_with_inner_classes.clj"))
 
-(def ns-with-incanter (clean-msg "test/resources/ns_with_incanter.clj"))
+(def ns-using-dollar (clean-msg "test/resources/ns_using_dollar.clj"))
 
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
@@ -205,7 +205,7 @@
     (is (re-find #"\^:multiple" cleaned))))
 
 (deftest does-not-remove-dollar-sign-if-valid-symbol
-  (let [cleaned (pprint-ns (clean-ns ns-with-incanter))]
+  (let [cleaned (pprint-ns (clean-ns ns-using-dollar))]
     (is (re-find #"\[\$\]" cleaned))))
 
 (deftest does-not-break-import-for-inner-class

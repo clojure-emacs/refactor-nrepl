@@ -21,8 +21,7 @@
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.10.0"]
                                        [org.clojure/clojure "1.7.0"]]}
-             :test {:dependencies [[print-foo "1.0.1"]
-                                   [incanter/incanter-core "1.5.7"]]
+             :test {:dependencies [[print-foo "1.0.1"]]
                     :src-paths ["test/resources"]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha14"]
