@@ -236,7 +236,7 @@
       (= "/" fully-qualified-name)
       fully-qualified-name
 
-      (re-find #"\$" fully-qualified-name)
+      (re-find #"\w\$\w" fully-qualified-name)
       (let [[outer & classes] (-> fully-qualified-name (.split "\\$"))
             outer (suffix outer)]
         (if (> (count classes) 1)

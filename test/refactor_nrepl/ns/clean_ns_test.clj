@@ -41,6 +41,8 @@
 
 (def ns-with-multiple-shorthand-meta (clean-msg "test/resources/ns_with_multiple_shorthand_meta.clj"))
 
+(def ns-with-incanter (clean-msg "test/resources/ns_with_incanter.clj"))
+
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
         combined-requires (core/get-ns-component ns2-cleaned :require)]
@@ -199,3 +201,7 @@
   (let [cleaned (pprint-ns (clean-ns ns-with-multiple-shorthand-meta))]
     (is (re-find #"\^:automation" cleaned))
     (is (re-find #"\^:multiple" cleaned))))
+
+(deftest does-not-remove-dollar-sign-if-valid-symbol
+  (let [cleaned (pprint-ns (clean-ns ns-with-incanter))]
+    (is (re-find #"\[\$\]" cleaned))))

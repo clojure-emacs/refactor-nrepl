@@ -12,6 +12,7 @@
 * [clojure-emacs/clj-refactor.el#330](https://github.com/clojure-emacs/clj-refactor.el/issues/330) `clean-ns` ignores namespaced keywords.
 * [#160](https://github.com/clojure-emacs/refactor-nrepl/issues/160) Make `resolve-missing` find newly defined vars and types (clj). Because of a stale cache, newly added vars or types would not be found. This fix takes into account vars/types added by eval-ing code (rescan affected namespace), and by hotloading dependencies (reset the cache).
 * [clojure-emacs/clj-refactor.el#362](https://github.com/clojure-emacs/clj-refactor.el/issues/362) Preserve all shorthand style metadata when `clean-ns` is used.
+* [#192](https://github.com/clojure-emacs/refactor-nrepl/issues/192) Clean ns understands `$` as a symbol. Specially this enables clean ns to work with incanter that does have function named `$`.
 
 ### Changes
 
