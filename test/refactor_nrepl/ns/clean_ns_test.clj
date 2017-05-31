@@ -41,6 +41,8 @@
 
 (def ns-with-multiple-shorthand-meta (clean-msg "test/resources/ns_with_multiple_shorthand_meta.clj"))
 
+(def ns-with-inner-classes (clean-msg "test/resources/ns_with_inner_classes.clj"))
+
 (def ns-with-incanter (clean-msg "test/resources/ns_with_incanter.clj"))
 
 (deftest combines-requires
@@ -205,3 +207,7 @@
 (deftest does-not-remove-dollar-sign-if-valid-symbol
   (let [cleaned (pprint-ns (clean-ns ns-with-incanter))]
     (is (re-find #"\[\$\]" cleaned))))
+
+(deftest does-not-break-import-for-inner-class
+  (let [cleaned (pprint-ns (clean-ns ns-with-inner-classes))]
+    (is (re-find #":import.*Line2D\$Double" cleaned))))

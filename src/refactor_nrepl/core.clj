@@ -227,7 +227,8 @@
 (defn suffix
   "java.util.Date -> Date
   java.text.Normalizer$Form/NFD => Normalizer
-  SomeClass$InnerClass$InnerInnerClass => SomeClass$InnerClass
+  SomeClass$InnerClass$InnerInnerClass => SomeClass$InnerClass$InnerInnerClass
+  SomeClass$InnerClass => SomeClass$InnerClass
 
   clojure.core/str -> str"
   [fully-qualified-name]
@@ -239,8 +240,9 @@
       (re-find #"\w\$\w" fully-qualified-name)
       (let [[outer & classes] (-> fully-qualified-name (.split "\\$"))
             outer (suffix outer)]
-        (if (> (count classes) 1)
-          (str/join "$" (apply vector outer classes ))
+        (if (or (> (count classes) 1)
+                (->> classes first (re-find #"/") not))
+          (str/join "$" (apply vector outer classes))
           outer))
 
       (re-find #"/" (str fully-qualified-name))
