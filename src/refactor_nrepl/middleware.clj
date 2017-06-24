@@ -4,24 +4,15 @@
             [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
             [clojure.tools.nrepl.misc :refer [response-for]]
             [clojure.tools.nrepl.transport :as transport]
-            [refactor-nrepl.analyzer :refer [warm-ast-cache]]
-            [refactor-nrepl.artifacts
-             :refer
-             [artifact-list artifact-versions hotload-dependency]]
             [refactor-nrepl.config :as config]
             [refactor-nrepl.core :as core]
-            [refactor-nrepl.extract-definition :refer [extract-definition]]
-            [refactor-nrepl.find.find-locals :refer [find-used-locals]]
-            [refactor-nrepl.find.find-symbol :refer [find-symbol]]
-            [refactor-nrepl.find.find-used-publics :refer [find-used-publics]]
-            [refactor-nrepl.find.find-macros :refer [warm-macro-occurrences-cache]]
-            [refactor-nrepl.ns.clean-ns :refer [clean-ns]]
             [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
-            [refactor-nrepl.ns.pprint :refer [pprint-ns]]
-            [refactor-nrepl.ns.resolve-missing :refer [resolve-missing]]
-            [refactor-nrepl.rename-file-or-dir :refer [rename-file-or-dir]]
             [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]
             [clojure.walk :as walk]))
+
+(defn- require-and-resolve [sym]
+  (require (symbol (namespace sym)))
+  (resolve sym))
 
 (defmacro ^:private with-errors-being-passed-on [transport msg & body]
   `(try
@@ -74,13 +65,21 @@
       (pr-str response) ; edn as default
       )))
 
+(def ^:private resolve-missing
+  (delay
+   (require-and-resolve 'refactor-nrepl.ns.resolve-missing/resolve-missing)))
+
 (defn resolve-missing-reply [{:keys [transport] :as msg}]
-  (reply transport msg :candidates (resolve-missing msg) :status :done))
+  (reply transport msg :candidates (@resolve-missing msg) :status :done))
+
+(def ^:private find-symbol
+  (delay
+   (require-and-resolve 'refactor-nrepl.find.find-symbol/find-symbol)))
 
 (defn- find-symbol-reply [{:keys [transport] :as msg}]
   (config/with-config msg
     (with-errors-being-passed-on transport msg
-      (let [occurrences (find-symbol msg)]
+      (let [occurrences (@find-symbol msg)]
         (doseq [occurrence occurrences
                 :let [response (serialize-response msg occurrence)]]
           (transport/send transport
@@ -88,41 +87,77 @@
         (transport/send transport (response-for msg :count (count occurrences)
                                                 :status :done))))))
 
+(def ^:private artifact-list
+  (delay (require-and-resolve 'refactor-nrepl.artifacts/artifact-list)))
+
+(def ^:private artifact-versions
+  (delay (require-and-resolve 'refactor-nrepl.artifacts/artifact-versions)))
+
+(def ^:private hotload-dependency
+  (delay (require-and-resolve 'refactor-nrepl.artifacts/hotload-dependency)))
+
 (defn- artifact-list-reply [{:keys [transport] :as msg}]
-  (reply transport msg :artifacts (artifact-list msg) :status :done))
+  (reply transport msg :artifacts (@artifact-list msg) :status :done))
 
 (defn- artifact-versions-reply [{:keys [transport] :as msg}]
-  (reply transport msg :versions (artifact-versions msg) :status :done))
+  (reply transport msg :versions (@artifact-versions msg) :status :done))
 
 (defn- hotload-dependency-reply [{:keys [transport] :as msg}]
-  (reply transport msg :status :done :dependency (hotload-dependency msg)))
+  (reply transport msg :status :done :dependency (@hotload-dependency msg)))
+
+(def ^:private clean-ns
+  (delay
+   (require-and-resolve 'refactor-nrepl.ns.clean-ns/clean-ns)))
+
+(def ^:private pprint-ns
+  (delay
+   (require-and-resolve 'refactor-nrepl.ns.pprint/pprint-ns)))
 
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
-  (reply transport msg :ns (some-> msg clean-ns pprint-ns) :status :done))
+  (reply transport msg :ns (some-> msg @clean-ns @pprint-ns) :status :done))
+
+(def ^:private find-used-locals
+  (delay
+   (require-and-resolve 'refactor-nrepl.find.find-locals/find-used-locals)))
 
 (defn- find-used-locals-reply [{:keys [transport] :as msg}]
-  (reply transport msg :used-locals (find-used-locals msg)))
+  (reply transport msg :used-locals (@find-used-locals msg)))
 
 (defn- version-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :version (core/version)))
 
+(def ^:private warm-ast-cache
+  (delay
+   (require-and-resolve 'refactor.nrepl.analyzer/warm-ast-cache)))
+
 (defn- warm-ast-cache-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
-         :ast-statuses (serialize-response msg (warm-ast-cache))))
+         :ast-statuses (serialize-response msg (@warm-ast-cache))))
+
+(def ^:private warm-macro-occurrences-cache
+  (delay (require-and-resolve 'refactor-nrepl.find.find-macros/warm-macro-occurrences-cache)))
 
 (defn- warm-macro-occurrences-cache-reply [{:keys [transport] :as msg}]
-  (warm-macro-occurrences-cache)
+  (@warm-macro-occurrences-cache)
   (reply transport msg :status :done))
 
 (defn- stubs-for-interface-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
          :functions (serialize-response msg (stubs-for-interface msg))))
 
+(def ^:private extract-definition
+  (delay
+   (require-and-resolve 'refactor-nrepl.extract-definition/extract-definition)))
+
 (defn- extract-definition-reply [{:keys [transport] :as msg}]
-  (reply transport msg :status :done :definition (pr-str (extract-definition msg))))
+  (reply transport msg :status :done :definition (pr-str (@extract-definition msg))))
+
+(def ^:private rename-file-or-dir
+  (delay
+   (require-and-resolve 'refactor-nrepl.rename-file-or-dir/rename-file-or-dir)))
 
 (defn- rename-file-or-dir-reply [{:keys [transport old-path new-path] :as msg}]
-  (reply transport msg :touched (rename-file-or-dir old-path new-path)
+  (reply transport msg :touched (@rename-file-or-dir old-path new-path)
          :status :done))
 
 (defn- namespace-aliases-reply [{:keys [transport] :as msg}]
@@ -130,9 +165,12 @@
          :namespace-aliases (serialize-response msg (namespace-aliases))
          :status :done))
 
+(def ^:private find-used-publics
+  (delay (require-and-resolve 'refactor-nrepl.find.find-used-publics/find-used-publics) ))
+
 (defn- find-used-publics-reply [{:keys [transport] :as msg}]
   (reply transport msg
-         :used-publics (serialize-response msg (find-used-publics msg)) :status :done))
+         :used-publics (serialize-response msg (@find-used-publics msg)) :status :done))
 
 (def refactor-nrepl-ops
   {
