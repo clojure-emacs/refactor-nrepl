@@ -12,6 +12,7 @@
 (defn start-up-repl-server []
   (let [server
         (nrserver/start-server
+         :bind "localhost"
          :port 7777
          :handler (nrserver/default-handler
                     #'refactor-nrepl.middleware/wrap-refactor))]
