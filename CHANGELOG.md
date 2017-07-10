@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* [#198](https://github.com/clojure-emacs/refactor-nrepl/issues/187) Delay middleware loading to speed up initialization.
 ## 2.3.1
 
 ### Bugs fixed
