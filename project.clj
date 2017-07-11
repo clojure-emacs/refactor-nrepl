@@ -27,7 +27,7 @@
                                   [org.clojure/clojurescript "1.9.671"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :global-vars {*warn-on-reflection* true}
-                   :dependencies [[org.clojure/clojurescript "1.7.48"]
+                   :dependencies [[org.clojure/clojurescript "1.9.89"]
                                   [com.cemerick/piggieback "0.2.2"]
                                   [leiningen-core "2.7.1"]
                                   [commons-io/commons-io "2.5"]]
