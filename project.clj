@@ -23,8 +23,8 @@
              :test {:dependencies [[print-foo "1.0.2"]]
                     :src-paths ["test/resources"]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
-             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha14"]
-                                  [org.clojure/clojurescript "1.9.660"]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha17"]
+                                  [org.clojure/clojurescript "1.9.671"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.7.48"]
