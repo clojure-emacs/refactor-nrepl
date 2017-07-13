@@ -38,7 +38,7 @@
 (defn- stale-cache? []
   (or (empty? @artifacts)
       (if-let [last-modified (some-> artifacts meta :last-modified .getTime)]
-        (neg? (- millis-per-day (- last-modified (.getTime (java.util.Date.)))))
+        (neg? (- millis-per-day (- (.getTime (java.util.Date.)) last-modified)))
         true)))
 
 (defn- get-mvn-artifacts!
