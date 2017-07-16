@@ -114,7 +114,7 @@
    (require-and-resolve 'refactor-nrepl.ns.pprint/pprint-ns)))
 
 (defn- clean-ns-reply [{:keys [transport path] :as msg}]
-  (reply transport msg :ns (some-> msg @clean-ns @pprint-ns) :status :done))
+  (reply transport msg :ns (some-> msg (@clean-ns) (@pprint-ns)) :status :done))
 
 (def ^:private find-used-locals
   (delay
@@ -128,7 +128,7 @@
 
 (def ^:private warm-ast-cache
   (delay
-   (require-and-resolve 'refactor.nrepl.analyzer/warm-ast-cache)))
+   (require-and-resolve 'refactor-nrepl.analyzer/warm-ast-cache)))
 
 (defn- warm-ast-cache-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
