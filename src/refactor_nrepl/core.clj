@@ -41,13 +41,22 @@
               false
               (:ignore-paths config/*config*))))
 
+(defn boot-project? []
+  ;; fake.class.path under boot contains the original directories with source
+  ;; files, see https://github.com/boot-clj/boot/issues/249
+  (not (nil? (System/getProperty "fake.class.path"))))
+
 (defn dirs-on-classpath
   "Return all dirs on classpath, filtering out our inlined deps
-  directory and paths matching :ignore-paths specified in config."
+  directory and paths matching :ignore-paths specified in config.
+  For boot it considers `fake.class.path` rather than real classpath."
   []
-  (->> (cp/classpath)
-       (filter fs/directory?)
-       (remove #(-> % str normalize-to-unix-path ignore-dir-on-classpath?))))
+  (let [files-on-cp (if (boot-project?)
+                      (map io/file (str/split (System/getProperty "fake.class.path") #":"))
+                      (cp/classpath))]
+    (->> files-on-cp
+         (filter fs/directory?)
+         (remove #(-> % str normalize-to-unix-path ignore-dir-on-classpath?)))))
 
 (defn project-root
   "Return the project root directory.
