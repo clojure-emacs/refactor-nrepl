@@ -16,7 +16,6 @@
                  ^:source-dep [rewrite-clj "0.4.13-SNAPSHOT"]
                  ^:source-dep [cljs-tooling "0.1.7"]
                  ^:source-dep [version-clj "0.1.2"]]
-  :global-vars {*warn-on-reflection* true}
   :plugins [[thomasa/mranderson "0.4.7"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.10.0"]
@@ -27,6 +26,7 @@
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0-alpha14"]
                                   [org.clojure/clojurescript "1.9.293"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
+                   :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.7.48"]
                                   [com.cemerick/piggieback "0.2.1"]
                                   [leiningen-core "2.5.3"]
