@@ -30,7 +30,7 @@
                    :dependencies [[org.clojure/clojurescript "1.9.89"]
                                   [com.cemerick/piggieback "0.2.2"]
                                   [leiningen-core "2.7.1"]
-                                  [commons-io/commons-io "2.5"]]
+                                  [commons-io/commons-io "2.6"]]
                    :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
