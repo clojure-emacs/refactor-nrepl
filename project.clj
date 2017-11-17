@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/tools.nrepl "0.2.13"]
                  ^:source-dep [http-kit "2.2.0"]
-                 ^:source-dep [cheshire "5.7.1"]
+                 ^:source-dep [cheshire "5.8.0"]
                  ^:source-dep [alembic "0.3.2"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.7.1"]
                  ^:source-dep [org.clojure/tools.namespace  "0.3.0-alpha3"]
