@@ -12,7 +12,7 @@
 
 (defn session-fixture
   [f]
-  (with-open [server (server/start-server :handler *handler*)
+  (with-open [server (server/start-server :bind "localhost" :handler *handler*)
               transport (nrepl/connect :port (:port server))]
     (let [client (nrepl/client transport Long/MAX_VALUE)]
       (binding [*session* (nrepl/client-session client)]
