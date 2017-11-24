@@ -1,5 +1,5 @@
 language: clojure
-lein: 2.7.1
+lein: 2.8.1
 script:
   - lein source-deps :prefix-exclusions "[\"classlojure\"]"
   - lein with-profile +plugin.mranderson/config test
