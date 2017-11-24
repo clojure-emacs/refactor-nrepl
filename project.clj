@@ -16,7 +16,7 @@
                  ^:source-dep [rewrite-clj "0.6.0"]
                  ^:source-dep [cljs-tooling "0.2.0"]
                  ^:source-dep [version-clj "0.1.2"]]
-  :plugins [[thomasa/mranderson "0.4.7"]]
+  :plugins [[thomasa/mranderson "0.4.8"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.14.0"]
                                        [org.clojure/clojure "1.7.0"]]}
