@@ -11,7 +11,7 @@ The role of this nREPL middleware is to provide refactoring support for clients 
 
 ### With CIDER and clj-refactor
 
-If you're using CIDER and clj-refator you don't have to do anything
+If you're using CIDER and clj-refactor you don't have to do anything
 except call `cider-jack-in`.  The dependencies are injected
 automagically.
 
