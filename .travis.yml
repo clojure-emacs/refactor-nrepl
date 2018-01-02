@@ -9,7 +9,6 @@ jdk:
   - openjdk7
   - oraclejdk7
   - oraclejdk8
-  - openjdk9
   - oraclejdk9
 
 notifications:
