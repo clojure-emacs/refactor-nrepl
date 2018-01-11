@@ -1,6 +1,6 @@
 (ns refactor-nrepl.middleware
   (:require [cider.nrepl.middleware.util.cljs :as cljs]
-            [cider.nrepl.middleware.util.misc :refer [err-info]]
+            [clojure.stacktrace :refer [print-cause-trace]]
             [clojure.tools.nrepl.middleware :refer [set-descriptor!]]
             [clojure.tools.nrepl.misc :refer [response-for]]
             [clojure.tools.nrepl.transport :as transport]
@@ -13,6 +13,12 @@
 (defn- require-and-resolve [sym]
   (require (symbol (namespace sym)))
   (resolve sym))
+
+(defn err-info
+  [ex status]
+  {:ex (str (class ex))
+   :err (with-out-str (print-cause-trace ex))
+   :status #{status :done}})
 
 (defmacro ^:private with-errors-being-passed-on [transport msg & body]
   `(try
