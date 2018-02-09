@@ -1,7 +1,7 @@
 # Changelog
 
 ## Unreleased
-
+* [#215](https://github.com/clojure-emacs/refactor-nrepl/issues/215) Support JVM system proxy in mvn artifacts listing
 * [#198](https://github.com/clojure-emacs/refactor-nrepl/issues/187) Delay middleware loading to speed up initialization.
 * Bump [mranderson](https://github.com/benedekfazekas/mranderson) version to fix leiningen 2.8.x incompatibility issues
 
