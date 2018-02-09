@@ -96,6 +96,7 @@ Any configuration settings passed along with the message will replace the defaul
 ### Artifact lookup
 
 This middleware provides operations for obtaining information about artifacts from clojars, or mvn central.
+If JVM system proxy properties are defined (e.g. http.proxyHost, http.proxyPort) they will be used for downloading the artifacts.
 
 Two ops are available:
 

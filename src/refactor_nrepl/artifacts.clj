@@ -17,6 +17,14 @@
 (defonce artifacts (atom {} :meta {:last-modified nil}))
 (def millis-per-day (* 24 60 60 1000))
 
+(defn- get-proxy-opts
+  "Generates proxy options from JVM properties for httpkit-client "
+  []
+  (when-let [proxy-host (some #(System/getProperty %) ["https.proxyHost" "http.proxyHost"])]
+    {:proxy-host proxy-host
+     :proxy-port (some->> ["https.proxyPort" "http.proxyPort"]
+                          (some #(System/getProperty %)) Integer/parseInt)}))
+
 (defn get-artifacts-from-clojars!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
@@ -47,7 +55,7 @@
   (let [search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
         search-suffix "%22+AND+p:%22jar%22&rows=2000&wt=json"
         search-url (str search-prefix group-id search-suffix)
-        {:keys [_ _ body _]} @(http/get search-url {:as :text})
+        {:keys [_ _ body _]} @(http/get search-url (assoc (get-proxy-opts) :as :text))
         search-result (json/parse-string body true)]
     (map :a (-> search-result :response :docs))))
 
@@ -60,7 +68,7 @@
                                              "%22+AND+a:%22"
                                              artifact
                                              "%22&core=gav&rows=200&wt=json")
-                                        {:as :text})]
+                                        (assoc (get-proxy-opts) :as :text))]
     (->> (json/parse-string body true)
          :response
          :docs
