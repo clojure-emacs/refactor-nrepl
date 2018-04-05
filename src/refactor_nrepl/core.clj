@@ -87,15 +87,16 @@
            :else (recur (fs/parent f))))))))
 
 (defn build-artifact? [path-or-file]
-  (let [f (io/file path-or-file)
-        target-path (-> path-or-file project-root .getCanonicalPath
-                        normalize-to-unix-path
-                        (str "/target"))
-        parent-paths (map (comp normalize-to-unix-path
-                                (memfn ^File getCanonicalPath))
-                          (fs/parents f))]
-    (and (some #{target-path} parent-paths)
-         path-or-file)))
+  (when path-or-file
+    (let [f (io/file path-or-file)
+          target-path (-> path-or-file project-root .getCanonicalPath
+                          normalize-to-unix-path
+                          (str "/target"))
+          parent-paths (map (comp normalize-to-unix-path
+                                  (memfn ^File getCanonicalPath))
+                            (fs/parents f))]
+      (and (some #{target-path} parent-paths)
+           path-or-file))))
 
 (defn find-in-dir
   "Searches recursively under dir for files matching (pred ^File file).
