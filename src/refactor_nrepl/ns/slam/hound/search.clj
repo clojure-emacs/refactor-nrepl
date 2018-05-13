@@ -3,7 +3,7 @@
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
 (ns refactor-nrepl.ns.slam.hound.search
   "Search the classpath for vars and classes."
-  (:require [clojure.java.classpath :as cp]
+  (:require [orchard.classpath]
             [clojure.java.io :refer [file]]
             [clojure.string :as string])
   (:import
@@ -111,7 +111,7 @@
   (into (map #(System/getProperty %) ["sun.boot.class.path"
                                       "java.ext.dirs"
                                       "java.class.path"])
-        (map #(.getName %) (cp/classpath-jarfiles))))
+        (map #(.getName %) (orchard.classpath/classpath-jarfiles))))
 
 (defn- get-available-classes []
   (into ()

@@ -10,7 +10,7 @@
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.7.1"]
                  ^:source-dep [org.clojure/tools.namespace  "0.3.0-alpha3"]
                  ^:source-dep [org.clojure/tools.reader "1.1.1"]
-                 ^:source-dep [org.clojure/java.classpath "0.2.3"]
+                 ^:source-dep [cider/orchard "0.2.0"]
                  ^:source-dep [lein-cljfmt "0.3.0"]
                  ^:source-dep [me.raynes/fs "1.4.6"]
                  ^:source-dep [rewrite-clj "0.6.0"]
