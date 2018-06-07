@@ -1,5 +1,6 @@
 (ns refactor-nrepl.artifacts
-  (:require [alembic.still :as alembic]
+  (:require [cemerick.pomegranate :as pomegranate]
+            [cemerick.pomegranate.aether :as aether]
             [cheshire.core :as json]
             [clojure
              [edn :as edn]
@@ -10,7 +11,8 @@
             [refactor-nrepl.ns.slam.hound.search :as slamhound]
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound-regrow]
             [version-clj.core :as versions])
-  (:import java.util.Date
+  (:import clojure.lang.DynamicClassLoader
+           java.util.Date
            java.util.jar.JarFile))
 
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
@@ -29,7 +31,7 @@
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
   (try
-    (->> "https://clojars.org/repo/all-jars.clj"
+    (->> "https://repo.clojars.org/all-jars.clj"
          java.net.URL.
          io/reader
          line-seq
@@ -116,9 +118,10 @@
   "Once the deps are available on cp we still have to load them and
   reset slamhound's cache to make resolve-missing work."
   [coords repos]
-  (let [dep (->> (alembic/resolve-dependencies alembic/the-still coords repos nil)
-                 (some (fn [dep] (when (= (:coords dep) (first coords)) dep))))
-        jarfile (JarFile. (:jar dep))]
+  (let [dep (->> (aether/resolve-dependencies :coordinates coords
+                                              :repositories repos)
+                 (some (fn [dep] (when (= (key dep) (first coords)) dep))))
+        jarfile (JarFile. (-> dep first meta :file))]
     (doseq [namespace (find/find-namespaces-in-jarfile jarfile)]
       (try
         (require namespace)
@@ -148,16 +151,26 @@
       (throw (IllegalArgumentException. (str "Can't find artifact '"
                                              (first coords) "'"))))))
 
+(defn get-classloader []
+  "Returns the highest level DynamicClassLoader."
+  (loop [loader (.getContextClassLoader (Thread/currentThread))]
+    (let [parent (.getParent loader)]
+      (if (instance? DynamicClassLoader parent)
+        (recur parent)
+        loader))))
+
 (defn distill [coords repos]
   ;; Just so we can mock this out during testing
-  (alembic/distill coords :repositories repos))
+  (pomegranate/add-dependencies :classloader (get-classloader)
+                                :coordinates coords
+                                :repositories repos))
 
 (defn hotload-dependency
   [{:keys [coordinates]}]
   (let [dependency-vector (edn/read-string coordinates)
         coords [(->> dependency-vector (take 2) vec)]
-        repos {"clojars" "http://clojars.org/repo"
-               "central" "http://repo1.maven.org/maven2/"}]
+        repos (merge aether/maven-central
+                     {"clojars" "https://repo.clojars.org/"})]
     (ensure-quality-coordinates coordinates)
     (distill coords repos)
     (make-resolve-missing-aware-of-new-deps coords repos)
