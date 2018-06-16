@@ -1,6 +1,6 @@
 (ns refactor-nrepl.ns.resolve-missing
   "Resolve a missing symbol on the classpath."
-  (:require [cider.nrepl.middleware.info :refer [info-clj]]
+  (:require [orchard.info :refer [info]]
             [cider.nrepl.middleware.util.cljs :as cljs]
             [cljs-tooling.util.analysis :as cljs-ana]
             [clojure.string :as str]
@@ -15,7 +15,7 @@
            (slamhound/candidates :refer (symbol (suffix sym)) [] {})]))
 
 (defn- get-type [sym]
-  (let [info (info-clj 'user sym)]
+  (let [info (info 'user sym)]
     (if-let [clazz (:class info)]
       (cond
         ((set (:interfaces info)) 'clojure.lang.IType) :type
