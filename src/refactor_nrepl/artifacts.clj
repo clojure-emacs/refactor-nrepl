@@ -25,7 +25,14 @@
      :proxy-port (some->> ["https.proxyPort" "http.proxyPort"]
                           (some #(System/getProperty %)) Integer/parseInt)}))
 
-(defn get-artifacts-from-clojars!
+(defn- stale-cache?
+  []
+  (or (empty? @artifacts)
+      (if-let [last-modified (some-> artifacts meta :last-modified .getTime)]
+        (neg? (- millis-per-day (- (.getTime (java.util.Date.)) last-modified)))
+        true)))
+
+(defn get-clojars-artifacts!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
   (try
@@ -38,17 +45,6 @@
       ;; In the event clojars is down just return an empty vector. See #136.
       [])))
 
-(defn add-artifacts-from-clojars! []
-  (->> (get-artifacts-from-clojars!)
-       (map #(swap! artifacts update-in [(str (first %))] conj (second %)))
-       dorun))
-
-(defn- stale-cache? []
-  (or (empty? @artifacts)
-      (if-let [last-modified (some-> artifacts meta :last-modified .getTime)]
-        (neg? (- millis-per-day (- (.getTime (java.util.Date.)) last-modified)))
-        true)))
-
 (defn- get-mvn-artifacts!
   "All the artifacts under org.clojure in mvn central"
   [group-id]
@@ -59,58 +55,57 @@
         search-result (json/parse-string body true)]
     (map :a (-> search-result :response :docs))))
 
-(defn- get-versions!
-  "Gets all the versions from an artifact belonging to the org.clojure."
-  [group-id artifact]
-  (let [search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
+(defn- get-mvn-versions!
+  "Fetches all the versions of particular artifact from maven repository."
+  [for-artifact]
+  (let [[group-id artifact] (str/split for-artifact #"/")
+        search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
         {:keys [_ _ body _]} @(http/get (str search-prefix
                                              group-id
                                              "%22+AND+a:%22"
                                              artifact
-                                             "%22&core=gav&rows=200&wt=json")
+                                             "%22&core=gav&rows=100&wt=json")
                                         (assoc (get-proxy-opts) :as :text))]
     (->> (json/parse-string body true)
          :response
          :docs
-         (map :v)
-         doall)))
+         (map :v))))
 
-(defn- collate-artifact-and-versions [group-id artifact]
-  (->> artifact
-       (get-versions! group-id)
-       (vector (str group-id "/" artifact))))
-
-(defn- add-artifact [[artifact versions]]
-  (swap! artifacts update-in [artifact] (constantly versions)))
-
-(defn- add-artifacts [group-id artifacts]
-  (->> artifacts
-       (partition-all 2)
-       (map #(future (->> %
-                          (map (partial collate-artifact-and-versions group-id))
-                          (map add-artifact)
-                          dorun)))))
-
-(defn- get-artifacts-from-mvn-central! []
+(defn- get-artifacts-from-mvn-central!
+  []
   (let [group-ids #{"com.cognitect" "org.clojure"}]
-    (mapcat (fn [group-id] (add-artifacts group-id (get-mvn-artifacts! group-id)))
+    (mapcat (fn [group-id]
+              (->> (get-mvn-artifacts! group-id)
+                   (map #(vector (str group-id "/" %) nil))))
             group-ids)))
 
-(defn- update-artifact-cache! []
-  (let [mvn-central-futures (get-artifacts-from-mvn-central!)
-        clojars-future (future (add-artifacts-from-clojars!))]
-    (dorun (map deref mvn-central-futures))
-    @clojars-future)
-  (alter-meta! artifacts update-in [:last-modified]
-               (constantly (java.util.Date.))))
+(defn- get-artifacts-from-clojars!
+  []
+  (reduce #(update %1 (str (first %2)) conj (second %2))
+          (sorted-map)
+          (get-clojars-artifacts!)))
 
-(defn artifact-list [{:keys [force]}]
+(defn- update-artifact-cache!
+  []
+  (let [clojars-artifacts (future (get-artifacts-from-clojars!))
+        maven-artifacts (future (get-artifacts-from-mvn-central!))]
+    (reset! artifacts (into @clojars-artifacts @maven-artifacts))
+    (alter-meta! artifacts update-in [:last-modified] (constantly (java.util.Date.)))))
+
+(defn artifact-list
+  [{:keys [force]}]
   (when (or (= force "true") (stale-cache?))
     (update-artifact-cache!))
   (->> @artifacts keys list*))
 
-(defn artifact-versions [{:keys [artifact]}]
-  (->> artifact (get @artifacts) distinct versions/version-sort reverse list*))
+(defn artifact-versions
+  [{:keys [artifact]}]
+  (->> (or (get @artifacts artifact)
+           (get-mvn-versions! artifact))
+       distinct
+       versions/version-sort
+       reverse
+       list*))
 
 (defn- make-resolve-missing-aware-of-new-deps
   "Once the deps are available on cp we still have to load them and

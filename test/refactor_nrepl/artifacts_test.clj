@@ -20,9 +20,9 @@
 (deftest creates-a-map-of-artifacts
   (reset! artifacts/artifacts {})
   (with-redefs
-    [artifacts/get-artifacts-from-clojars! (constantly clojars-artifacts)
+    [artifacts/get-clojars-artifacts! (constantly clojars-artifacts)
      artifacts/get-mvn-artifacts! (constantly clojure-artifacts)
-     artifacts/get-versions! (constantly clojure-versions)]
+     artifacts/get-mvn-versions! (constantly clojure-versions)]
 
     (is (#'artifacts/stale-cache?))
 
@@ -30,9 +30,12 @@
 
     (is (not (#'artifacts/stale-cache?)))
 
-    (testing "Contains clojure with correct versions"
+    (testing "Contains no maven-based dependency versions fetched upfront"
       (is (contains? @artifacts/artifacts "org.clojure/clojure"))
-      (is (= (count (@artifacts/artifacts "org.clojure/clojure"))
+      (is (= 0 (count (@artifacts/artifacts "org.clojure/clojure")))))
+
+    (testing "Fetches versions of maven dependency when requested"
+      (is (= (count (artifacts/artifact-versions {:artifact "org.clojure/clojure"}))
              (count clojure-versions))))
 
     (testing "Contains artifacts from clojars"
