@@ -30,9 +30,11 @@
   (into {}
         (map (fn [[k v]] (cond
                            (and (string? v) (= v "true")) [k true]
-                           (string? v) [k false]
+                           (and (string? v) (= v "false")) [k false]
                            :else [k v]))
-             (select-keys msg (keys *config*)))))
+             (update (select-keys msg (keys *config*))
+                     :ignore-paths
+                     (partial map re-pattern)))))
 
 (defmacro with-config
   "Merge the override map with the default config and execute body."
