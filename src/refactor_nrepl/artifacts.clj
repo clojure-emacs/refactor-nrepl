@@ -1,6 +1,5 @@
 (ns refactor-nrepl.artifacts
-  (:require [alembic.still :as alembic]
-            [cheshire.core :as json]
+  (:require [cheshire.core :as json]
             [clojure
              [edn :as edn]
              [string :as str]]
@@ -107,53 +106,6 @@
        reverse
        list*))
 
-(defn- make-resolve-missing-aware-of-new-deps
-  "Once the deps are available on cp we still have to load them and
-  reset slamhound's cache to make resolve-missing work."
-  [coords repos]
-  (let [dep (->> (alembic/resolve-dependencies alembic/the-still coords repos nil)
-                 (some (fn [dep] (when (= (:coords dep) (first coords)) dep))))
-        jarfile (JarFile. (:jar dep))]
-    (doseq [namespace (find/find-namespaces-in-jarfile jarfile)]
-      (try
-        (require namespace)
-        (catch Exception _
-          ;; I've seen this happen after adding core.async as a dependency.
-          ;; It also happens if you try to require namespaces that no longer work,
-          ;; like compojure.handler.
-          ;; A failure here isn't a big deal, it only means that resolve-missing
-          ;; isn't going to work until the namespace has been loaded manually.
-          )))
-    (slamhound/reset)
-    (slamhound-regrow/clear-cache!)))
-
-(defn- ensure-quality-coordinates [coordinates]
-  (let [coords (->> coordinates read-string (take 2) vec)]
-    (when-not (= (count coords) 2)
-      (throw (IllegalArgumentException. (str "Malformed dependency vector: "
-                                             coordinates))))
-    (when (stale-cache?)
-      (update-artifact-cache!))
-    (if-let [versions (get @artifacts (str (first coords)))]
-      (when-not ((set versions) (second coords))
-        (throw (IllegalArgumentException.
-                (str "Version " (second coords)
-                     " does not exist for " (first coords)
-                     ". Available versions are " (pr-str (vec versions))))))
-      (throw (IllegalArgumentException. (str "Can't find artifact '"
-                                             (first coords) "'"))))))
-
-(defn distill [coords repos]
-  ;; Just so we can mock this out during testing
-  (alembic/distill coords :repositories repos))
-
 (defn hotload-dependency
   [{:keys [coordinates]}]
-  (let [dependency-vector (edn/read-string coordinates)
-        coords [(->> dependency-vector (take 2) vec)]
-        repos {"clojars" "http://clojars.org/repo"
-               "central" "http://repo1.maven.org/maven2/"}]
-    (ensure-quality-coordinates coordinates)
-    (distill coords repos)
-    (make-resolve-missing-aware-of-new-deps coords repos)
-    (str/join " " dependency-vector)))
+  (throw (IllegalArgumentException. "Temporarily disabled until a solution for java 10 is found.")))

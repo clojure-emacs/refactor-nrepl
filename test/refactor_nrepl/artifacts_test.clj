@@ -46,20 +46,3 @@
       (reset! artifacts/artifacts {"org.clojure/clojure" clojure-versions})
       (is (= sorted-clojure-versions
              (artifacts/artifact-versions {:artifact "org.clojure/clojure"}))))))
-
-(deftest hotload-dependency-throws-exceptions
-  (reset! artifacts/artifacts {"prismatic/schema" ["0.1"]})
-  (with-redefs
-    [artifacts/make-resolve-missing-aware-of-new-deps (fn [& _])
-     artifacts/stale-cache? (constantly false)
-     artifacts/distill (constantly true)]
-    (testing "Throws for non existing version"
-      (is (thrown? IllegalArgumentException
-                   (artifacts/hotload-dependency
-                    {:coordinates "[prismatic/schema \"1.0\"]"}))))
-    (testing "Throws for non existing artifact"
-      (is (thrown? IllegalArgumentException
-                   (artifacts/hotload-dependency
-                    {:coordinates "[imaginary \"1.0\"]"}))))
-    (testing "No exception when all is OK"
-      (is (artifacts/hotload-dependency {:coordinates "[prismatic/schema \"0.1\"]"})))))
