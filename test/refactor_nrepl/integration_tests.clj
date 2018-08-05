@@ -1,7 +1,7 @@
 (ns refactor-nrepl.integration-tests
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
-            [clojure.tools.nrepl.server :as nrserver]
+            [nrepl.server :as nrserver]
             [refactor-nrepl middleware
              [client :refer :all]
              [core :as core]]

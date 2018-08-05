@@ -1,10 +1,10 @@
 (ns refactor-nrepl.ns.resolve-missing-test
-  (:require [cemerick.piggieback :as piggieback]
+  (:require [cider.piggieback :as piggieback]
             [clojure
              [edn :as edn]
              [test :as t]]
-            [clojure.tools.nrepl :as nrepl]
-            [clojure.tools.nrepl.server :as server]
+            [nrepl.core :as nrepl]
+            [nrepl.server :as server]
             [refactor-nrepl.middleware :as middleware]))
 
 (def ^:dynamic *handler* (server/default-handler #'middleware/wrap-refactor))
@@ -35,7 +35,7 @@
                            #'piggieback/wrap-cljs-repl)]
        (message {:op :eval
                  :code (nrepl/code
-                        (require '[cemerick.piggieback :as piggieback])
+                        (require '[cider.piggieback :as piggieback])
                         (require '[cljs.repl.node :as node])
                         (piggieback/cljs-repl (node/repl-env)))})
        (f)

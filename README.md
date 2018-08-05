@@ -43,12 +43,17 @@ Add the following in `~/.boot/profile.boot`:
 
 ### Passing messages to and from refactor-nrepl
 
-We've already called this a middleware, but we haven't really talked about what that means.  refactor-nrepl is middleware for a REPL.  Specifically it's middleware for a networked REPL, which is managed by [clojure.tools.nrepl](https://github.com/clojure/tools.nrepl).  refactor-nrepl uses the running REPL to to gain insight about your project, in order to offer various refactorings.
+We've already called this a middleware, but we haven't really talked
+about what that means.  refactor-nrepl is middleware for a REPL.
+Specifically it's middleware for a networked REPL, which is managed by
+[nREPL](https://github.com/nrepl/nrepl).
+refactor-nrepl uses the running REPL to to gain insight about your
+project, in order to offer various refactorings.
 
 Most likely you're already in an environment with a nREPL client available, so you don't have to worry about anything except sending an receiving messages:
 
 ```cljs
-=> (require '[clojure.tools.nrepl :as repl])
+=> (require '[nrepl.core :as repl])
 nil
 => (with-open [conn (repl/connect :port 59258)]
      (-> (repl/client conn 1000)    ; message receive timeout required

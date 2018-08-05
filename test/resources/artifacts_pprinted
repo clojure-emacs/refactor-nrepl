@@ -4,7 +4,7 @@
              [string :as str]]
             [clojure.data.json :as json]
             [clojure.java.io :as io]
-            [clojure.tools.nrepl
+            [nrepl
              [middleware :refer [set-descriptor!]]
              [misc :refer [response-for]]
              [transport :as transport]]

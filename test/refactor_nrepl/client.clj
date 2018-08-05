@@ -2,7 +2,7 @@
   (:require [clojure
              [edn :as edn]
              [string :as str]]
-            [clojure.tools.nrepl :as nrepl])
+            [nrepl.core :as nrepl])
   (:import java.io.File))
 
 (def ^:private nrepl-port

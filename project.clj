@@ -3,7 +3,7 @@
   :url "http://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/tools.nrepl "0.2.13"]
+  :dependencies [[nrepl "0.4.4"]
                  ^:source-dep [http-kit "2.2.0"]
                  ^:source-dep [cheshire "5.8.0"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.7.1"]
@@ -27,10 +27,10 @@
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.89"]
-                                  [com.cemerick/piggieback "0.2.2"]
+                                  [cider/piggieback "0.3.8"]
                                   [leiningen-core "2.7.1"]
                                   [commons-io/commons-io "2.6"]]
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
                                     "test/resources/testproject/src"]
