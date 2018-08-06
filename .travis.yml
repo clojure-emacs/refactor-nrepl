@@ -3,7 +3,6 @@ lein: 2.8.1
 script:
   - lein source-deps :prefix-exclusions "[\"classlojure\"]"
   - lein with-profile +plugin.mranderson/config test
-  - lein with-profile +1.8,+plugin.mranderson/config test
   - lein with-profile +1.9,+plugin.mranderson/config test
 jdk:
   - openjdk7
