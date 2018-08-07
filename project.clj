@@ -17,7 +17,7 @@
                  ^:source-dep [version-clj "0.1.2"]]
   :plugins [[thomasa/mranderson "0.4.8"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
-  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.14.0"]
+  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.18.0"]
                                        [org.clojure/clojure "1.8.0"]]}
              :test {:dependencies [[print-foo "1.0.2"]]
                     :src-paths ["test/resources"]}
