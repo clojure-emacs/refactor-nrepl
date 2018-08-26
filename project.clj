@@ -19,6 +19,10 @@
                  ^:source-dep [rewrite-clj "0.6.0"]
                  ^:source-dep [cljs-tooling "0.2.0"]
                  ^:source-dep [version-clj "0.1.2"]]
+  :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
+                                    :username :env/clojars_username
+                                    :password :env/clojars_password
+                                    :sign-releases false}]]
   :plugins [[thomasa/mranderson "0.4.8"]]
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.18.0"]
