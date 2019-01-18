@@ -258,16 +258,35 @@
   metadata which shouldn't be printed back out."
   [file-content]
   (let [ns-string (sexp/get-first-sexp file-content)
-        meta? (-> ns-string (.replaceFirst "\\^\\{" "\\{")
-                  (StringReader.)
-                  (PushbackReader.)
-                  parse/read-ns-decl
-                  second)
-        shorthand-meta?  (re-seq #"\^:([^\s]+)\s" ns-string)]
-    (cond
-      (map? meta?) meta?
-      shorthand-meta? {::shorthand-meta-coll (map (comp keyword second) shorthand-meta?)}
-      :else nil)))
+        ns-form (-> ns-string (.replaceFirst "\\^\\{" "\\{")
+                    (StringReader.)
+                    (PushbackReader.)
+                    parse/read-ns-decl)
+        meta? (second ns-form)          ;easily available
+        shorthand-meta? (re-seq #"(?:(ns\s+.*?\^:)|\G\s*\^:)(\w+)" ns-string)]
+    {:ns-meta (merge meta?
+                     (into {} (for [match shorthand-meta?]
+                                [(keyword (nth match 2)) true])))
+     :gc-methods-meta (extract-gen-class-methods-meta ns-form)}))
+
+(defn extract-gen-class-methods-meta
+  "Retrieve the metadata relative to :methods in the :gen-class top
+  level component.
+
+  Returns nil if there is no :gen-class, or if there is no :methods
+  inside :gen-class
+
+  .indexOf returns -1 if not found, and since the structure we are
+  looking for comes after, by 'incing' by default we can just check
+  for zero?"
+  [ns-form]
+  (let [gen-class (get-ns-component ns-form :gen-class)
+        methods_index (inc (if-not (nil? gen-class)
+                             (.indexOf gen-class :methods)
+                             -1))]
+    (if-not (zero? methods_index)
+      (map #(meta %) (nth gen-class methods_index))
+      nil)))
 
 (defn read-ns-form-with-meta
   "Read the ns form found at PATH.
