@@ -2,9 +2,9 @@
   (:require [cljfmt.core :as fmt]
             [clojure
              [pprint :refer [pprint]]
-             [data :as data]
              [string :as str]]
             [refactor-nrepl.core :as core :refer [prefix-form?]])
+
   (:import java.util.regex.Pattern))
 
 (defn- libspec-vectors-last [libspecs]
@@ -64,9 +64,11 @@
       (if (= key :methods)
         (do
           (print key "[")
-          (doseq [method val]             ;val are all the methods
-            (pprint-meta (last (data/diff (meta method) metadata)))
-            (print method))
+          (doseq [method val]           ;val are all the methods
+            (pprint-meta (filter (fn [[k v]]
+                                   (contains? metadata k))
+                                 (meta method)))
+            (print method))             ;TODO add newline here
           (print "]"))
         (print key val))
       (when (= idx (dec (count (partition 2 elems))))
