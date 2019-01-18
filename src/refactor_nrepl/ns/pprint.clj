@@ -77,12 +77,17 @@
     imports)))
 
 (defn pprint-meta
+  "Given some metadata m, print the shorthand metadata first, and the
+  longhand metadata second, trying to convert to shorthand notation if
+  possible"
   [m]
-  (if-let [shorthand-meta-coll (::core/shorthand-meta-coll m)]
-    (doseq [shorthand-meta shorthand-meta-coll]
-      (print (str "^" shorthand-meta " ")))
-    (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
-                         ", " "\n"))))
+  (let [short? #(= (str %) "true")
+        shorthand (filter (fn [[k v]] (short? v)) m)
+        longhand (remove (fn [[k v]] (short? v)) m)]
+    (doseq [[k v] shorthand]
+      (print "^" (str k) " "))
+    (doseq [[k v] longhand]
+      (print "^{" (keyword k) " " (with-out-str (pprint v)) "}"))))
 
 (defn pprint-ns
   [[_ name & more :as ns-form]]
@@ -91,7 +96,7 @@
         forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
                     :else (rest more))
-        ns-meta (meta ns-form)]
+        ns-meta (:top-level-meta (meta ns-form))]
     (-> (with-out-str
           (printf "(ns ")
           (when (seq ns-meta) (pprint-meta ns-meta))

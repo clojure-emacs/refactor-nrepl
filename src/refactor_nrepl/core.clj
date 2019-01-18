@@ -266,8 +266,8 @@
         shorthand-meta (re-seq #"(?:(ns\s+.*?\^:)|\G\s*\^:)(\w+)" ns-string)
         shorthand->longhand (into {} (for [match shorthand-meta]
                                        [(keyword (nth match 2)) true]))]
-    {:ns-meta (merge meta (when-not (empty? shorthand->longhand)
-                            shorthand->longhand))
+    {:top-level-meta (merge meta (when-not (empty? shorthand->longhand)
+                                   shorthand->longhand))
      :gc-methods-meta (extract-gen-class-methods-meta ns-form)}))
 
 (defn extract-gen-class-methods-meta
