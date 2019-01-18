@@ -286,7 +286,7 @@
                              (.indexOf gen-class :methods)
                              -1))]
     (if-not (zero? methods_index)
-      (map #(meta %) (nth gen-class methods_index))
+      (apply merge (map #(meta %) (nth gen-class methods_index)))
       nil)))
 
 (defn read-ns-form-with-meta

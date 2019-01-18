@@ -2,9 +2,9 @@
   (:require [cljfmt.core :as fmt]
             [clojure
              [pprint :refer [pprint]]
+             [data :as data]
              [string :as str]]
             [refactor-nrepl.core :as core :refer [prefix-form?]])
-
   (:import java.util.regex.Pattern))
 
 (defn- libspec-vectors-last [libspecs]
@@ -53,16 +53,25 @@
        (= (first form) type)))
 
 (defn- pprint-gen-class-form
-  [[_ & elems]]
+  "Prints the gen class form and :methods metadata (if any)."
+  [[_ & elems] metadata]
   (if (empty? elems)
     (println "(:gen-class)")
     (println "(:gen-class"))
   (dorun
    (map-indexed
     (fn [idx [key val]]
-      (if (= idx (dec (count (partition 2 elems))))
-        (printf "%s %s)\n" key val)
-        (println key val)))
+      (if (= key :methods)
+        (do
+          (print key "[")
+          (doseq [method val]             ;val are all the methods
+            (pprint-meta (last (data/diff (meta method) metadata)))
+            (print method))
+          (print "]"))
+        (print key val))
+      (when (= idx (dec (count (partition 2 elems))))
+        (print ")"))
+      (println))
     (partition 2 elems))))
 
 (defn- pprint-import-form
@@ -85,9 +94,9 @@
         shorthand (filter (fn [[k v]] (short? v)) m)
         longhand (remove (fn [[k v]] (short? v)) m)]
     (doseq [[k v] shorthand]
-      (print "^" (str k) " "))
+      (print "^" (str k) ""))
     (doseq [[k v] longhand]
-      (print "^{" (keyword k) " " (with-out-str (pprint v)) "}"))))
+      (print "^{" (keyword k) (with-out-str (pprint v)) "}"))))
 
 (defn pprint-ns
   [[_ name & more :as ns-form]]
@@ -121,11 +130,11 @@
                         (str/trim-newline
                          (with-out-str
                            (cond (form-is? form :require) (pprint-require-form form)
-                                 (form-is? form :gen-class) (pprint-gen-class-form form)
+                                 (form-is? form :gen-class) (pprint-gen-class-form form (:gc-methods-meta (meta ns-form)))
                                  (form-is? form :import) (pprint-import-form form)
                                  :else (pprint form)))))
                 (cond (form-is? form :require) (pprint-require-form form)
-                      (form-is? form :gen-class) (pprint-gen-class-form form)
+                      (form-is? form :gen-class) (pprint-gen-class-form form (:gc-methods-meta (meta ns-form)))
                       (form-is? form :import) (pprint-import-form form)
                       :else (pprint form))))
             forms)))
