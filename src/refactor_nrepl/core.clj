@@ -250,26 +250,6 @@
 
       :else (-> fully-qualified-name str (.split "\\.") last))))
 
-(defn extract-ns-meta
-  "Retrieve the metadata for the ns, if there is any.
-
-  This is preferable to just doing (meta the-ns-form) because the
-  compiler, as well as libraries like clojure.test, add quite a bit of
-  metadata which shouldn't be printed back out."
-  [file-content]
-  (let [ns-string (sexp/get-first-sexp file-content)
-        ns-form (-> ns-string (.replaceFirst "\\^\\{" "\\{")
-                    (StringReader.)
-                    (PushbackReader.)
-                    parse/read-ns-decl)
-        meta (if (map? (second ns-form)) (second ns-form)) ;easily available
-        shorthand-meta (re-seq #"(?:(ns\s+.*?\^:)|\G\s*\^:)(\w+)" ns-string)
-        shorthand->longhand (into {} (for [match shorthand-meta]
-                                       [(keyword (nth match 2)) true]))]
-    {:top-level-meta (merge meta (when-not (empty? shorthand->longhand)
-                                   shorthand->longhand))
-     :gc-methods-meta (extract-gen-class-methods-meta ns-form)}))
-
 (defn extract-gen-class-methods-meta
   "Retrieve the metadata relative to :methods in the :gen-class top
   level component.
@@ -288,6 +268,22 @@
     (if-not (zero? methods_index)
       (apply merge (map #(meta %) (nth gen-class methods_index)))
       nil)))
+
+(defn extract-ns-meta
+  "Retrieve the metadata for the ns, if there is any.
+
+  By parsing the ns as a string, and reading the metadata off it, all
+  the metadata introduced by the compiler or clojure.test is not
+  printed back out"
+  [file-content]
+  (let [ns-string (sexp/get-first-sexp file-content)
+        ns-form (-> ns-string
+                    (StringReader.)
+                    (PushbackReader.)
+                    parse/read-ns-decl)
+        ns-meta (meta (second ns-form))]
+    {:top-level-meta ns-meta
+     :gc-methods-meta (extract-gen-class-methods-meta ns-form)}))
 
 (defn read-ns-form-with-meta
   "Read the ns form found at PATH.

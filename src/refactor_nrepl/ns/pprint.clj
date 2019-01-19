@@ -3,7 +3,9 @@
             [clojure
              [pprint :refer [pprint]]
              [string :as str]]
-            [refactor-nrepl.core :as core :refer [prefix-form?]])
+            [refactor-nrepl
+             [core :as core :refer [prefix-form?]]
+             [util :as util :refer [replace-last]]])
 
   (:import java.util.regex.Pattern))
 
@@ -52,6 +54,31 @@
   (and (sequential? form)
        (= (first form) type)))
 
+(defn pprint-meta
+  "Given some metadata m, print the shorthand metadata first, and the
+  longhand metadata second, trying to convert to shorthand notation if
+  possible
+
+  If newlines is true, it prints a newline after each piece of
+  longhand metadata"
+  [m & {:keys [newlines]
+        :or {newlines false}}]
+  (let [short? #(= (str %) "true")
+        shorthand (sort (filter (fn [[k v]] (short? v)) m))
+        longhand (remove (fn [[k v]] (short? v)) m)]
+    (doseq [[k v] shorthand]
+      (print "^" (str k) ""))
+    (when-not (empty? longhand)
+      (printf "^{")
+      (doseq [[k v] longhand]
+        (print k)
+        (if newlines
+          (print (with-out-str (pprint v)))
+          (print (replace-last (with-out-str (pprint v)) #"\s" ""))))
+      (if newlines
+        (println "}")
+        (print "}")))))
+
 (defn- pprint-gen-class-form
   "Prints the gen class form and :methods metadata (if any)."
   [[_ & elems] metadata]
@@ -68,7 +95,9 @@
             (pprint-meta (filter (fn [[k v]]
                                    (contains? metadata k))
                                  (meta method)))
-            (print method))             ;TODO add newline here
+            (print method)
+            (when-not (= method (last val))
+              (println)))
           (print "]"))
         (print key val))
       (when (= idx (dec (count (partition 2 elems))))
@@ -87,19 +116,6 @@
         (println import)))
     imports)))
 
-(defn pprint-meta
-  "Given some metadata m, print the shorthand metadata first, and the
-  longhand metadata second, trying to convert to shorthand notation if
-  possible"
-  [m]
-  (let [short? #(= (str %) "true")
-        shorthand (filter (fn [[k v]] (short? v)) m)
-        longhand (remove (fn [[k v]] (short? v)) m)]
-    (doseq [[k v] shorthand]
-      (print "^" (str k) ""))
-    (doseq [[k v] longhand]
-      (print "^{" (keyword k) (with-out-str (pprint v)) "}"))))
-
 (defn pprint-ns
   [[_ name & more :as ns-form]]
   (let [docstring? (when (string? (first more)) (first more))
@@ -110,7 +126,7 @@
         ns-meta (:top-level-meta (meta ns-form))]
     (-> (with-out-str
           (printf "(ns ")
-          (when (seq ns-meta) (pprint-meta ns-meta))
+          (when (seq ns-meta) (pprint-meta ns-meta :newlines true))
           (print name)
           (if (or docstring? attrs? forms)
             (println)
