@@ -4,7 +4,7 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "0.4.4"]
-                 ^:source-dep [http-kit "2.2.0"]
+                 ^:source-dep [http-kit "2.3.0"]
                  ^:source-dep [cheshire "5.8.0"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.7.1"]
                  ^:source-dep [org.clojure/tools.namespace "0.3.0-alpha3"]
