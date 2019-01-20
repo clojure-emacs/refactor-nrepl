@@ -3,7 +3,9 @@
             [clojure
              [pprint :refer [pprint]]
              [string :as str]]
-            [refactor-nrepl.core :as core :refer [prefix-form?]])
+            [refactor-nrepl
+             [core :as core :refer [prefix-form?]]
+             [util :as util :refer [replace-last]]])
 
   (:import java.util.regex.Pattern))
 
@@ -52,17 +54,55 @@
   (and (sequential? form)
        (= (first form) type)))
 
+(defn pprint-meta
+  "Given some metadata m, print the shorthand metadata first, and the
+  longhand metadata second, trying to convert to shorthand notation if
+  possible
+
+  If newlines is true, it prints a newline after each piece of
+  longhand metadata"
+  [m & {:keys [newlines]
+        :or {newlines false}}]
+  (let [short? #(= (str %) "true")
+        shorthand (sort (filter (fn [[k v]] (short? v)) m))
+        longhand (remove (fn [[k v]] (short? v)) m)]
+    (doseq [[k v] shorthand]
+      (print "^" (str k) ""))
+    (when-not (empty? longhand)
+      (printf "^{")
+      (doseq [[k v] longhand]
+        (print k)
+        (if newlines
+          (print (with-out-str (pprint v)))
+          (print (replace-last (with-out-str (pprint v)) #"\s" ""))))
+      (if newlines
+        (println "}")
+        (print "}")))))
+
 (defn- pprint-gen-class-form
-  [[_ & elems]]
+  "Prints the gen class form and :methods metadata (if any)."
+  [[_ & elems] metadata]
   (if (empty? elems)
     (println "(:gen-class)")
     (println "(:gen-class"))
   (dorun
    (map-indexed
     (fn [idx [key val]]
-      (if (= idx (dec (count (partition 2 elems))))
-        (printf "%s %s)\n" key val)
-        (println key val)))
+      (if (= key :methods)
+        (do
+          (print key "[")
+          (doseq [method val]           ;val are all the methods
+            (pprint-meta (filter (fn [[k v]]
+                                   (contains? metadata k))
+                                 (meta method)))
+            (print method)
+            (when-not (= method (last val))
+              (println)))
+          (print "]"))
+        (print key val))
+      (when (= idx (dec (count (partition 2 elems))))
+        (print ")"))
+      (println))
     (partition 2 elems))))
 
 (defn- pprint-import-form
@@ -76,14 +116,6 @@
         (println import)))
     imports)))
 
-(defn pprint-meta
-  [m]
-  (if-let [shorthand-meta-coll (::core/shorthand-meta-coll m)]
-    (doseq [shorthand-meta shorthand-meta-coll]
-      (print (str "^" shorthand-meta " ")))
-    (printf (.replaceAll (str "^" (into (sorted-map) m) "\n")
-                         ", " "\n"))))
-
 (defn pprint-ns
   [[_ name & more :as ns-form]]
   (let [docstring? (when (string? (first more)) (first more))
@@ -91,10 +123,10 @@
         forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
                     :else (rest more))
-        ns-meta (meta ns-form)]
+        ns-meta (:top-level-meta (meta ns-form))]
     (-> (with-out-str
           (printf "(ns ")
-          (when (seq ns-meta) (pprint-meta ns-meta))
+          (when (seq ns-meta) (pprint-meta ns-meta :newlines true))
           (print name)
           (if (or docstring? attrs? forms)
             (println)
@@ -116,11 +148,11 @@
                         (str/trim-newline
                          (with-out-str
                            (cond (form-is? form :require) (pprint-require-form form)
-                                 (form-is? form :gen-class) (pprint-gen-class-form form)
+                                 (form-is? form :gen-class) (pprint-gen-class-form form (:gc-methods-meta (meta ns-form)))
                                  (form-is? form :import) (pprint-import-form form)
                                  :else (pprint form)))))
                 (cond (form-is? form :require) (pprint-require-form form)
-                      (form-is? form :gen-class) (pprint-gen-class-form form)
+                      (form-is? form :gen-class) (pprint-gen-class-form form (:gc-methods-meta (meta ns-form)))
                       (form-is? form :import) (pprint-import-form form)
                       :else (pprint form))))
             forms)))

@@ -1,4 +1,5 @@
 (ns refactor-nrepl.util
+  (:require [clojure.string :as string])
   (:import java.util.regex.Pattern))
 
 (defn normalize-to-unix-path
@@ -41,3 +42,13 @@
     (if (seq xs)
       (apply conj coll xs)
       coll)))
+
+(defn replace-last
+  "Replaces the last instance of match from the string s with rep"
+  [s match rep]
+  (as-> s _
+    (reverse _)
+    (apply str _)
+    (string/replace-first _ match rep)
+    (reverse _)
+    (apply str _)))

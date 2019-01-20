@@ -158,6 +158,8 @@ The `clean-ns` op will perform the following cleanups on an ns form:
 * Remove any unused namespaces, referred symbols or imported classes.
 * Remove any duplication in the :require and :import form.
 * Prune or remove any `:rename` clause.
+* Use the shorthand version of metadata found if possible, and sort it
+  alphabetically
 
 The `clean-ns` requires a `path` which is the path to the file containing the `ns` to be operated upon.
 

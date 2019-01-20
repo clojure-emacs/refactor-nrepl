@@ -38,8 +38,11 @@
 (def cljc-ns-same-clj-cljs-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/cljcns_same_clj_cljs_cleaned.cljc")))
 
 (def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
-
 (def ns-with-multiple-shorthand-meta (clean-msg "test/resources/ns_with_multiple_shorthand_meta.clj"))
+(def ns-with-gen-class-methods-meta (clean-msg "test/resources/ns_with_gen_class_methods_meta.clj"))
+(def ns-with-gen-class-methods-meta-clean (clean-msg "test/resources/ns_with_gen_class_methods_meta_clean.clj"))
+(def ns-with-lots-of-meta (clean-msg "test/resources/ns_with_lots_of_meta.clj"))
+(def ns-with-lots-of-meta-clean (clean-msg "test/resources/ns_with_lots_of_meta_clean.clj"))
 
 (def ns-with-inner-classes (clean-msg "test/resources/ns_with_inner_classes.clj"))
 
@@ -199,10 +202,20 @@
   (let [cleaned (pprint-ns (clean-ns ns-with-shorthand-meta))]
     (is (re-find #"\^:automation" cleaned))))
 
-(deftest preservres-multiple-shortand-meta
+(deftest preserves-multiple-shortand-meta
   (let [cleaned (pprint-ns (clean-ns ns-with-multiple-shorthand-meta))]
     (is (re-find #"\^:automation" cleaned))
     (is (re-find #"\^:multiple" cleaned))))
+
+(deftest preserves-gen-class-methods-meta
+  (let [actual (pprint-ns (clean-ns ns-with-gen-class-methods-meta))
+        expected (slurp (:path ns-with-gen-class-methods-meta-clean))]
+    (is (= expected actual))))
+
+(deftest preserves-all-meta
+  (let [actual (pprint-ns (clean-ns ns-with-lots-of-meta))
+        expected (slurp (:path ns-with-lots-of-meta-clean))]
+    (is (= expected actual))))
 
 (deftest does-not-remove-dollar-sign-if-valid-symbol
   (let [cleaned (pprint-ns (clean-ns ns-using-dollar))]

@@ -250,24 +250,40 @@
 
       :else (-> fully-qualified-name str (.split "\\.") last))))
 
+(defn extract-gen-class-methods-meta
+  "Retrieve the metadata relative to :methods in the :gen-class top
+  level component.
+
+  Returns nil if there is no :gen-class, or if there is no :methods
+  inside :gen-class
+
+  .indexOf returns -1 if not found, and since the structure we are
+  looking for comes after, by 'incing' by default we can just check
+  for zero?"
+  [ns-form]
+  (let [gen-class (get-ns-component ns-form :gen-class)
+        methods_index (inc (if-not (nil? gen-class)
+                             (.indexOf gen-class :methods)
+                             -1))]
+    (if-not (zero? methods_index)
+      (apply merge (map #(meta %) (nth gen-class methods_index)))
+      nil)))
+
 (defn extract-ns-meta
   "Retrieve the metadata for the ns, if there is any.
 
-  This is preferable to just doing (meta the-ns-form) because the
-  compiler, as well as libraries like clojure.test, add quite a bit of
-  metadata which shouldn't be printed back out."
+  By parsing the ns as a string, and reading the metadata off it, all
+  the metadata introduced by the compiler or clojure.test is not
+  printed back out"
   [file-content]
   (let [ns-string (sexp/get-first-sexp file-content)
-        meta? (-> ns-string (.replaceFirst "\\^\\{" "\\{")
-                  (StringReader.)
-                  (PushbackReader.)
-                  parse/read-ns-decl
-                  second)
-        shorthand-meta?  (re-seq #"\^:([^\s]+)\s" ns-string)]
-    (cond
-      (map? meta?) meta?
-      shorthand-meta? {::shorthand-meta-coll (map (comp keyword second) shorthand-meta?)}
-      :else nil)))
+        ns-form (-> ns-string
+                    (StringReader.)
+                    (PushbackReader.)
+                    parse/read-ns-decl)
+        ns-meta (meta (second ns-form))]
+    {:top-level-meta ns-meta
+     :gc-methods-meta (extract-gen-class-methods-meta ns-form)}))
 
 (defn read-ns-form-with-meta
   "Read the ns form found at PATH.
