@@ -1,4 +1,4 @@
-(defproject refactor-nrepl "2.4.0"
+(defproject refactor-nrepl "2.4.1-SNAPSHOT"
   :description "nREPL middleware to support editor-agnostic refactoring"
   :url "http://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
@@ -10,7 +10,7 @@
                  ^:source-dep [org.clojure/tools.namespace "0.3.0-alpha3"]
                  ;; Not used directly in refactor-nrepl, but needed because of tool.namespace
                  ;; and the way MrAnderson processes dependencies
-                 ;; See https://github.com/clojure-emacs/cider/issues/2176 for details 
+                 ;; See https://github.com/clojure-emacs/cider/issues/2176 for details
                  ^:source-dep [org.clojure/java.classpath "0.2.3"]
                  ^:source-dep [org.clojure/tools.reader "1.1.1"]
                  ^:source-dep [cider/orchard "0.3.0"]
