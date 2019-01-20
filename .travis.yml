@@ -5,8 +5,6 @@ script:
   - lein with-profile +plugin.mranderson/config test
   - lein with-profile +1.9,+plugin.mranderson/config test
 jdk:
-  - openjdk7
-  - oraclejdk7
   - oraclejdk8
 
 notifications:
