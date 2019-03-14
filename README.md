@@ -3,19 +3,19 @@
 
 # Refactor nREPL
 
-nREPL middleware to support refactorings in an editor agnostic way.
+[nREPL][] middleware to support refactorings in an editor agnostic way.
 
-The role of this nREPL middleware is to provide refactoring support for clients such as [clj-refactor.el](https://github.com/clojure-emacs/clj-refactor.el).
+The role of this nREPL middleware is to provide refactoring support for clients such as [clj-refactor.el][].
 
 ## Usage
 
 ### With CIDER and clj-refactor
 
-If you're using CIDER and clj-refactor you don't have to do anything
+If you're using [CIDER][] and clj-refactor you don't have to do anything
 except call `cider-jack-in`.  The dependencies are injected
 automagically.
 
-Be aware that this isn't the case if you connect to an already running REPL process. See the [cider documentation](http://cider.readthedocs.io/en/latest/installation/) for more details.
+Be aware that this isn't the case if you connect to an already running REPL process. See the [CIDER documentation](http://cider.readthedocs.io/en/latest/installation/) for more details.
 
 ### Adding the middleware via Leiningen
 
@@ -46,7 +46,7 @@ Add the following in `~/.boot/profile.boot`:
 We've already called this a middleware, but we haven't really talked
 about what that means.  refactor-nrepl is middleware for a REPL.
 Specifically it's middleware for a networked REPL, which is managed by
-[nREPL](https://github.com/nrepl/nrepl).
+[nREPL][].
 refactor-nrepl uses the running REPL to to gain insight about your
 project, in order to offer various refactorings.
 
@@ -314,7 +314,7 @@ contains among other things a full stacktrace.
 
 ## Development with `mranderson`
 
-[mranderson](https://github.com/benedekfazekas/mranderson) is used to avoid classpath collisions.
+[mranderson][] is used to avoid classpath collisions.
 
 To work with `mranderson` the first thing to do is:
 
@@ -358,3 +358,8 @@ An extensive changelog is available [here](CHANGELOG.md).
 Copyright © 2013-2018 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen
 
 Distributed under the Eclipse Public License, the same as Clojure.
+
+[nREPL]:https://github.com/nrepl/nrepl
+[CIDER]:https://github.com/clojure-emacs/cider
+[clj-refactor.el]:https://github.com/clojure-emacs/clj-refactor.el
+[mranderson]:https://github.com/benedekfazekas/mranderson
