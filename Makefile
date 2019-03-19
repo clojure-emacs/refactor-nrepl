@@ -9,8 +9,10 @@ JAVA_VERSION := $(shell lein with-profile +sysutils \
                         sysutils :java-version-simple | cut -d " " -f 2)
 TEST_SELECTOR := :java$(JAVA_VERSION)
 
-test:
+source-deps:
 	lein source-deps :prefix-exclusions "[\"classlojure\"]"
+
+test:
 	lein with-profile +$(VERSION),+plugin.mranderson/config test
 
 # Documentation management via autodoc (https://github.com/plexus/autodoc)
