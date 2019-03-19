@@ -41,5 +41,5 @@
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
                                     "test/resources/testproject/src"]
-                   :repositories [["snapshots" "http://oss.sonatype.org/content/repositories/snapshots"]]}}
+                   :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots"]]}}
   :jvm-opts ["-Djava.net.preferIPv4Stack=true"])
