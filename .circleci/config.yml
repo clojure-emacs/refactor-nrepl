@@ -116,11 +116,14 @@ jobs:
           cache_version: << parameters.clojure_version >>
           steps:
             - run:
-                name: Installing source-deps
-                command: lein source-deps :prefix-exclusions "[\"classlojure\"]"
-            - run:
                 name: Running tests
-                command: lein with-profile +<< parameters.clojure_version >>,+plugin.mranderson/config test
+                command: make test
+            # - run:
+            #     name: Installing source-deps
+            #     command: lein source-deps :prefix-exclusions "[\"classlojure\"]"
+            # - run:
+            #     name: Running tests
+            #     command: lein with-profile +<< parameters.clojure_version >>,+plugin.mranderson/config test
 
 ######################################################################
 #
