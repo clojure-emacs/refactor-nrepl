@@ -144,38 +144,38 @@ workflows:
   version: 2.1
   ci-test-matrix:
     jobs:
-      - test_code:
-          name: Java 8, Clojure 1.8
-          clojure_version: "1.8"
-          jdk_version: openjdk8
+      # - test_code:
+      #     name: Java 8, Clojure 1.8
+      #     clojure_version: "1.8"
+      #     jdk_version: openjdk8
       - test_code:
           name: Java 8, Clojure 1.9
           clojure_version: "1.9"
           jdk_version: openjdk8
-      - test_code:
-          name: Java 8, Clojure 1.10
-          clojure_version: "1.10"
-          jdk_version: openjdk8
-      - test_code:
-          name: Java 8, Clojure master
-          clojure_version: "master"
-          jdk_version: openjdk8
-      - test_code:
-          name: Java 11, Clojure 1.8
-          clojure_version: "1.8"
-          jdk_version: openjdk11
+      # - test_code:
+      #     name: Java 8, Clojure 1.10
+      #     clojure_version: "1.10"
+      #     jdk_version: openjdk8
+      # - test_code:
+      #     name: Java 8, Clojure master
+      #     clojure_version: "master"
+      #     jdk_version: openjdk8
+      # - test_code:
+      #     name: Java 11, Clojure 1.8
+      #     clojure_version: "1.8"
+      #     jdk_version: openjdk11
       - test_code:
           name: Java 11, Clojure 1.9
           clojure_version: "1.9"
           jdk_version: openjdk11
-      - test_code:
-          name: Java 11, Clojure 1.10
-          clojure_version: "1.10"
-          jdk_version: openjdk11
-      - test_code:
-          name: Java 11, Clojure master
-          clojure_version: "master"
-          jdk_version: openjdk11
+      # - test_code:
+      #     name: Java 11, Clojure 1.10
+      #     clojure_version: "1.10"
+      #     jdk_version: openjdk11
+      # - test_code:
+      #     name: Java 11, Clojure master
+      #     clojure_version: "master"
+      #     jdk_version: openjdk11
       # - util_job:
       #     name: Code Linting
       #     steps:

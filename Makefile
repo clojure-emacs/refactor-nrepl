@@ -11,7 +11,7 @@ TEST_SELECTOR := :java$(JAVA_VERSION)
 
 test:
 	lein source-deps :prefix-exclusions "[\"classlojure\"]"
-	lein with-profile +$(VERSION)+plugin.mranderson/config test
+	lein with-profile +$(VERSION),+plugin.mranderson/config test
 
 # Documentation management via autodoc (https://github.com/plexus/autodoc)
 # Pin a specific commit in that repo to prevent accidental changes in
