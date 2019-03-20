@@ -83,5 +83,4 @@
        (PushbackReader. nil))
 
      (proxy [FilenameFilter] []
-       (accept [d n] true))
-     ))
+       (accept [d n] true))))

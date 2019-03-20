@@ -4,6 +4,6 @@
 (defn shadow-macro-in-fn-param [my-macro]
   (my-macro :shadowed-by-function-param))
 
-(defn shadow-macro-in-let[my-macro]
+(defn shadow-macro-in-let [my-macro]
   (let [my-macro (fn not-a-macro [])]
     (my-macro :shadowed-by-let)))

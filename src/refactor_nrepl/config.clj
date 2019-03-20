@@ -2,8 +2,7 @@
 
 ;; NOTE: Update the readme whenever this map is changed
 (def ^:dynamic *config*
-  {
-   ;; Verbose setting for debugging.  The biggest effect this has is
+  {;; Verbose setting for debugging.  The biggest effect this has is
    ;; to not catch any exceptions to provide meaningful error
    ;; messages for the client.
 
@@ -23,8 +22,7 @@
    :libspec-whitelist ["^cljsjs"]
 
    ;; Regexes matching paths that are to be ignored
-   :ignore-paths []
-   })
+   :ignore-paths []})
 
 (defn opts-from-msg [msg]
   (into {}

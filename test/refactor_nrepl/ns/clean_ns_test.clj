@@ -94,7 +94,7 @@
 (deftest throws-on-malformed-ns
   (is (thrown? IllegalStateException
                (core/read-ns-form-with-meta (.getAbsolutePath
-                                   (File. "test/resources/clojars-artifacts.edn"))))))
+                                             (File. "test/resources/clojars-artifacts.edn"))))))
 
 (deftest preserves-other-elements
   (let [actual (clean-ns ns1)

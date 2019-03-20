@@ -29,4 +29,4 @@
   (t/is (=  "{:qux [#{more}]}" (apply sut/get-enclosing-sexp file-content map-location)))
   (t/is (=  nil (apply sut/get-enclosing-sexp weird-file-content weird-location)))
   (t/is (= nil (sut/get-first-sexp weird-file-content)))
-  (t/is (=  "#{foo bar baz}"(sut/get-first-sexp file-content-with-set))))
+  (t/is (=  "#{foo bar baz}" (sut/get-first-sexp file-content-with-set))))

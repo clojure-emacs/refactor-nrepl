@@ -138,21 +138,21 @@
         macro-suffix (core/suffix macro-name)
         alias? ((get-ns-aliases libspecs) macro-prefix)]
     (when
-        (or
+     (or
          ;; locally defined macro
-         (and (= current-ns macro-prefix)
-              (= sym macro-suffix))
-         ;; fully qualified
-         (= sym macro-name)
-         ;; aliased
-         (when alias? (= sym (str alias? "/" macro-suffix)))
-         ;; referred
-         (when (macro-referred? libspecs macro-name)
+      (and (= current-ns macro-prefix)
            (= sym macro-suffix))
+         ;; fully qualified
+      (= sym macro-name)
+         ;; aliased
+      (when alias? (= sym (str alias? "/" macro-suffix)))
+         ;; referred
+      (when (macro-referred? libspecs macro-name)
+        (= sym macro-suffix))
          ;; I used to have a clause here for (:use .. :rename {...})
          ;; but :use is ;; basically deprecated and nobody used :rename to
          ;; begin with so I dropped it when the test failed.
-         )
+      )
       macro-name)))
 
 (defn- active-bindings

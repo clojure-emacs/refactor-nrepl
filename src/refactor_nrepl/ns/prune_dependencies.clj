@@ -119,7 +119,7 @@
   (let [ns-name (str (:ns libspec))]
     (some (fn [^String pattern]
             (re-find (re-pattern pattern) ns-name))
-            (:libspec-whitelist config/*config*))))
+          (:libspec-whitelist config/*config*))))
 
 (defn- prune-libspec [symbols-in-file current-ns libspec]
   (if (libspec-should-never-be-pruned? libspec)
