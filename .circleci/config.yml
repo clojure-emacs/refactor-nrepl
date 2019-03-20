@@ -170,14 +170,14 @@ workflows:
       #     name: Java 11, Clojure master
       #     clojure_version: "master"
       #     jdk_version: openjdk11
-      # - util_job:
-      #     name: Code Linting
-      #     steps:
-      #       - run:
-      #           name: Running Eastwood
-      #           command: |
-      #             make eastwood
-      #       - run:
-      #           name: Running cljfmt
-      #           command: |
-      #             make cljfmt
+      - util_job:
+          name: Code Linting
+          steps:
+            # - run:
+            #     name: Running Eastwood
+            #     command: |
+            #       make eastwood
+            - run:
+                name: Running cljfmt
+                command: |
+                  make cljfmt

@@ -47,5 +47,11 @@
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
                                     "test/resources/testproject/src"]
-                   :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots"]]}}
+                   :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots"]]}
+             :cljfmt [:test
+                      {:plugins [[lein-cljfmt "0.6.4"]]
+                       :cljfmt {:indents {as-> [[:inner 0]]
+                                          with-debug-bindings [[:inner 0]]
+                                          merge-meta [[:inner 0]]
+                                          try-if-let [[:block 1]]}}}]}
   :jvm-opts ["-Djava.net.preferIPv4Stack=true"])

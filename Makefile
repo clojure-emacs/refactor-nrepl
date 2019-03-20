@@ -11,6 +11,8 @@ source-deps: .source-deps
 test: .source-deps
 	lein with-profile +$(VERSION),+plugin.mranderson/config test
 
+cljfmt:
+	lein with-profile +$(VERSION),+cljfmt cljfmt check
 
 # When releasing, the BUMP variable controls which field in the
 # version string will be incremented in the *next* snapshot
