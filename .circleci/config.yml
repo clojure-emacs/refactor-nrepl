@@ -116,10 +116,7 @@ jobs:
           cache_version: << parameters.clojure_version >>
           steps:
             - run:
-                name: Downloading Source deps
-                command: make source-deps
-            - run:
-                name: Running tests
+                name: Running tests with inlined deps
                 command: make test
 
 ######################################################################

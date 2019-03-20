@@ -2,10 +2,13 @@
 
 VERSION ?= 1.10
 
-source-deps:
-	lein source-deps :prefix-exclusions "[\"classlojure\"]"
+.source-deps:
+	lein source-deps
+	touch .source-deps
 
-test:
+source-deps: .source-deps
+
+test: .source-deps
 	lein with-profile +$(VERSION),+plugin.mranderson/config test
 
 
@@ -27,3 +30,4 @@ deploy:
 
 clean:
 	lein clean
+	rm -f .source-deps
