@@ -121,12 +121,6 @@ jobs:
             - run:
                 name: Running tests
                 command: make test
-            # - run:
-            #     name: Installing source-deps
-            #     command: lein source-deps :prefix-exclusions "[\"classlojure\"]"
-            # - run:
-            #     name: Running tests
-            #     command: lein with-profile +<< parameters.clojure_version >>,+plugin.mranderson/config test
 
 ######################################################################
 #

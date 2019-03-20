@@ -1,6 +1,6 @@
 .PHONY: source-deps test release deploy clean
 
-VERSION ?= 1.9
+VERSION ?= 1.10
 
 source-deps:
 	lein source-deps :prefix-exclusions "[\"classlojure\"]"
