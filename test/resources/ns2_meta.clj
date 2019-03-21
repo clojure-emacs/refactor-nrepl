@@ -7,7 +7,7 @@
 ;; ===========================================================================
 (ns ^{:author "Trurl and Klapaucius"
       :doc "test ns with meta"}
-  resources.ns2-meta
+ resources.ns2-meta
   (:require
    [clojure.pprint :refer [fresh-line]]
    [clojure.pprint :refer [get-pretty-writer]]

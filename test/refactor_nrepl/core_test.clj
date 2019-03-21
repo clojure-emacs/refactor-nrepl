@@ -3,12 +3,10 @@
             [refactor-nrepl.config :as config]
             [refactor-nrepl.core :refer [ignore-dir-on-classpath?]]))
 
-
 (defmacro assert-ignored-paths
   [paths pred]
   `(doseq [p# ~paths]
      (is (~pred (ignore-dir-on-classpath? p#)))))
-
 
 (deftest test-ignore-dir-on-classpath?
   (let [not-ignored ["/home/user/project/test"

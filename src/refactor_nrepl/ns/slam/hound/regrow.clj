@@ -60,8 +60,8 @@
 
 (defn- ns->symbols []
   (caching :ns->symbols
-    (let [xs (all-ns)]
-      (zipmap xs (mapv (comp set keys ns-publics) xs)))))
+           (let [xs (all-ns)]
+             (zipmap xs (mapv (comp set keys ns-publics) xs)))))
 
 (defn- symbols->ns-syms*
   ([]
@@ -77,7 +77,6 @@
 
 (defn- symbols->ns-syms []
   (cache-with-dirty-tracking :symbols->ns-syms symbols->ns-syms*))
-
 
 (defn- walk
   "Adapted from clojure.walk/walk and clojure.walk/prewalk; this version
@@ -110,12 +109,12 @@
 
 (def ^:private ns-qualifed-syms
   (memoize
-    (fn [body]
-      (apply merge-with set/union {}
-             (for [ss (symbols-in-body body)
-                   :let [[_ alias var-name] (re-matches #"(.+)/(.+)" (str ss))]
-                   :when alias]
-               {(symbol alias) #{(symbol var-name)}})))))
+   (fn [body]
+     (apply merge-with set/union {}
+            (for [ss (symbols-in-body body)
+                  :let [[_ alias var-name] (re-matches #"(.+)/(.+)" (str ss))]
+                  :when alias]
+              {(symbol alias) #{(symbol var-name)}})))))
 
 (defn- ns-import-candidates
   "Search (all-ns) for imports that match missing-sym, returning a set of
@@ -131,12 +130,12 @@
 
 (defn- alias-candidates [type missing body]
   (set
-    (let [syms-with-alias (get (ns-qualifed-syms body) missing)]
-      (when (seq syms-with-alias)
-        (let [ns->syms (ns->symbols)]
-          (for [ns (all-ns)
-                :when (set/subset? syms-with-alias (ns->syms ns))]
-            (ns-name ns)))))))
+   (let [syms-with-alias (get (ns-qualifed-syms body) missing)]
+     (when (seq syms-with-alias)
+       (let [ns->syms (ns->symbols)]
+         (for [ns (all-ns)
+               :when (set/subset? syms-with-alias (ns->syms ns))]
+           (ns-name ns)))))))
 
 (defn candidates
   "Return a set of class or ns symbols that match the given constraints."
@@ -155,7 +154,7 @@
                    (alias-candidates type missing body')))))
     :refer (get (symbols->ns-syms) missing)
     :rename (reduce-kv
-              (fn [s ns orig->rename]
-                (cond->* s
-                  (some #{missing} (vals orig->rename)) (conj ns)))
-              #{} (:rename old-ns-map))))
+             (fn [s ns orig->rename]
+               (cond->* s
+                 (some #{missing} (vals orig->rename)) (conj ns)))
+             #{} (:rename old-ns-map))))

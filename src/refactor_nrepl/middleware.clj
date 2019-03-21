@@ -11,15 +11,15 @@
 ;; The assumption is that if someone is using old lein repl or boot repl
 ;; they'll end up using the tools.nrepl, otherwise the modern one.
 (when-not (resolve 'set-descriptor!)
-    (if (find-ns 'clojure.tools.nrepl)
-      (require
-       '[clojure.tools.nrepl.middleware :refer [set-descriptor!]]
-       '[clojure.tools.nrepl.misc :refer [response-for]]
-       '[clojure.tools.nrepl.transport :as transport])
-      (require
-       '[nrepl.middleware :refer [set-descriptor!]]
-       '[nrepl.misc :refer [response-for]]
-       '[nrepl.transport :as transport])))
+  (if (find-ns 'clojure.tools.nrepl)
+    (require
+     '[clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+     '[clojure.tools.nrepl.misc :refer [response-for]]
+     '[clojure.tools.nrepl.transport :as transport])
+    (require
+     '[nrepl.middleware :refer [set-descriptor!]]
+     '[nrepl.misc :refer [response-for]]
+     '[nrepl.transport :as transport])))
 
 (defn- require-and-resolve [sym]
   (require (symbol (namespace sym)))
@@ -183,15 +183,14 @@
          :status :done))
 
 (def ^:private find-used-publics
-  (delay (require-and-resolve 'refactor-nrepl.find.find-used-publics/find-used-publics) ))
+  (delay (require-and-resolve 'refactor-nrepl.find.find-used-publics/find-used-publics)))
 
 (defn- find-used-publics-reply [{:keys [transport] :as msg}]
   (reply transport msg
          :used-publics (serialize-response msg (@find-used-publics msg)) :status :done))
 
 (def refactor-nrepl-ops
-  {
-   "artifact-list" artifact-list-reply
+  {"artifact-list" artifact-list-reply
    "artifact-versions" artifact-versions-reply
    "clean-ns" clean-ns-reply
    "extract-definition" extract-definition-reply
@@ -205,8 +204,7 @@
    "find-used-publics" find-used-publics-reply
    "version" version-reply
    "warm-ast-cache" warm-ast-cache-reply
-   "warm-macro-occurrences-cache" warm-macro-occurrences-cache-reply
-   })
+   "warm-macro-occurrences-cache" warm-macro-occurrences-cache-reply})
 
 (defn wrap-refactor
   [handler]

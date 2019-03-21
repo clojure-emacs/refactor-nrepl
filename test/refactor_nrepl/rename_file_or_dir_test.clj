@@ -146,8 +146,9 @@
       (is (some #(.endsWith % "non_clj_file") @files))
       (is (= 4 (count (filter #(.endsWith % ".cljs") @files)))))))
 
-
+
 ;;; cljs
+
 
 (def from-file-path-cljs (.getAbsolutePath (File. "test/resources/testproject/src/com/move/ns_to_be_moved_cljs.cljs")))
 (def to-file-path-cljs (.getAbsolutePath (File. "test/resources/testproject/src/com/move/moved_ns_cljs.cljs")))
