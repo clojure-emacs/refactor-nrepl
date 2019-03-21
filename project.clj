@@ -51,6 +51,9 @@
              :cljfmt [:test
                       {:plugins [[lein-cljfmt "0.6.4"]]
                        :cljfmt {:indents {as-> [[:inner 0]]
+                                          as->* [[:inner 0]]
+                                          cond-> [[:inner 0]]
+                                          cond->* [[:inner 0]]
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]}

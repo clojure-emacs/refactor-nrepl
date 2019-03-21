@@ -90,9 +90,9 @@
         (coll? form) (into (empty form) (map f form))
         :else form)
       (as->* form'
-             (if-let [m (meta form)]
-               (with-meta form' m)
-               form'))))
+        (if-let [m (meta form)]
+          (with-meta form' m)
+          form'))))
 
 (defn- prewalk [f form]
   (walk (partial prewalk f) (f form)))
@@ -156,5 +156,5 @@
     :rename (reduce-kv
              (fn [s ns orig->rename]
                (cond->* s
-                        (some #{missing} (vals orig->rename)) (conj ns)))
+                 (some #{missing} (vals orig->rename)) (conj ns)))
              #{} (:rename old-ns-map))))
