@@ -318,7 +318,7 @@ contains among other things a full stacktrace.
 
 To work with `mranderson` the first thing to do is:
 
-`lein do clean, source-deps :prefix-exclusions "[\"classlojure\"]"`
+`lein do clean, inline-deps`
 
 this creates the munged local dependencies in target/srcdeps directory
 
@@ -348,6 +348,8 @@ Or alternatively run
 `./build.sh deploy clojars`
 
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
+
+You can also use a Makefile now: `make clean && make test` for example.
 
 ## Changelog
 

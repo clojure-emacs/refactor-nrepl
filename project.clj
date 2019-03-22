@@ -7,14 +7,10 @@
                  ^:source-dep [http-kit "2.3.0"]
                  ^:source-dep [cheshire "5.8.0"]
                  ^:source-dep [org.clojure/tools.analyzer.jvm "0.7.1"]
-                 ^:source-dep [org.clojure/tools.namespace "0.3.0-alpha3"]
-                 ;; Not used directly in refactor-nrepl, but needed because of tool.namespace
-                 ;; and the way MrAnderson processes dependencies
-                 ;; See https://github.com/clojure-emacs/cider/issues/2176 for details
-                 ^:source-dep [org.clojure/java.classpath "0.2.3"]
+                 ^:source-dep [org.clojure/tools.namespace "0.3.0-alpha3" :exclusions [org.clojure/tools.reader]]
                  ^:source-dep [org.clojure/tools.reader "1.1.1"]
                  ^:source-dep [cider/orchard "0.3.0"]
-                 ^:source-dep [lein-cljfmt "0.3.0"]
+                 ^:source-dep [cljfmt "0.6.3"]
                  ^:source-dep [me.raynes/fs "1.4.6"]
                  ^:source-dep [rewrite-clj "0.6.0"]
                  ^:source-dep [cljs-tooling "0.2.0"]
@@ -23,7 +19,10 @@
                                     :username :env/clojars_username
                                     :password :env/clojars_password
                                     :sign-releases false}]]
-  :plugins [[thomasa/mranderson "0.4.8"]]
+  :plugins [[thomasa/mranderson "0.5.0"]]
+  :mranderson {:project-prefix  "refactor.inlined-deps"
+               :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
+               :unresolved-tree false}
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {:provided {:dependencies [[cider/cider-nrepl "0.18.0"]
                                        [org.clojure/clojure "1.8.0"]]}
@@ -38,7 +37,7 @@
              :1.10 {:dependencies [[org.clojure/clojure "1.10.0"]
                                    [org.clojure/clojurescript "1.10.63"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
-                   :global-vars {*warn-on-reflection* true}
+                   ;:global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.89"]
                                   [cider/piggieback "0.3.8"]
                                   [leiningen-core "2.7.1"]

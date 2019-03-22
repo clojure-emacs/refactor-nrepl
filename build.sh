@@ -9,7 +9,7 @@ function check_result {
     fi
 }
 
-lein do clean, source-deps :prefix-exclusions "[\"classlojure\"]"
+lein do clean, inline-deps
 check_result
 lein with-profile +plugin.mranderson/config test
 check_result
