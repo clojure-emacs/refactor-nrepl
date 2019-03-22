@@ -1,14 +1,14 @@
-.PHONY: source-deps test release deploy clean
+.PHONY: inline-deps test release deploy clean
 
 VERSION ?= 1.10
 
-.source-deps:
-	lein source-deps
-	touch .source-deps
+.inline-deps:
+	lein inline-deps
+	touch .inline-deps
 
-source-deps: .source-deps
+inline-deps: .inline-deps
 
-test: .source-deps
+test: .inline-deps
 	lein with-profile +$(VERSION),+plugin.mranderson/config test
 
 cljfmt:
@@ -32,4 +32,4 @@ deploy:
 
 clean:
 	lein clean
-	rm -f .source-deps
+	rm -f .inline-deps
