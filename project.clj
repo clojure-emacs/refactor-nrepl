@@ -20,7 +20,7 @@
                                     :password :env/clojars_password
                                     :sign-releases false}]]
   :plugins [[thomasa/mranderson "0.5.0"]]
-  :mranderson {:project-prefix  "refactor.inlined-deps"
+  :mranderson {:project-prefix  "refactor-nrepl.inlined-deps"
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
@@ -37,7 +37,7 @@
              :1.10 {:dependencies [[org.clojure/clojure "1.10.0"]
                                    [org.clojure/clojurescript "1.10.63"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
-                   ;:global-vars {*warn-on-reflection* true}
+                   :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.89"]
                                   [cider/piggieback "0.3.8"]
                                   [leiningen-core "2.7.1"]
