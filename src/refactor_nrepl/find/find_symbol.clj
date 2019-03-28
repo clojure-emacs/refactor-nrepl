@@ -137,7 +137,16 @@
                                (str/join "/" [namespace var-name]))]
     (->> (core/dirs-on-classpath)
          (mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
-         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
+         (shuffle) ;; make it less likely that work will be concentrated in one partition (see next line)
+         (find-util/divide-by (find-util/processor-count))
+         (pmap (fn [work]
+                 ;; `vec` ensures all work is actually performed within the surrounding `pmap`
+                 (->> work
+                      (mapcat (comp vec
+                                    (partial find-symbol-in-file fully-qualified-name ignore-errors)))
+                      vec)))
+         (apply concat)
+         (vec))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [^long line-beg ^long col-beg]}]

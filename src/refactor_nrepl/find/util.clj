@@ -20,3 +20,12 @@
              (core/suffix name)))))
   ([file occ]
    (spurious? (assoc occ :file file))))
+
+(defn divide-by
+  "Divides `coll` in `n` parts. The parts can have disparate sizes if the division isn't exact."
+  [n coll]
+  (let [c (/ (count coll) n)]
+    (partition-all c coll)))
+
+(defn processor-count []
+  (-> (Runtime/getRuntime) .availableProcessors))
