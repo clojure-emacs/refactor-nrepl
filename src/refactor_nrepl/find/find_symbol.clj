@@ -2,6 +2,7 @@
   (:require [clojure
              [set :as set]
              [string :as str]]
+            [clojure.core.reducers :as reducers]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.parse :as parse]
             [refactor-nrepl
@@ -136,8 +137,10 @@
                                var-name
                                (str/join "/" [namespace var-name]))]
     (->> (core/dirs-on-classpath)
-         (mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
-         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
+         (vec) ;; ensure parallelisation
+         (reducers/mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
+         (reducers/mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors))
+         (reducers/foldcat))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [^long line-beg ^long col-beg]}]
