@@ -140,13 +140,12 @@
          (shuffle) ;; make it less likely that work will be concentrated in one partition (see next line)
          (find-util/divide-by (find-util/processor-count))
          (pmap (fn [work]
-                 ;; `vec` ensures all work is actually performed within the surrounding `pmap`
                  (->> work
-                      (mapcat (comp vec
+                      (mapcat (comp doall
                                     (partial find-symbol-in-file fully-qualified-name ignore-errors)))
-                      vec)))
+                      doall)))
          (apply concat)
-         (vec))))
+         (doall))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [^long line-beg ^long col-beg]}]
