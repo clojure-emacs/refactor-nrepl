@@ -4,22 +4,22 @@
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "0.4.4"]
-                 ^:source-dep [http-kit "2.3.0"]
-                 ^:source-dep [cheshire "5.8.0"]
-                 ^:source-dep [org.clojure/tools.analyzer.jvm "0.7.1"]
-                 ^:source-dep [org.clojure/tools.namespace "0.3.0-alpha3" :exclusions [org.clojure/tools.reader]]
-                 ^:source-dep [org.clojure/tools.reader "1.1.1"]
-                 ^:source-dep [cider/orchard "0.3.0"]
-                 ^:source-dep [cljfmt "0.6.3"]
-                 ^:source-dep [me.raynes/fs "1.4.6"]
-                 ^:source-dep [rewrite-clj "0.6.0"]
-                 ^:source-dep [cljs-tooling "0.2.0"]
-                 ^:source-dep [version-clj "0.1.2"]]
+                 ^:inline-dep [http-kit "2.3.0"]
+                 ^:inline-dep [cheshire "5.8.0"]
+                 ^:inline-dep [org.clojure/tools.analyzer.jvm "0.7.1"]
+                 ^:inline-dep [org.clojure/tools.namespace "0.3.0-alpha3" :exclusions [org.clojure/tools.reader]]
+                 ^:inline-dep [org.clojure/tools.reader "1.1.1"]
+                 ^:inline-dep [cider/orchard "0.3.0"]
+                 ^:inline-dep [cljfmt "0.6.3"]
+                 ^:inline-dep [me.raynes/fs "1.4.6"]
+                 ^:inline-dep [rewrite-clj "0.6.0"]
+                 ^:inline-dep [cljs-tooling "0.2.0"]
+                 ^:inline-dep [version-clj "0.1.2"]]
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
                                     :username :env/clojars_username
                                     :password :env/clojars_password
                                     :sign-releases false}]]
-  :plugins [[thomasa/mranderson "0.5.0"]]
+  :plugins [[thomasa/mranderson "0.5.1"]]
   :mranderson {:project-prefix  "refactor-nrepl.inlined-deps"
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}
