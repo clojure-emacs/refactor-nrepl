@@ -24,3 +24,4 @@ install.cmd
 /.cljs_node_repl/
 /out/
 /.lein-env
+.inline-deps
