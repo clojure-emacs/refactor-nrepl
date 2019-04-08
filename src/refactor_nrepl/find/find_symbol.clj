@@ -137,7 +137,9 @@
                                (str/join "/" [namespace var-name]))]
     (->> (core/dirs-on-classpath)
          (mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
-         (shuffle) ;; make it less likely that work will be concentrated in one partition (see next line)
+         (find-util/distribute-evenly-by {:n (find-util/processor-count)
+                                          :f (fn [^File file]
+                                               (-> file .length))})
          (find-util/divide-by (find-util/processor-count))
          (pmap (fn [work]
                  (->> work

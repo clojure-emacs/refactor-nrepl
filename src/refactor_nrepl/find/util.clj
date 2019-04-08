@@ -27,5 +27,28 @@
   (let [c (/ (count coll) n)]
     (partition-all c coll)))
 
+(defn distribute-evenly-by
+  "Sorts `coll` by `f` in such a way that if partitioned by `n`, each partition will have items of similar cost."
+  [{:keys [f n]
+    :as   options}
+   coll]
+  {:pre [(partial every? #{:f :n}) (keys options)
+         (ifn? f)
+         (pos? n)
+         (integer? n)
+         (coll? coll)]}
+  (if-not (seq coll)
+    coll
+    (->> coll
+         (sort-by f)
+         (partition-all n)
+         (map (fn [chunk]
+                (->> (repeat ::padding)
+                     (concat chunk)
+                     (take n))))
+         (apply map vector)
+         (apply concat)
+         (remove #{::padding}))))
+
 (defn processor-count []
   (-> (Runtime/getRuntime) .availableProcessors))
