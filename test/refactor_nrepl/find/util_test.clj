@@ -2,9 +2,9 @@
   (:require [clojure.test :refer :all]
             [refactor-nrepl.find.util :as sut]))
 
-(deftest divide-by
+(deftest slice
   (are [input n expected] (= expected
-                             (sut/divide-by n input))
+                             (sut/slice n input))
     []      1 '()
     [1]     1 '((1))
     [1 1]   1 '((1 1))
@@ -51,12 +51,12 @@
              input)))))
 
 (deftest workload-partitioning
-  (testing "`distribute-evenly-by` works well in conjunction with `divide-by`"
+  (testing "`distribute-evenly-by` works well in conjunction with `slice`"
     (are [input n expected] (= expected
                                (->> input
                                     (sut/distribute-evenly-by {:n n
                                                                :f identity})
-                                    (sut/divide-by n)))
+                                    (sut/slice n)))
       []                                4 []
       [1 1 1 1 2 2 2 2 3 3 3 3 4 4 4 4] 4 '[(1 2 3 4) (1 2 3 4) (1 2 3 4) (1 2 3 4)])
 
@@ -66,4 +66,4 @@
               (shuffle)
               (sut/distribute-evenly-by {:n 4
                                          :f identity})
-              (sut/divide-by 4))))))
+              (sut/slice 4))))))

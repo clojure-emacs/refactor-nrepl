@@ -140,7 +140,7 @@
          (find-util/distribute-evenly-by {:n (find-util/processor-count)
                                           :f (fn [^File file]
                                                (-> file .length))})
-         (find-util/divide-by (find-util/processor-count))
+         (find-util/slice (find-util/processor-count))
          (pmap (fn [work]
                  (->> work
                       (mapcat (comp doall
