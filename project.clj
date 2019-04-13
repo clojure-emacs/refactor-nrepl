@@ -38,10 +38,12 @@
                                    [org.clojure/clojurescript "1.10.520"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :global-vars {*warn-on-reflection* true}
-                   :dependencies [[org.clojure/clojurescript "1.9.946"]
+                   :dependencies [[org.clojure/clojurescript "1.10.520"]
+                                  [org.clojure/clojure "1.10.0"]
                                   [cider/piggieback "0.4.0"]
                                   [leiningen-core "2.9.0"]
-                                  [commons-io/commons-io "2.6"]]
+                                  [commons-io/commons-io "2.6"]
+                                  [javax.xml.bind/jaxb-api "2.3.1"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
