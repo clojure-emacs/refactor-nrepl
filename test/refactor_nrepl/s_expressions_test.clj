@@ -11,11 +11,11 @@
   ;; some other stuff
   (foobar baz)")
 (def binding-location [3 8])
-(def funcall-location [6 8])
 (def set-location [7 35])
 (def map-location [7 28])
 (def weird-location [1 5])
 (def println-location [5 8])
+(def when-not-location [10 9])
 
 (t/deftest get-enclosing-sexp-test
   (t/is (= "[some :bindings
@@ -28,5 +28,8 @@
   (t/is (=  "#{more}" (apply sut/get-enclosing-sexp file-content set-location)))
   (t/is (=  "{:qux [#{more}]}" (apply sut/get-enclosing-sexp file-content map-location)))
   (t/is (=  nil (apply sut/get-enclosing-sexp weird-file-content weird-location)))
+  (t/is (= "(when-not (= true true)
+    (= 5 (* 2 2)))"
+           (apply sut/get-enclosing-sexp file-content when-not-location)))
   (t/is (= nil (sut/get-first-sexp weird-file-content)))
   (t/is (=  "#{foo bar baz}" (sut/get-first-sexp file-content-with-set))))

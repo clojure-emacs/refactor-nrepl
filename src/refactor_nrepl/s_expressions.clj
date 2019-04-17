@@ -30,24 +30,29 @@
                        (zip/string zloc)))
           (take-while (complement nil?) (iterate zip/left zloc)))))
 
+(defn- node-at-loc?
+  "True if node encloses point defined by `loc-line` and `loc-column`."
+  [zloc ^long loc-line ^long loc-column]
+  (let [[line end-line column end-column] (->> (zip/node zloc)
+                                               meta
+                                               ((juxt :row :end-row :col :end-col))
+                                               (map (comp dec long)))]
+    (or (< line loc-line end-line)
+        (and (or (= line loc-line)
+                 (= end-line loc-line))
+             (<= column loc-column end-column)))))
+
 (defn- zip-to
-  "Move the zipper to the node at line and col"
-  [zipper ^long line ^long col]
-  (let [distance (fn [zloc]
-                   (let [node (zip/node zloc)
-                         line-beg (dec (long (:row (meta node))))
-                         line-end (dec (long (:end-row (meta node))))
-                         col-beg (dec (long (:col (meta node))))
-                         col-end (dec (long (:end-col (meta node))))]
-                     (+ (* 1000 (Math/abs (- line line-beg)))
-                        (* 100 (Math/abs (- line line-end)))
-                        (* 10 (Math/abs (- col col-beg)))
-                        (Math/abs (- col col-end)))))]
-    (reduce (fn [best zloc] (if (< (long (distance zloc)) (long (distance best)))
-                              zloc
-                              best))
-            zipper
-            (all-zlocs zipper))))
+  "Move the zipper to the node at `loc-line` and `loc-col`.
+
+  Implementation uses `all-zlocs` and exploits the fact that it generates
+  a seq of nodes in depth-first order."
+  [zipper ^long loc-line ^long loc-column]
+  (reduce
+   (fn [node-at-loc zloc]
+     (if (node-at-loc? zloc loc-line loc-column) zloc node-at-loc))
+   zipper
+   (all-zlocs zipper)))
 
 (defn get-enclosing-sexp
   "Extracts the sexp enclosing point at LINE and COLUMN in FILE-CONTENT,

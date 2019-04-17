@@ -6,3 +6,7 @@
     (println #{some}
              ;; unhelpful comment )
              (prn {"foo" {:qux [#{more}]}}))))
+
+(defn bar []
+  (when-not (= true true)
+    (= 5 (* 2 2))))
