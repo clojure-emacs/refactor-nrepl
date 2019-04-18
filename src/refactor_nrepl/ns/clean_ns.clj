@@ -20,7 +20,8 @@
              [ns-parser :as ns-parser]
              [prune-dependencies :refer [prune-dependencies]]
              [rebuild :refer [rebuild-ns-form]]]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.java.io :as io]))
 
 (defn- assert-no-exclude-clause
   [use-form]
@@ -35,20 +36,22 @@
   (assert-no-exclude-clause (core/get-ns-component ns-form :use))
   ns-form)
 
-(defn clean-ns [{:keys [path]}]
+(defn clean-ns [{:keys [path relative-path]}]
   {:pre [(seq path) (string? path) (core/source-file? path)]}
-  ;; Prefix notation not supported in cljs.
-  ;; We also turn it off for cljc for reasons of symmetry
-  (config/with-config {:prefix-rewriting (if (or (core/cljs-file? path)
-                                                 (core/cljc-file? path))
-                                           false
-                                           (:prefix-rewriting config/*config*))}
-    (let [ns-form (validate (core/read-ns-form-with-meta path))
-          deps-preprocessor (if (get config/*config* :prune-ns-form)
-                              #(prune-dependencies % path)
-                              identity)
-          new-ns-form (-> (ns-parser/parse-ns path)
-                          deps-preprocessor
-                          (rebuild-ns-form ns-form))]
-      (when-not (= ns-form new-ns-form)
-        new-ns-form))))
+  ;; Try first the absolute, then the relative path
+  (let [path (first (filter #(some-> % io/file .exists) [path relative-path]))]
+    ;; Prefix notation not supported in cljs.
+    ;; We also turn it off for cljc for reasons of symmetry
+    (config/with-config {:prefix-rewriting (if (or (core/cljs-file? path)
+                                                   (core/cljc-file? path))
+                                             false
+                                             (:prefix-rewriting config/*config*))}
+      (let [ns-form (validate (core/read-ns-form-with-meta path))
+            deps-preprocessor (if (get config/*config* :prune-ns-form)
+                                #(prune-dependencies % path)
+                                identity)
+            new-ns-form (-> (ns-parser/parse-ns path)
+                            deps-preprocessor
+                            (rebuild-ns-form ns-form))]
+        (when-not (= ns-form new-ns-form)
+          new-ns-form)))))

@@ -10,7 +10,8 @@
   (.getAbsolutePath (File. path)))
 
 (defn- clean-msg [path]
-  {:path (absolute-path path)})
+  {:path (absolute-path path)
+   :relative-path path})
 
 (def ns1 (clean-msg "test/resources/ns1.clj"))
 (def ns1-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/ns1_cleaned.clj")))
@@ -47,6 +48,9 @@
 (def ns-with-inner-classes (clean-msg "test/resources/ns_with_inner_classes.clj"))
 
 (def ns-using-dollar (clean-msg "test/resources/ns_using_dollar.clj"))
+
+(def ns1-relative-path {:path "I do not exist"
+                        :relative-path "test/resources/ns1.clj"})
 
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
@@ -224,3 +228,7 @@
 (deftest does-not-break-import-for-inner-class
   (let [cleaned (pprint-ns (clean-ns ns-with-inner-classes))]
     (is (re-find #":import.*Line2D\$Double" cleaned))))
+
+(deftest fallback-to-relative-path
+  (is (= (pprint-ns (clean-ns ns1))
+         (pprint-ns (clean-ns ns1-relative-path)))))
