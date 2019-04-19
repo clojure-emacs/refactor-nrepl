@@ -3,7 +3,8 @@
             [refactor-nrepl.config :as config]
             [refactor-nrepl.core :as core]
             [refactor-nrepl.ns.clean-ns :refer [clean-ns]]
-            [refactor-nrepl.ns.pprint :refer [pprint-ns]])
+            [refactor-nrepl.ns.pprint :refer [pprint-ns]]
+            [clojure.string :as str])
   (:import java.io.File))
 
 (defn- absolute-path [^String path]
@@ -49,7 +50,7 @@
 
 (def ns-using-dollar (clean-msg "test/resources/ns_using_dollar.clj"))
 
-(def ns1-relative-path {:path "I do not exist"
+(def ns1-relative-path {:path "I do not exist.clj"
                         :relative-path "test/resources/ns1.clj"})
 
 (deftest combines-requires
@@ -59,7 +60,7 @@
 
 (deftest meta-preserved
   (let [cleaned (pprint-ns (clean-ns ns2-meta))]
-    (is (.contains cleaned "^{:author \"Trurl and Klapaucius\"
+    (is (str/includes? cleaned "^{:author \"Trurl and Klapaucius\"
       :doc \"test ns with meta\"}"))))
 
 (deftest rewrites-use-to-require

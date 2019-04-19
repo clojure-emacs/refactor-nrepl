@@ -37,9 +37,10 @@
   ns-form)
 
 (defn clean-ns [{:keys [path relative-path]}]
-  {:pre [(seq path) (string? path) (core/source-file? path)]}
+  {:pre [(seq path) (string? path)]}
   ;; Try first the absolute, then the relative path
   (let [path (first (filter #(some-> % io/file .exists) [path relative-path]))]
+    (assert (core/source-file? path))
     ;; Prefix notation not supported in cljs.
     ;; We also turn it off for cljc for reasons of symmetry
     (config/with-config {:prefix-rewriting (if (or (core/cljs-file? path)

@@ -156,6 +156,6 @@
                       (form-is? form :import) (pprint-import-form form)
                       :else (pprint form))))
             forms)))
-        (.replaceAll "\r" "")
+        (str/replace "\r" "")
         fmt/reformat-string
-        (.replaceAll (Pattern/quote "#? @") "#?@"))))
+        (str/replace (Pattern/quote "#? @") "#?@"))))
