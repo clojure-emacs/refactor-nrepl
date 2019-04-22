@@ -36,10 +36,14 @@
   (assert-no-exclude-clause (core/get-ns-component ns-form :use))
   ns-form)
 
+(defn- find
+  "Find the first element in coll that satisfies pred?"
+  [pred? coll]
+  (reduce (fn [_ x] (when (pred? x) (reduced x))) nil coll))
+
 (defn clean-ns [{:keys [path relative-path]}]
-  {:pre [(seq path) (string? path)]}
-  ;; Try first the absolute, then the relative path
-  (let [path (first (filter #(some-> % io/file .exists) [path relative-path]))]
+  (let [path (find #(and % (.exists (io/file %)))
+                   [path relative-path])]
     (assert (core/source-file? path))
     ;; Prefix notation not supported in cljs.
     ;; We also turn it off for cljc for reasons of symmetry

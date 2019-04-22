@@ -161,7 +161,7 @@ The `clean-ns` op will perform the following cleanups on an ns form:
 * Use the shorthand version of metadata found if possible, and sort it
   alphabetically
 
-The `clean-ns` requires a `path` which is the path to the file containing the `ns` to be operated upon.
+The `clean-ns` requires a `path` which must be the absolute path to the file containing the `ns` to be operated upon. A client should also pass in a `relative-path`, which is the path relative to the project root, and which is used as a fallback when the `path` does not exist. (see [clj-refactor.el #380](https://github.com/clojure-emacs/clj-refactor.el/issues/380)).
 
 The return value, `ns` is the entire `(ns ..)` form in prestine condition, or `nil` if nothing was done (so the client doesn't update the timestamp on files when nothing actually needs doing).
 

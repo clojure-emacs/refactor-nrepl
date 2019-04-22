@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#251](https://github.com/clojure-emacs/refactor-nrepl/pull/251) `clean-ns` support extra message key `relative-path`, which will be used if `path` does not exist.
+
 ## 2.4.0
 
 * [#231](https://github.com/clojure-emacs/refactor-nrepl/issues/231) hotload-dependencies temporarily disabled due to java 10 issues.
