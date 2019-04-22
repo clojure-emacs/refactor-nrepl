@@ -36,13 +36,13 @@
   (assert-no-exclude-clause (core/get-ns-component ns-form :use))
   ns-form)
 
-(defn- find
+(defn- seek
   "Find the first element in coll that satisfies pred?"
   [pred? coll]
   (reduce (fn [_ x] (when (pred? x) (reduced x))) nil coll))
 
 (defn clean-ns [{:keys [path relative-path]}]
-  (let [path (find #(and % (.exists (io/file %)))
+  (let [path (seek #(and % (.exists (io/file %)))
                    [path relative-path])]
     (assert (core/source-file? path))
     ;; Prefix notation not supported in cljs.
