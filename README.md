@@ -316,6 +316,10 @@ contains among other things a full stacktrace.
 
 [mranderson][] is used to avoid classpath collisions.
 
+First make sure you have Leiningen 2.9.1 or later, `lein upgrade` if necessary.
+
+`lein version`
+
 To work with `mranderson` the first thing to do is:
 
 `lein do clean, inline-deps`
