@@ -234,9 +234,8 @@
           transport (connect :port 7777)]
       (is (= (find-unbound :transport transport :file five-file :line 12 :column 6)
              '(s)))
-      ;; maybe fails because of a bug in `refactor-nrepl.s-expressions/get-enclosing-sexp`?! which is covered up by the fact that we can prefilter AST nodes with `nodes-at-loc` for clj but for cljs?!
-      ;; (is (= (find-unbound :transport transport :file five-file :line 13 :column 13)
-      ;;        '(s sep)))
+      (is (= (find-unbound :transport transport :file five-file :line 13 :column 13)
+             '(s sep)))
 
       (is (= (find-unbound :transport transport :file five-file :line 20 :column 16)
              '(p)))
