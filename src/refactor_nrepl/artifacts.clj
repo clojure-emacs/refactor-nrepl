@@ -39,7 +39,11 @@
          java.net.URL.
          io/reader
          line-seq
-         (map edn/read-string))
+         (keep #(try
+                  (edn/read-string %)
+                  (catch Exception _
+                    ;; Ignore artifact if not readable. See #255
+                    nil))))
     (catch Exception _
       ;; In the event clojars is down just return an empty vector. See #136.
       [])))
