@@ -31,6 +31,14 @@
         (neg? (- millis-per-day (- (.getTime (java.util.Date.)) last-modified)))
         true)))
 
+(defn- edn-read-or-nil
+  "Read a form `s`. Return nil if it cannot be parsed."
+  [s]
+  (try (edn/read-string s)
+       (catch Exception _
+         ;; Ignore artifact if not readable. See #255
+         nil)))
+
 (defn get-clojars-artifacts!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
@@ -39,7 +47,7 @@
          java.net.URL.
          io/reader
          line-seq
-         (map edn/read-string))
+         (keep edn-read-or-nil))
     (catch Exception _
       ;; In the event clojars is down just return an empty vector. See #136.
       [])))
