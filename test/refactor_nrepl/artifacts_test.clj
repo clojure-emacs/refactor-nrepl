@@ -46,3 +46,10 @@
       (reset! artifacts/artifacts {"org.clojure/clojure" clojure-versions})
       (is (= sorted-clojure-versions
              (artifacts/artifact-versions {:artifact "org.clojure/clojure"}))))))
+
+(deftest ignores-invalid-artifact-forms
+  (let [bad-form "[bad/1.1 \"funky\"]"
+        good-form "[foo/bar \"1.1\"]"]
+    (is (nil? (#'artifacts/edn-read-or-nil bad-form)))
+    (is (= 'foo/bar (first (#'artifacts/edn-read-or-nil good-form))))
+    (is (= "1.1" (second (#'artifacts/edn-read-or-nil good-form))))))
