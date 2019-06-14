@@ -15,7 +15,8 @@
   * Returns nil when nothing is changed, so the client knows not to do anything."
   (:require [refactor-nrepl
              [config :as config]
-             [core :as core]]
+             [core :as core]
+             [tramp :as tramp]]
             [refactor-nrepl.ns
              [ns-parser :as ns-parser]
              [prune-dependencies :refer [prune-dependencies]]
@@ -40,7 +41,8 @@
   (let [path (some (fn [p]
                      (when (and p (.exists (io/file p)))
                        p))
-                   [path relative-path])]
+                   [(tramp/remove-tramp-params path)
+                    (tramp/remove-tramp-params relative-path)])]
     (assert (core/source-file? path))
     ;; Prefix notation not supported in cljs.
     ;; We also turn it off for cljc for reasons of symmetry

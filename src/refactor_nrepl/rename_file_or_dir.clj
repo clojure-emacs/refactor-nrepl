@@ -3,7 +3,8 @@
             [me.raynes.fs :as fs]
             [refactor-nrepl
              [core :as core]
-             [util :as util]]
+             [util :as util]
+             [tramp :as tramp]]
             [refactor-nrepl.ns
              [ns-parser :as ns-parser]
              [pprint :refer [pprint-ns]]
@@ -272,6 +273,7 @@
 
   Returns a list of all files that were affected."
   [old-path new-path]
-  (assert-friendly old-path new-path)
-  (binding [*print-length* nil]
-    (-rename-file-or-dir old-path new-path)))
+  (let [[old-path new-path] (map tramp/remove-tramp-params [old-path new-path])]
+    (assert-friendly old-path new-path)
+    (binding [*print-length* nil]
+      (-rename-file-or-dir old-path new-path))))

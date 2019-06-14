@@ -1,6 +1,8 @@
 (ns refactor-nrepl.find.util
   (:require [clojure.java.io :as io]
-            [refactor-nrepl.core :as core]))
+            [refactor-nrepl
+             [core :as core]
+             [tramp :as tramp]]))
 
 (defn spurious?
   "True if the occurrence doesn't exist at the given coordinates."
@@ -9,6 +11,7 @@
    ;; the form not the first mention of the symbol being defined
    (when-not (and match (.startsWith match "(def"))
      (let [thing-in-file (->> file
+                              tramp/remove-tramp-params
                               io/reader
                               line-seq
                               (drop (dec line-beg))

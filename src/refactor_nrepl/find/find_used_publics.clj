@@ -5,7 +5,9 @@
             [refactor-nrepl.analyzer :as ana]
             [refactor-nrepl.find.find-macros :as macros]
             [refactor-nrepl.find.util :as find-util]
-            [refactor-nrepl.core :as core]))
+            [refactor-nrepl
+             [core :as core]
+             [tramp :as tramp]]))
 
 (defn- ns-used-in-node?
   [used-ns ast-node]
@@ -65,7 +67,9 @@
 
   Looks for used symbol types: vars, protocols and macros."
   [{:keys [file used-ns]}]
-  (let [ast-nodes (->> (slurp file)
+  (let [ast-nodes (->> file
+                       tramp/remove-tramp-params
+                       slurp
                        ana/ns-ast
                        rest
                        (mapcat nodes))

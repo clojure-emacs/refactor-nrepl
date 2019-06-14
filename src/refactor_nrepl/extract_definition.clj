@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [refactor-nrepl
              [core :refer [suffix]]
+             [tramp :as tramp]
              [s-expressions :as sexp]]
             [refactor-nrepl.find.find-symbol :refer [find-symbol]]
             [rewrite-clj.zip :as zip])
@@ -42,7 +43,7 @@
 
 (defn- -extract-definition
   [{:keys [match file ^long line-beg ^long col-beg name]}]
-  (let [literal-sexp (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
+  (let [literal-sexp (sexp/get-enclosing-sexp (slurp (tramp/remove-tramp-params file)) (dec line-beg)
                                               col-beg)
         form (read-string literal-sexp)]
     (.replaceAll
@@ -68,7 +69,7 @@
 (defn- def?
   "Is the OCCURRENCE the defining form?"
   [{:keys [file name ^long col-beg ^long line-beg] :as occurrence}]
-  (let [form (read-string (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
+  (let [form (read-string (sexp/get-enclosing-sexp (slurp (tramp/remove-tramp-params file)) (dec line-beg)
                                                    col-beg))
         name (symbol (suffix (read-string name)))]
     (if (def-form? form)

@@ -4,7 +4,8 @@
             [refactor-nrepl
              [core :as core]
              [s-expressions :as sexp]
-             [util :as util]]
+             [util :as util]
+             [tramp :as tramp]]
             [refactor-nrepl.find.bindings :as bindings]
             [refactor-nrepl.ns
              [ns-parser :as ns-parser]
@@ -235,7 +236,7 @@
            set
            (map #(assoc {} :name %))
            seq
-           (#(find-usages-in-file % (io/file file)))
+           (#(find-usages-in-file % (io/file (tramp/remove-tramp-params file))))
            (map #(select-keys % [:name :line-beg :line-end :col-beg :col-end :file]))))
 
 (defn warm-macro-occurrences-cache []

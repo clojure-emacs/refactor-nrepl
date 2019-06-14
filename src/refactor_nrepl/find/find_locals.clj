@@ -4,14 +4,15 @@
             [refactor-nrepl
              [analyzer :as ana]
              [s-expressions :as sexp]
-             [core :as core]]))
+             [core :as core]
+             [tramp :as tramp]]))
 
 (defn find-used-locals  [{:keys [file ^long line ^long column]}]
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
   (core/throw-unless-clj-file file)
-  (let [content (slurp file)
+  (let [content (slurp (tramp/remove-tramp-params file))
         ast (ana/ns-ast content)
         sexp (sexp/get-enclosing-sexp content (dec line) (dec column))
         selected-sexp-node (->> ast

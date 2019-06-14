@@ -7,6 +7,7 @@
             [refactor-nrepl
              [analyzer :as ana]
              [core :as core]
+             [tramp :as tramp]
              [s-expressions :as sexp]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]
             [refactor-nrepl.find.util :as find-util]
@@ -103,7 +104,7 @@
          (str/join "\n")
          str/trim)))
 
-(defn- find-symbol-in-file [fully-qualified-name ignore-errors ^File file]
+(defn- find-symbol-in-file [fully-qualified-name ignore-errors tramp-params ^File file]
   (let [file-content (slurp file)
         locs (try (->> (ana/ns-ast file-content)
                        (find-symbol-in-ast fully-qualified-name)
@@ -123,7 +124,7 @@
                                 :col-end end-column})))))
         gather (fn [info]
                  (merge info
-                        {:file (.getCanonicalPath file)
+                        {:file (tramp/with-tramp-params tramp-params (.getCanonicalPath file))
                          :name fully-qualified-name
                          :match (match file-content
                                   (:line-beg info)
@@ -131,13 +132,14 @@
     (map gather locs)))
 
 (defn- find-global-symbol [file ns var-name ignore-errors]
-  (let [namespace (or ns (core/ns-from-string (slurp file)))
+  (let [tramp-params (tramp/extract-tramp-params file)
+        namespace (or ns (core/ns-from-string (slurp (:path tramp-params))))
         fully-qualified-name (if (= namespace "clojure.core")
                                var-name
                                (str/join "/" [namespace var-name]))]
     (->> (core/dirs-on-classpath)
          (mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
-         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
+         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors tramp-params)))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [^long line-beg ^long col-beg]}]
@@ -197,7 +199,8 @@
   {:pre [(number? line)
          (number? column)
          (not-empty file)]}
-  (let [file-content (slurp file)
+  (let [tramp-params (tramp/extract-tramp-params file)
+        file-content (slurp (:path tramp-params))
         ast (ana/ns-ast file-content)]
     (when-let [form-index (ana/top-level-form-index line column ast)]
       (let [top-level-form-ast (nth ast form-index)
@@ -212,7 +215,7 @@
             local-occurrences
             (map #(merge %
                          {:name var-name
-                          :file (.getCanonicalPath (java.io.File. file))
+                          :file (tramp/with-tramp-params tramp-params (.getCanonicalPath (java.io.File. (:path tramp-params))))
                           :match (match file-content
                                    (:line-beg %)
                                    (:line-end %))})
