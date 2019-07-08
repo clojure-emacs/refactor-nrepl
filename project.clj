@@ -7,7 +7,7 @@
                  ^:inline-dep [http-kit "2.3.0"]
                  ^:inline-dep [cheshire "5.8.1"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "0.7.2"]
-                 ^:inline-dep [org.clojure/tools.namespace "0.3.0-alpha3" :exclusions [org.clojure/tools.reader]]
+                 ^:inline-dep [org.clojure/tools.namespace "0.3.0" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.2"]
                  ^:inline-dep [cider/orchard "0.4.0"]
                  ^:inline-dep [cljfmt "0.6.4"]
