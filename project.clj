@@ -39,7 +39,7 @@
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.946"]
-                                  [cider/piggieback "0.4.0"]
+                                  [cider/piggieback "0.4.1"]
                                   [leiningen-core "2.9.0"]
                                   [commons-io/commons-io "2.6"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
