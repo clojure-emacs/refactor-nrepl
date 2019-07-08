@@ -34,7 +34,7 @@
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [org.clojure/clojurescript "1.9.946"]
                                   [javax.xml.bind/jaxb-api "2.3.1"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.0"]
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]
                                    [org.clojure/clojurescript "1.10.520"]]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :global-vars {*warn-on-reflection* true}
