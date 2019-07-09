@@ -43,8 +43,8 @@
 (defn- ns-publics-cljs [env ns-name]
   (->> ns-name (cljs-ana/public-vars env) keys))
 
-(defn- ns-public-macros-cljs [ns-name]
-  (->> ns-name cljs-ana/public-macros keys))
+(defn- ns-public-macros-cljs [env ns-name]
+  (->> ns-name (cljs-ana/public-macros env) keys))
 
 (defn- cljs-vars-to-namespaces [env]
   (let [all-ns (remove (partial = 'cljs.core) (keys (cljs-ana/all-ns env)))
@@ -57,7 +57,7 @@
         ns-by-macros (->> all-ns
                           (mapcat (fn [ns]
                                     (map (fn [sym] {sym (list {:name ns :type :macro})})
-                                         (ns-public-macros-cljs ns))))
+                                         (ns-public-macros-cljs env ns))))
                           (remove empty?)
                           (apply merge-with into))]
     (merge-with into ns-by-vars ns-by-macros)))
