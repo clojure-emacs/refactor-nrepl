@@ -13,7 +13,8 @@
            java.util.zip.GZIPInputStream
            java.util.jar.JarFile))
 
-(def artifacts-file ".artifacts-cache")
+(def artifacts-file (str (System/getProperty "java.io.tmpdir")
+                         "/refactor-nrepl-artifacts-cache"))
 
 (defn get-last-modified-from-file
   "Returns last modified time in milliseconds or nil if file does not exist."
