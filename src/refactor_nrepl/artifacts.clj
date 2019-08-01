@@ -40,8 +40,6 @@
          ;; Ignore artifact if not readable. See #255
          nil)))
 
-(def stuff 33)
-
 (defn get-clojars-artifacts!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
@@ -106,7 +104,8 @@
 (defn artifact-list
   [{:keys [force]}]
   (when (or (= force "true") (stale-cache?))
-    (update-artifact-cache!))
+    (update-artifact-cache!)
+    (spit ".artifacts-cache" @artifacts))
   (->> @artifacts keys list*))
 
 (defn artifact-versions
