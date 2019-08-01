@@ -22,7 +22,9 @@
     (if (zero? lm) nil lm)))
 
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
-(defonce artifacts (atom (slurp artifacts-file)
+(defonce artifacts (atom (if (.exists (io/as-file artifacts-file))
+                           (-> artifacts-file slurp read-string)
+                           {})
                          :meta {:last-modified
                                 (get-last-modified-from-file artifacts-file)}))
 (def millis-per-day (* 24 60 60 1000))
@@ -116,8 +118,7 @@
 (defn artifact-list
   [{:keys [force]}]
   (when (or (= force "true") (stale-cache?))
-    (update-artifact-cache!)
-    (spit artifacts-file @artifacts))
+    (update-artifact-cache!))
   (->> @artifacts keys list*))
 
 (defn artifact-versions
