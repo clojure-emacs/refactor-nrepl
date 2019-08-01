@@ -13,8 +13,18 @@
            java.util.zip.GZIPInputStream
            java.util.jar.JarFile))
 
+(def artifacts-file ".artifacts-cache")
+
+(defn get-last-modified-from-file
+  "Returns last modified time in milliseconds or nil if file does not exist."
+  [file]
+  (let [lm (.lastModified (io/file file))]
+    (if (zero? lm) nil lm)))
+
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
-(defonce artifacts (atom {} :meta {:last-modified nil}))
+(defonce artifacts (atom (slurp artifacts-file)
+                         :meta {:last-modified
+                                (get-last-modified-from-file artifacts-file)}))
 (def millis-per-day (* 24 60 60 1000))
 
 (defn- get-proxy-opts
@@ -28,7 +38,7 @@
 (defn- stale-cache?
   []
   (or (empty? @artifacts)
-      (if-let [last-modified (some-> artifacts meta :last-modified .getTime)]
+      (if-let [last-modified (some-> artifacts meta :last-modified)]
         (neg? (- millis-per-day (- (.getTime (java.util.Date.)) last-modified)))
         true)))
 
@@ -99,13 +109,15 @@
   (let [clojars-artifacts (future (get-artifacts-from-clojars!))
         maven-artifacts (future (get-artifacts-from-mvn-central!))]
     (reset! artifacts (into @clojars-artifacts @maven-artifacts))
-    (alter-meta! artifacts update-in [:last-modified] (constantly (java.util.Date.)))))
+    (spit artifacts-file @artifacts)
+    (alter-meta! artifacts update-in [:last-modified]
+                 (constantly (get-last-modified-from-file artifacts-file)))))
 
 (defn artifact-list
   [{:keys [force]}]
   (when (or (= force "true") (stale-cache?))
     (update-artifact-cache!)
-    (spit ".artifacts-cache" @artifacts))
+    (spit artifacts-file @artifacts))
   (->> @artifacts keys list*))
 
 (defn artifact-versions
