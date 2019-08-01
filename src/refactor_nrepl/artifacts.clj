@@ -10,6 +10,7 @@
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound-regrow]
             [version-clj.core :as versions])
   (:import java.util.Date
+           java.util.zip.GZIPInputStream
            java.util.jar.JarFile))
 
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
@@ -39,12 +40,15 @@
          ;; Ignore artifact if not readable. See #255
          nil)))
 
+(def stuff 33)
+
 (defn get-clojars-artifacts!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
   (try
-    (->> "https://clojars.org/repo/all-jars.clj"
-         java.net.URL.
+    (->> "https://clojars.org/repo/all-jars.clj.gz"
+         io/input-stream
+         GZIPInputStream.
          io/reader
          line-seq
          (keep edn-read-or-nil))
