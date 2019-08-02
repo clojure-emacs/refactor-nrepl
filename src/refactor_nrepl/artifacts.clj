@@ -24,7 +24,7 @@
 
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
 (defonce artifacts (atom (if (.exists (io/as-file artifacts-file))
-                           (->> artifacts-file slurp read-string (into (sorted-map)))
+                           (->> artifacts-file slurp edn/read-string (into (sorted-map)))
                            {})
                          :meta {:last-modified
                                 (get-last-modified-from-file artifacts-file)}))
