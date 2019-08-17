@@ -15,6 +15,8 @@
                  ^:inline-dep [rewrite-clj "0.6.1"]
                  ^:inline-dep [cljs-tooling "0.3.1"]
                  ^:inline-dep [version-clj "0.1.2"]]
+  :exclusions [org.clojure/clojure] ; see versions matrix below
+
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
                                     :username :env/clojars_username
                                     :password :env/clojars_password
@@ -24,10 +26,10 @@
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
-  :profiles {:provided {:dependencies [[cider/cider-nrepl "0.20.0"]
+
+  :profiles {;; Clojure versions matrix
+             :provided {:dependencies [[cider/cider-nrepl "0.20.0"]
                                        [org.clojure/clojure "1.8.0"]]}
-             :test {:dependencies [[print-foo "1.0.2"]]
-                    :src-paths ["test/resources"]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [org.clojure/clojurescript "1.8.51"]
                                   [javax.xml.bind/jaxb-api "2.3.1"]]}
@@ -36,6 +38,9 @@
                                   [javax.xml.bind/jaxb-api "2.3.1"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]
                                    [org.clojure/clojurescript "1.10.520"]]}
+
+             :test {:dependencies [[print-foo "1.0.2"]]
+                    :src-paths ["test/resources"]}
              :dev {:plugins [[jonase/eastwood "0.2.0"]]
                    :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.946"]
