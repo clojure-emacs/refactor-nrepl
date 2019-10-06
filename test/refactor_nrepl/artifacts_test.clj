@@ -5,22 +5,24 @@
             [clojure.java.io :as io]
             [refactor-nrepl.artifacts :as artifacts]))
 
-(def clojure-versions (-> (io/resource "resources/clojure-versions.edn")
-                          slurp
-                          edn/read-string))
+(defn- resource [filename]
+  (edn/read-string (slurp (io/resource filename))))
+
+(def clojure-versions (resource "clojure-versions.edn"))
+(def aero-versions (resource "aero-versions.edn"))
+
 (def sorted-clojure-versions
   (vector "1.7.0-alpha1"
           "1.6.0" "1.6.0-RC1" "1.6.0-beta1" "1.6.0-alpha1"
           "1.5.1" "1.5.0"))
 (def clojure-artifacts ["clojure"])
-(def clojars-artifacts (-> (io/resource "resources/clojars-artifacts.edn")
-                           slurp
-                           edn/read-string))
+(def clojars-artifacts (resource "clojars-artifacts.edn"))
 
 (deftest creates-a-map-of-artifacts
   (reset! artifacts/artifacts {})
   (with-redefs
    [artifacts/get-clojars-artifacts! (constantly clojars-artifacts)
+    artifacts/get-clojars-versions! (constantly aero-versions)
     artifacts/get-mvn-artifacts! (constantly clojure-artifacts)
     artifacts/get-mvn-versions! (constantly clojure-versions)]
 
@@ -37,6 +39,11 @@
     (testing "Fetches versions of maven dependency when requested"
       (is (= (count (artifacts/artifact-versions {:artifact "org.clojure/clojure"}))
              (count clojure-versions))))
+
+    (testing "Fetches version from Clojars when Maven has no results"
+      (with-redefs [artifacts/get-mvn-versions! (constantly (list))]
+        (is (= (set aero-versions)
+               (set (artifacts/artifact-versions {:artifact "aero"}))))))
 
     (testing "Contains artifacts from clojars"
       (is (contains? @artifacts/artifacts "alembic"))

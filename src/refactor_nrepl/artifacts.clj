@@ -101,6 +101,14 @@
                    (map #(vector (str group-id "/" %) nil))))
             group-ids)))
 
+(defn get-clojars-versions!
+  "Fetches all the versions of particular artifact from Clojars."
+  [for-artifact]
+  (let [{:keys [body status]} @(http/get (str "https://clojars.org/api/artifacts/"
+                                              for-artifact))]
+    (when (= 200 status)
+      (map :version (:recent_versions (json/parse-string body true))))))
+
 (defn- get-artifacts-from-clojars!
   []
   (reduce #(update %1 (str (first %2)) conj (second %2))
@@ -125,7 +133,8 @@
 (defn artifact-versions
   [{:keys [artifact]}]
   (->> (or (get @artifacts artifact)
-           (get-mvn-versions! artifact))
+           (seq (get-mvn-versions! artifact))
+           (get-clojars-versions! artifact))
        distinct
        versions/version-sort
        reverse
