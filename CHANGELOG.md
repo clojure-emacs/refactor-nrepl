@@ -5,6 +5,7 @@
 * [#251](https://github.com/clojure-emacs/refactor-nrepl/pull/251) `clean-ns` support extra message key `relative-path`, which will be used if `path` does not exist.
 * [#256](https://github.com/clojure-emacs/refactor-nrepl/pull/256) ignore malformed artifact coordinates when fetching from Clojars.
 * [#264](https://github.com/clojure-emacs/refactor-nrepl/pull/264) less bandwidth used to fetch artifacts from Clojars
+* [#268](https://github.com/clojure-emacs/refactor-nrepl/pull/268) added support for fetching artifact versions from Clojars
 
 ## 2.4.0
 
