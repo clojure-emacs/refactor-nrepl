@@ -79,8 +79,8 @@
 
 (defn- get-mvn-versions!
   "Fetches all the versions of particular artifact from maven repository."
-  [for-artifact]
-  (let [[group-id artifact] (str/split for-artifact #"/")
+  [artifact]
+  (let [[group-id artifact] (str/split artifact #"/")
         search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
         {:keys [_ _ body _]} @(http/get (str search-prefix
                                              group-id
@@ -103,9 +103,9 @@
 
 (defn get-clojars-versions!
   "Fetches all the versions of particular artifact from Clojars."
-  [for-artifact]
+  [artifact]
   (let [{:keys [body status]} @(http/get (str "https://clojars.org/api/artifacts/"
-                                              for-artifact))]
+                                              artifact))]
     (when (= 200 status)
       (map :version (:recent_versions (json/parse-string body true))))))
 
@@ -131,6 +131,9 @@
   (->> @artifacts keys list*))
 
 (defn artifact-versions
+  "Returns a sorted list of artifact version strings. The list can either come
+  from the artifacts cache, the maven search api or the clojars search api in
+  that order."
   [{:keys [artifact]}]
   (->> (or (get @artifacts artifact)
            (seq (get-mvn-versions! artifact))
