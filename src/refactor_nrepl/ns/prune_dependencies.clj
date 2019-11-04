@@ -87,6 +87,7 @@
 (defn- class-in-use?
   [symbols-in-file c]
   (or
+   (:side-effects (meta c))
    ;; fully.qualified.Class
    (symbols-in-file c)
    ;; OnlyClassName, Class$Enum/Value or Class$Innerclass$InnerInnerClass
@@ -116,10 +117,11 @@
 ;; are side-effecting at load but might look unused and otherwise be
 ;; pruned.
 (defn- libspec-should-never-be-pruned? [libspec]
-  (let [ns-name (str (:ns libspec))]
-    (some (fn [^String pattern]
-            (re-find (re-pattern pattern) ns-name))
-          (:libspec-whitelist config/*config*))))
+  (or (:side-effects (meta (:ns libspec)))
+      (let [ns-name (str (:ns libspec))]
+        (some (fn [^String pattern]
+                (re-find (re-pattern pattern) ns-name))
+              (:libspec-whitelist config/*config*)))))
 
 (defn- prune-libspec [symbols-in-file current-ns libspec]
   (if (libspec-should-never-be-pruned? libspec)

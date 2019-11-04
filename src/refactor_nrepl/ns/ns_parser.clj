@@ -27,18 +27,17 @@
 (defn- expand-prefix-specs
   "Eliminate prefix lists."
   [libspecs]
-  (let [prepend-prefix (fn add-prefix [prefix libspec]
-                         (if (sequential? libspec)
-                           (apply vector
-                                  (symbol (str prefix "." (first libspec)))
-                                  (rest libspec))
-                           (symbol (str prefix "." libspec))))
-        normalize-libspec-vector (fn [libspec]
-                                   (if (core/prefix-form? libspec)
-                                     (let [prefix (first libspec)]
-                                       (map (partial prepend-prefix prefix)
-                                            (rest libspec)))
-                                     [libspec]))]
+  (letfn [(add-prefix [prefix libspec]
+            (if (sequential? libspec)
+              (into [(add-prefix prefix (first libspec))] (rest libspec))
+              (with-meta (symbol (str prefix "." libspec))
+                (merge (meta prefix) (meta libspec)))))
+          (normalize-libspec-vector [libspec]
+            (if (core/prefix-form? libspec)
+              (let [prefix (vary-meta (first libspec) (partial merge (meta libspec)))]
+                (map (partial add-prefix prefix)
+                     (rest libspec)))
+              [libspec]))]
     (mapcat normalize-libspec-vector libspecs)))
 
 (defn- use-to-refer-all [use-spec]
@@ -80,9 +79,10 @@
 (defn get-imports [ns-form]
   (let [expand-prefix-specs (fn [import-spec]
                               (if (sequential? import-spec)
-                                (let [package (first import-spec)]
+                                (let [package (vary-meta (first import-spec) (partial merge (meta import-spec)))]
                                   (map (fn [class-name]
-                                         (symbol (str package "." class-name)))
+                                         (with-meta (symbol (str package "." class-name))
+                                           (merge (meta package) (meta class-name))))
                                        (rest import-spec)))
                                 import-spec))]
     (some->> (core/get-ns-component ns-form :import)

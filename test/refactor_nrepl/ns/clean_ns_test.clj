@@ -25,6 +25,8 @@
 (def ns-with-rename (clean-msg "test/resources/ns_with_rename.clj"))
 (def ns-with-rename-cleaned (core/read-ns-form-with-meta "test/resources/ns_with_rename_cleaned.clj"))
 (def ns-with-unused-deps (clean-msg "test/resources/unused_deps.clj"))
+(def ns-with-whitelisted-deps (clean-msg "test/resources/ns_with_whitelisted_deps.clj"))
+(def ns-with-whitelisted-deps-cleaned (core/read-ns-form-with-meta "test/resources/ns_with_whitelisted_deps_cleaned.clj"))
 (def ns-without-unused-deps (core/read-ns-form-with-meta
                              (absolute-path "test/resources/unused_removed.clj")))
 (def cljs-file (clean-msg "test/resources/file.cljs"))
@@ -140,6 +142,14 @@
         clean-imports (core/get-ns-component ns-without-unused-deps :import)]
     (is (= clean-requires requires))
     (is (= clean-imports imports))))
+
+(deftest allows-unused-dependencies-with-whitelist-metadata
+  (let [expected ns-with-whitelisted-deps-cleaned
+        actual  (clean-ns ns-with-whitelisted-deps)]
+    (is (= (core/get-ns-component expected :require)
+           (core/get-ns-component actual :require)))
+    (is (= (core/get-ns-component expected :import)
+           (core/get-ns-component actual :import)))))
 
 (def artifact-ns '(ns refactor-nrepl.artifacts
                     (:require [clojure
