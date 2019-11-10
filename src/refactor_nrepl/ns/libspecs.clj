@@ -16,7 +16,7 @@
 (defn- aliases-by-frequencies [libspecs]
   (->> libspecs
        (mapcat aliases) ; => [[str clojure.string] ...]
-       (sort-by second)
+       (sort-by (comp str second))
        (group-by first) ; => {str [[str clojure.string] [str clojure.string]] ...}
        (map (comp seq frequencies second)) ; => (([[set clojure.set] 4] [set set] 1) ...)
        (map (partial sort-by second >)) ; by decreasing frequency
