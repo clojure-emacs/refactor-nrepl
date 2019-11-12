@@ -6,6 +6,7 @@
 * [#256](https://github.com/clojure-emacs/refactor-nrepl/pull/256) ignore malformed artifact coordinates when fetching from Clojars.
 * [#264](https://github.com/clojure-emacs/refactor-nrepl/pull/264) less bandwidth used to fetch artifacts from Clojars
 * [#268](https://github.com/clojure-emacs/refactor-nrepl/pull/268) added support for fetching artifact versions from Clojars
+* [#271](https://github.com/clojure-emacs/refactor-nrepl/pull/271) improved shadow-cljs support
 
 ## 2.4.0
 
