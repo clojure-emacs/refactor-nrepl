@@ -153,12 +153,6 @@
    (for [libspec libspecs]
      (create-libspec libspec))))
 
-(defn- create-prefixed-libspec-vector
-  [libspecs]
-  (vec
-   (for [{:keys [ns] :as libspec} libspecs]
-     (create-libspec (assoc libspec :ns (ns-suffix ns))))))
-
 (defn- create-prefixed-libspec-vectors
   [[libspec & more :as libspecs]]
   (if-not (:prefix-rewriting config/*config*)
