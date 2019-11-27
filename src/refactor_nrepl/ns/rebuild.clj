@@ -60,7 +60,7 @@
   ^String [dep]
   (str/lower-case
    (if (sequential? dep)
-     (let [name (-> dep first name)
+     (let [name (-> dep first pr-str)
            ;; penalize prefix forms so [foo.bar :as bar]
            ;; comes before [foo.bar [qux :as qux] [quux ..]]
            suffix (if (and (> (count dep) 1) (sequential? (second dep)))
