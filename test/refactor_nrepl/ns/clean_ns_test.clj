@@ -53,6 +53,9 @@
 (def ns1-relative-path {:path "I do not exist.clj"
                         :relative-path "test/resources/ns1.clj"})
 
+(def ns-with-npm-strs (clean-msg "test/resources/ns_with_npm_strs.cljs"))
+(def ns-with-npm-strs-clean (clean-msg "test/resources/ns_with_npm_strs_clean.cljs"))
+
 (deftest combines-requires
   (let [requires (core/get-ns-component (clean-ns ns2) :require)
         combined-requires (core/get-ns-component ns2-cleaned :require)]
@@ -233,3 +236,13 @@
 (deftest fallback-to-relative-path
   (is (= (pprint-ns (clean-ns ns1))
          (pprint-ns (clean-ns ns1-relative-path)))))
+
+;; keep quotes around string requires
+(deftest npm-string-preservation
+  (let [cleaned (pprint-ns (clean-ns ns-with-npm-strs))]
+    (is (re-find #"\[\"react-native\" :as rn\]" cleaned))))
+
+;; group string requires together when sorting
+(deftest npm-string-sorting
+  (is (= (pprint-ns (clean-ns ns-with-npm-strs))
+         (pprint-ns (read-string (slurp (:path ns-with-npm-strs-clean)))))))
