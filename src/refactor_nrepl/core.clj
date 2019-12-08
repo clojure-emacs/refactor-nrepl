@@ -3,7 +3,8 @@
             [clojure.string :as str]
             [clojure.tools.namespace.parse :as parse]
             [clojure.tools.reader.reader-types :as readers]
-            [orchard.classpath]
+            [orchard.java.classpath :as cp]
+            [orchard.misc :as misc]
             [me.raynes.fs :as fs]
             [refactor-nrepl.util :refer [normalize-to-unix-path]]
             [refactor-nrepl.s-expressions :as sexp]
@@ -46,8 +47,11 @@
   directory and paths matching :ignore-paths specified in config.
   Follows the semantics of orchard classpath."
   []
-  (->> (orchard.classpath/classpath-directories)
-       (remove #(-> % str normalize-to-unix-path (.endsWith "target/srcdeps")))))
+  (->> (cp/classpath)
+       (remove misc/archive?)
+       (keep #(let [f (io/file %)]
+                (when (.isDirectory ^File f) f)))
+       (remove (comp ignore-dir-on-classpath? str))))
 
 (defn project-root
   "Return the project root directory.
@@ -95,7 +99,6 @@
   are pruned by this function."
   [pred dir]
   (->>  dir
-        io/file
         file-seq
         (filter (every-pred fs/exists?
                             (complement fs/hidden?)
