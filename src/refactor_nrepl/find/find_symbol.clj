@@ -24,12 +24,12 @@
                       (str/replace "#'" "")
                       (str/replace "clojure.core/" "")))
         full-class (get alias-info class class)]
-    (str/join "/" (remove nil? [full-class (:field node)]))))
+    (str/join "/" (remove nil? [(if (map? full-class) "" full-class) (:field node)]))))
 
 (defn- contains-var?
-  "Checks if the var of `node` is present in the `var-set`."
-  [vars-set alias-info node]
-  (vars-set (node->var alias-info node)))
+  "Checks if the var of `node` is same as given `var-name`"
+  [var-name alias-info node]
+  (= var-name (node->var alias-info node)))
 
 (defn present-before-expansion?
   "returns true if node is not result of macro expansion or if it is and it contains
@@ -48,8 +48,7 @@
 
 (defn- find-nodes
   "Filters `ast` with `pred` and returns a list of vectors with line-beg, line-end,
-  colum-beg, column-end and the result of applying pred to the node for each
-  node in the AST.
+  colum-beg, column-end for each node in the AST.
 
   if name present macro call sites are checked if they contained name before macro expansion"
   ([asts pred]
@@ -58,8 +57,7 @@
         (map (juxt (comp :line :env)
                    (comp :end-line :env)
                    (comp :column :env)
-                   (comp :end-column :env)
-                   pred))
+                   (comp :end-column :env)))
         (map #(zipmap [:line-beg :line-end :col-beg :col-end] %))))
   ([name asts pred]
    (find-nodes (map #(postwalk % (partial dissoc-macro-nodes name)) asts) pred)))
@@ -81,7 +79,7 @@
          var-name)))
 
 (defn- contains-var-or-const? [var-name alias-info node]
-  (or (contains-var? #{var-name} alias-info node)
+  (or (contains-var? var-name alias-info node)
       (contains-const? var-name alias-info node)))
 
 (defn- find-symbol-in-ast [name asts]
@@ -103,7 +101,7 @@
          (str/join "\n")
          str/trim)))
 
-(defn- find-symbol-in-file [fully-qualified-name ignore-errors ^File file]
+(defn- find-symbol-in-file [fully-qualified-name ignore-errors referred-syms ^File file]
   (let [file-content (slurp file)
         locs (try (->> (ana/ns-ast file-content)
                        (find-symbol-in-ast fully-qualified-name)
@@ -111,16 +109,16 @@
                   (catch Exception e
                     (when-not ignore-errors
                       (throw e))))
-        locs (concat locs
-                     (some->
-                      (libspecs/referred-syms-by-file&fullname)
-                      (get-in [:clj (str file) fully-qualified-name])
-                      meta
-                      ((fn [{:keys [line column end-line end-column]}]
-                         (list {:line-beg line
-                                :line-end end-line
-                                :col-beg column
-                                :col-end end-column})))))
+        locs (into
+              locs (some->
+                    referred-syms
+                    (get-in [:clj (str file) fully-qualified-name])
+                    meta
+                    ((fn [{:keys [line column end-line end-column]}]
+                       (list {:line-beg line
+                              :line-end end-line
+                              :col-beg column
+                              :col-end end-column})))))
         gather (fn [info]
                  (merge info
                         {:file (.getCanonicalPath file)
@@ -134,10 +132,11 @@
   (let [namespace (or ns (core/ns-from-string (slurp file)))
         fully-qualified-name (if (= namespace "clojure.core")
                                var-name
-                               (str/join "/" [namespace var-name]))]
+                               (str/join "/" [namespace var-name]))
+        referred-syms (libspecs/referred-syms-by-file&fullname)]
     (->> (core/dirs-on-classpath)
          (mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
-         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors)))))
+         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors referred-syms)))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [^long line-beg ^long col-beg]}]
@@ -165,7 +164,7 @@
       res)))
 
 (defn- occurrence-for-optmap-default
-  [var-name [{:keys [line-beg col-beg] :as orig-occurrence} [_ _ ^String level2-string _]]]
+  [var-name [orig-occurrence [_ _ ^String level2-string _]]]
   (let [var-positions (re-pos (re-pattern (format "\\W%s\\W" var-name)) level2-string)
         ^long var-default-pos (first (second var-positions))
         newline-cnt (reduce (fn [cnt char] (if (= char \newline) (inc (long cnt)) cnt)) 0 (.substring level2-string 0 var-default-pos))
@@ -228,10 +227,6 @@
                  (map (partial occurrence-for-optmap-default var-name)))]
         (sort-by :line-beg (concat local-occurrences optmap-def-occurrences))))))
 
-(defn- to-find-symbol-result
-  [{:keys [line-beg line-end col-beg col-end name file match]}]
-  [line-beg line-end col-beg col-end name file match])
-
 (defn find-symbol [{:keys [file ns name line column ignore-errors]}]
   (core/throw-unless-clj-file file)
   (let [macros (future (find-macro (core/fully-qualify ns name)))
@@ -239,9 +234,15 @@
                      distinct
                      (remove find-util/spurious?)
                      future)]
+
     (or
      ;; find-local-symbol is the fastest of the three
-     (not-empty (remove find-util/spurious? (distinct (find-local-symbol file name line column))))
+     ;; if result is not empty, there is no point in keeping `find-macro` and `find-global-symbol` futures still active
+     (when-let [result (not-empty (remove find-util/spurious? (distinct (find-local-symbol file name line column))))]
+       (future-cancel macros)
+       (future-cancel globals)
+       result)
+
      ;; find-macros has to be checked first because find-global-symbol
      ;; can return spurious hits for some macro definitions
      @macros
