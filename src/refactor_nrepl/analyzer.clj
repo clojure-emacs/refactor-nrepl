@@ -28,16 +28,17 @@
   a map of the aliases for the namespace as the second element
   in the same format as ns-aliases"
   [body]
-  (let [ns-decl (read-ns-decl (PushbackReader. (java.io.StringReader. body)))
-        aliases (->> ns-decl
-                     (filter list?)
-                     (some #(when (#{:require} (first %)) %))
-                     rest
-                     (remove symbol?)
-                     (filter #(contains? (set %) :as))
-                     (#(zipmap (map (partial get-alias nil) %)
-                               (map first %))))]
-    [(second ns-decl) aliases]))
+  (with-open [string-reader (java.io.StringReader. body)]
+    (let [ns-decl (read-ns-decl (PushbackReader. string-reader))
+          aliases (->> ns-decl
+                       (filter list?)
+                       (some #(when (#{:require} (first %)) %))
+                       rest
+                       (remove symbol?)
+                       (filter #(contains? (set %) :as))
+                       (#(zipmap (map (partial get-alias nil) %)
+                                 (map first %))))]
+      [(second ns-decl) aliases])))
 
 (defn- noop-macroexpand-1 [form]
   form)
