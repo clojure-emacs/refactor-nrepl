@@ -51,6 +51,7 @@
   (util/with-additional-ex-data [:file (.getAbsolutePath f)]
     (with-open [file-rdr (FileReader. f)]
       (binding [*ns* (or (core/path->namespace :no-error f) *ns*)
+                reader/*read-eval* false
                 reader/*data-readers* *data-readers*]
         (let [rdr (LineNumberingPushbackReader. file-rdr)
               opts {:read-cond :allow :features #{:clj} :eof :eof}]
@@ -81,9 +82,13 @@
 
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
-  []
+  [ignore-errors?]
   (->> (core/find-in-project (some-fn core/cljc-file? core/clj-file?))
-       (mapcat get-macro-definitions-in-file-with-caching)))
+       (mapcat #(try
+                  (get-macro-definitions-in-file-with-caching %)
+                  (catch Exception e
+                    (when-not ignore-errors?
+                      (throw e)))))))
 
 (defn- get-ns-aliases
   "Create a map of ns-aliases to namespaces."
@@ -207,9 +212,9 @@
 (defn find-macro
   "Finds all occurrences of the macro, including the definition, in
   the project."
-  [fully-qualified-name]
+  [fully-qualified-name ignore-errors?]
   (when (fully-qualified-name? fully-qualified-name)
-    (let [all-defs (find-macro-definitions-in-project)
+    (let [all-defs (find-macro-definitions-in-project ignore-errors?)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
           tracker (tracker/build-tracker)
           origin-ns (symbol (core/prefix fully-qualified-name))

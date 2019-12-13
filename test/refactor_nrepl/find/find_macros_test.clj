@@ -6,7 +6,7 @@
   (first (filter #(re-find regexp (:match %)) occurrences)))
 
 (deftest find-macro-test
-  (let [occurrences (find-macro "com.example.macro-def/my-macro")
+  (let [occurrences (find-macro "com.example.macro-def/my-macro" false)
         {:keys [line-beg col-beg file match]}
         (first (filter #(.contains (:match %) "defmacro") occurrences))]
     (testing "finds the macro definition"
@@ -29,29 +29,29 @@
       (is (.endsWith file "macro_def.clj")))))
 
 (deftest find-regular-symbol-test
-  (is (nil? (find-macro "sym"))))
+  (is (nil? (find-macro "sym" false))))
 
 (deftest find-fully-qualified-random-name
-  (is (nil? (find-macro "asdf"))))
+  (is (nil? (find-macro "asdf" false))))
 
 (deftest find-fully-qualified-fn
-  (is (nil? (find-macro "refactor-nrepl.find.find-macros/find-macro"))))
+  (is (nil? (find-macro "refactor-nrepl.find.find-macros/find-macro" false))))
 
 (deftest finds-macro-defined-in-cljc-file
   (is (found? #"defmacro cljc-macro"
-              (find-macro "com.example.macro-def-cljc/cljc-macro"))))
+              (find-macro "com.example.macro-def-cljc/cljc-macro" false))))
 
 (deftest finds-macro-defined-in-cljc-file-and-used-in-clj-file
   (is (found? #"(com.example.macro-def-cljc/cljc-macro :fully-qualified)"
-              (find-macro "com.example.macro-def-cljc/cljc-macro"))))
+              (find-macro "com.example.macro-def-cljc/cljc-macro" false))))
 
 (deftest macro-definitions-are-cached
-  (find-macro "com.example.macro-def/my-macro")
+  (find-macro "com.example.macro-def/my-macro" false)
   (with-redefs [refactor-nrepl.find.find-macros/put-cached-macro-definitions
                 (fn [& _] (throw (ex-info "Cache miss!" {})))]
-    (is (found? #"defmacro my-macro" (find-macro "com.example.macro-def/my-macro"))))
+    (is (found? #"defmacro my-macro" (find-macro "com.example.macro-def/my-macro" false))))
   (reset! @#'refactor-nrepl.find.find-macros/macro-defs-cache {})
   (with-redefs [refactor-nrepl.find.find-macros/put-cached-macro-definitions
                 (fn [& _] (throw (Exception. "Expected!")))]
     (is (thrown-with-msg? Exception #"Expected!"
-                          (find-macro "com.example.macro-def/my-macro")))))
+                          (find-macro "com.example.macro-def/my-macro" false)))))

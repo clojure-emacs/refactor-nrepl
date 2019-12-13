@@ -234,8 +234,9 @@
 
 (defn find-symbol [{:keys [file ns name line column ignore-errors]}]
   (core/throw-unless-clj-file file)
-  (let [macros (future (find-macro (core/fully-qualify ns name)))
-        globals (->> (find-global-symbol file ns name (= ignore-errors "true"))
+  (let [ignore-errors? (= ignore-errors "true")
+        macros (future (find-macro (core/fully-qualify ns name) ignore-errors?))
+        globals (->> (find-global-symbol file ns name ignore-errors?)
                      distinct
                      (remove find-util/spurious?)
                      future)]
