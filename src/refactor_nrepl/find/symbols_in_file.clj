@@ -56,7 +56,9 @@
                          (ns-parser/get-libspecs-from-file :cljs (io/file path)))
                         (ns-aliases file-ns))]
        (binding [*ns* file-ns
-                 reader/*data-readers* *data-readers*
+                 reader/*data-readers* (merge (when (= dialect :cljs)
+                                                {'js identity})
+                                              *data-readers*)
                  clojure.tools.reader/*alias-map* ns-aliases]
          (let [rdr (-> path slurp core/file-content-sans-ns
                        readers/indexing-push-back-reader)
