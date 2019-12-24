@@ -28,7 +28,7 @@
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
 
   :profiles {;; Clojure versions matrix
-             :provided {:dependencies [[cider/cider-nrepl "0.20.0"]
+             :provided {:dependencies [[cider/cider-nrepl "0.22.4"]
                                        [org.clojure/clojure "1.8.0"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]
                                   [org.clojure/clojurescript "1.8.51"]
