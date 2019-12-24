@@ -5,21 +5,10 @@
             [refactor-nrepl.core :as core]
             [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
             [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]
-            [clojure.walk :as walk]))
-
-;; Compatibility with the legacy tools.nrepl and the new nREPL 0.4.x.
-;; The assumption is that if someone is using old lein repl or boot repl
-;; they'll end up using the tools.nrepl, otherwise the modern one.
-(when-not (resolve 'set-descriptor!)
-  (if (find-ns 'clojure.tools.nrepl)
-    (require
-     '[clojure.tools.nrepl.middleware :refer [set-descriptor!]]
-     '[clojure.tools.nrepl.misc :refer [response-for]]
-     '[clojure.tools.nrepl.transport :as transport])
-    (require
-     '[nrepl.middleware :refer [set-descriptor!]]
-     '[nrepl.misc :refer [response-for]]
-     '[nrepl.transport :as transport])))
+            [clojure.walk :as walk]
+            [nrepl.middleware :refer [set-descriptor!]]
+            [nrepl.misc :refer [response-for]]
+            [nrepl.transport :as transport]))
 
 (defn- require-and-resolve [sym]
   (require (symbol (namespace sym)))

@@ -10,6 +10,10 @@
 * [#268](https://github.com/clojure-emacs/refactor-nrepl/pull/268): Added support for fetching artifact versions from Clojars.
 * [#271](https://github.com/clojure-emacs/refactor-nrepl/pull/271): Improved shadow-cljs support.
 
+### Changes
+
+* Drop support for nREPL 0.2.
+
 ### Bugs fixed
 
 * [#256](https://github.com/clojure-emacs/refactor-nrepl/pull/256): Ignore malformed artifact coordinates when fetching from Clojars.
