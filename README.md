@@ -347,9 +347,9 @@ to clojars:
 
 Or alternatively run
 
-`./build.sh install`
+`make install`
 
-`./build.sh deploy clojars`
+`make deploy`
 
 build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
 
