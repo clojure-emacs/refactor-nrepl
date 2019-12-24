@@ -3,7 +3,7 @@
   :url "http://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "0.5.3"]
+  :dependencies [[nrepl "0.6.0"]
                  ^:inline-dep [http-kit "2.3.0"]
                  ^:inline-dep [cheshire "5.8.1"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "0.7.3"]
