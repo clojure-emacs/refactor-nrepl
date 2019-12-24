@@ -2,20 +2,33 @@
 
 ## Unreleased
 
-* [clojure-emacs/clj-refactor.el#443](https://github.com/clojure-emacs/clj-refactor.el/issues/443) `clean-ns` support namespaces with js literal (#js).
-* [#251](https://github.com/clojure-emacs/refactor-nrepl/pull/251) `clean-ns` support extra message key `relative-path`, which will be used if `path` does not exist.
-* [#256](https://github.com/clojure-emacs/refactor-nrepl/pull/256) ignore malformed artifact coordinates when fetching from Clojars.
-* [#264](https://github.com/clojure-emacs/refactor-nrepl/pull/264) less bandwidth used to fetch artifacts from Clojars
-* [#268](https://github.com/clojure-emacs/refactor-nrepl/pull/268) added support for fetching artifact versions from Clojars
-* [#271](https://github.com/clojure-emacs/refactor-nrepl/pull/271) improved shadow-cljs support
+### New features
+
+* [clojure-emacs/clj-refactor.el#443](https://github.com/clojure-emacs/clj-refactor.el/issues/443): `clean-ns` support namespaces with js literal (#js).
+* [#251](https://github.com/clojure-emacs/refactor-nrepl/pull/251): `clean-ns` support extra message key `relative-path`, which will be used if `path` does not exist.
+* [#264](https://github.com/clojure-emacs/refactor-nrepl/pull/264): Less bandwidth used to fetch artifacts from Clojars.
+* [#268](https://github.com/clojure-emacs/refactor-nrepl/pull/268): Added support for fetching artifact versions from Clojars.
+* [#271](https://github.com/clojure-emacs/refactor-nrepl/pull/271): Improved shadow-cljs support.
+
+### Bugs fixed
+
+* [#256](https://github.com/clojure-emacs/refactor-nrepl/pull/256): Ignore malformed artifact coordinates when fetching from Clojars.
 
 ## 2.4.0
 
-* [#231](https://github.com/clojure-emacs/refactor-nrepl/issues/231) hotload-dependencies temporarily disabled due to java 10 issues.
-* [#215](https://github.com/clojure-emacs/refactor-nrepl/issues/215) Support JVM system proxy in mvn artifacts listing
-* [#198](https://github.com/clojure-emacs/refactor-nrepl/issues/198) Delay middleware loading to speed up initialization.
-* Bump [mranderson](https://github.com/benedekfazekas/mranderson) version to fix leiningen 2.8.x incompatibility issues
-* Drop Clojure 1.7.0 support
+### New features
+
+* [#215](https://github.com/clojure-emacs/refactor-nrepl/issues/215): Support JVM system proxy in mvn artifacts listing.
+
+### Changes
+
+* [#231](https://github.com/clojure-emacs/refactor-nrepl/issues/231): Hotload-dependencies temporarily disabled due to java 10 issues.
+* [#198](https://github.com/clojure-emacs/refactor-nrepl/issues/198): Delay middleware loading to speed up initialization.
+* Drop Clojure 1.7.0 support.
+
+### Bugs fixed
+
+* Bump [mranderson](https://github.com/benedekfazekas/mranderson): Version to fix leiningen 2.8.x incompatibility issues.
 
 ## 2.3.1
 
