@@ -27,8 +27,8 @@ release:
 # specified in project.clj to provide a login and password to the
 # artifact repository.
 
-deploy:
-	lein with-profile +$(VERSION) deploy clojars
+deploy: .inline-deps
+	lein with-profile +$(VERSION),+plugin.mranderson/config deploy clojars
 
 clean:
 	lein clean
