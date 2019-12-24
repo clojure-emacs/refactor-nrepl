@@ -318,19 +318,18 @@ contains among other things a full stacktrace.
 
 First make sure you have Leiningen 2.9.1 or later, `lein upgrade` if necessary.
 
-`lein version`
+    lein version
 
 To work with `mranderson` the first thing to do is:
 
-`lein do clean, inline-deps`
+    lein do clean, inline-deps
 
 this creates the munged local dependencies in target/srcdeps directory
 
 after that you can run your tests or your repl with:
 
-`lein with-profile +plugin.mranderson/config repl`
-
-`lein with-profile +plugin.mranderson/config test`
+    lein with-profile +plugin.mranderson/config repl
+    lein with-profile +plugin.mranderson/config test
 
 note the plus sign before the leiningen profile.
 
@@ -339,21 +338,18 @@ If you want to use `mranderson` while developing locally with the repl the sourc
 When you want to release
 locally:
 
-`lein with-profile plugin.mranderson/config install`
+    lein with-profile plugin.mranderson/config install
 
 to clojars:
 
-`lein with-profile plugin.mranderson/config deploy clojars`
+    lein with-profile plugin.mranderson/config deploy clojars
 
-Or alternatively run
+Alternatively you can leverage the bundled `Makefile`:
 
-`make install`
+    make install
+    make deploy
 
-`make deploy`
-
-build.sh cleans, runs source-deps with the right parameters, runs the tests and then runs the provided lein target.
-
-You can also use a Makefile now: `make clean && make test` for example.
+You might also want to do a `make test` prior to deploying anything to Clojars.
 
 ## Changelog
 
