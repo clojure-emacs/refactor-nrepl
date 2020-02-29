@@ -351,6 +351,9 @@ Alternatively you can leverage the bundled `Makefile`:
 
 You might also want to do a `make test` prior to deploying anything to Clojars.
 
+**Note:** You'll need to run `make clean test` if you changed any of the project's dependencies,
+as those will need to be inlined first.
+
 ## Changelog
 
 An extensive changelog is available [here](CHANGELOG.md).
