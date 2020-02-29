@@ -5,7 +5,8 @@
   (:require [clojure.set :as set]
             [clojure.string :as string]
             [refactor-nrepl.ns.slam.hound.future :refer [as->* cond->*]]
-            [refactor-nrepl.ns.slam.hound.search :as search])
+            [refactor-nrepl.ns.slam.hound.search :as search]
+            [nrepl.middleware.interruptible-eval :refer [*msg*]])
   (:import (clojure.lang IMapEntry IRecord)
            (java.util.regex Pattern)))
 
@@ -14,7 +15,8 @@
 
 (defn wrap-clojure-repl [f]
   (fn [& args]
-    (swap! *dirty-ns* conj *ns*)
+    (when-let [ns (some-> *msg* :ns symbol find-ns)]
+      (swap! *dirty-ns* conj ns))
     (apply f args)))
 
 (alter-var-root #'clojure.main/repl wrap-clojure-repl)
