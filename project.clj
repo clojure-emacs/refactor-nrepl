@@ -13,7 +13,6 @@
                  ^:inline-dep [cljfmt "0.6.4"]
                  ^:inline-dep [clj-commons/fs "1.5.0"]
                  ^:inline-dep [rewrite-clj "0.6.1"]
-                 ^:inline-dep [cljs-tooling "0.3.1"]
                  ^:inline-dep [version-clj "0.1.2"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
 

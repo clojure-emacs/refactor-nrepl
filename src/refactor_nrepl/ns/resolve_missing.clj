@@ -2,7 +2,7 @@
   "Resolve a missing symbol on the classpath."
   (:require [orchard.info :refer [info]]
             [cider.nrepl.middleware.util.cljs :as cljs]
-            [cljs-tooling.util.analysis :as cljs-ana]
+            [orchard.cljs.analysis :as cljs-ana]
             [clojure.string :as str]
             [refactor-nrepl.core :refer [prefix suffix]]
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
