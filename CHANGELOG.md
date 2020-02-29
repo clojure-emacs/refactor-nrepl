@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2.5.0 (2020-02-29)
+
 ### New features
 
 * [clojure-emacs/clj-refactor.el#443](https://github.com/clojure-emacs/clj-refactor.el/issues/443): `clean-ns` support namespaces with js literal (#js).
@@ -18,7 +20,7 @@
 
 * [#256](https://github.com/clojure-emacs/refactor-nrepl/pull/256): Ignore malformed artifact coordinates when fetching from Clojars.
 
-## 2.4.0
+## 2.4.0 (2018-08-26)
 
 ### New features
 
