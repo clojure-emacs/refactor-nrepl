@@ -360,7 +360,7 @@ An extensive changelog is available [here](CHANGELOG.md).
 
 ## License
 
-Copyright © 2013-2019 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen
+Copyright © 2013-2020 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen, Bozhidar Batsov
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
