@@ -23,7 +23,7 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
 
 ```clojure
 :plugins [[refactor-nrepl "2.4.0"]
-          [cider/cider-nrepl "0.18.0"]]
+          [cider/cider-nrepl "0.24.0"]]
 ```
 
 ### Adding the middleware via Boot
@@ -35,7 +35,7 @@ Add the following in `~/.boot/profile.boot`:
 
 (swap! boot.repl/*default-dependencies* conj
        '[refactor-nrepl "2.4.0"]
-       '[cider/cider-nrepl "0.18.0"])
+       '[cider/cider-nrepl "0.24.0"])
 
 (swap! boot.repl/*default-middleware* conj
        'refactor-nrepl.middleware/wrap-refactor)
