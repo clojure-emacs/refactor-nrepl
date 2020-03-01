@@ -120,7 +120,10 @@
   (let [clojars-artifacts (future (get-artifacts-from-clojars!))
         maven-artifacts (future (get-artifacts-from-mvn-central!))]
     (reset! artifacts (into @clojars-artifacts @maven-artifacts))
-    (spit artifacts-file @artifacts)
+    (spit artifacts-file
+          (binding [*print-length* nil
+                    *print-level*  nil]
+            (prn-str @artifacts)))
     (alter-meta! artifacts update-in [:last-modified]
                  (constantly (get-last-modified-from-file artifacts-file)))))
 
