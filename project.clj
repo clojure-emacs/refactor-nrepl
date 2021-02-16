@@ -11,7 +11,7 @@
                  ^:inline-dep [org.clojure/tools.reader "1.3.5"]
                  ^:inline-dep [cider/orchard "0.5.6"]
                  ^:inline-dep [cljfmt "0.7.0"]
-                 ^:inline-dep [clj-commons/fs "1.5.0"]
+                 ^:inline-dep [clj-commons/fs "1.6.307"]
                  ^:inline-dep [rewrite-clj "0.6.1"]
                  ^:inline-dep [version-clj "1.0.0"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
