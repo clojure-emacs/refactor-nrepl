@@ -35,7 +35,7 @@
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]
                                   [org.clojure/clojurescript "1.9.946"]
                                   [javax.xml.bind/jaxb-api "2.3.1"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.1"]
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]
                                    [org.clojure/clojurescript "1.10.520"]]}
 
              :test {:dependencies [[print-foo "1.0.2"]]
