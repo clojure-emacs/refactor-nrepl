@@ -8,7 +8,7 @@
                  ^:inline-dep [cheshire "5.10.0"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "0.7.3"]
                  ^:inline-dep [org.clojure/tools.namespace "0.3.1" :exclusions [org.clojure/tools.reader]]
-                 ^:inline-dep [org.clojure/tools.reader "1.3.2"]
+                 ^:inline-dep [org.clojure/tools.reader "1.3.5"]
                  ^:inline-dep [cider/orchard "0.5.6"]
                  ^:inline-dep [cljfmt "0.7.0"]
                  ^:inline-dep [clj-commons/fs "1.5.0"]
