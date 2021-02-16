@@ -45,7 +45,7 @@
                    :dependencies [[org.clojure/clojurescript "1.9.946"]
                                   [cider/piggieback "0.4.1"]
                                   [leiningen-core "2.9.5"]
-                                  [commons-io/commons-io "2.6"]]
+                                  [commons-io/commons-io "2.8.0"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
