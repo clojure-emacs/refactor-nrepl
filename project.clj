@@ -20,7 +20,7 @@
                                     :username :env/clojars_username
                                     :password :env/clojars_password
                                     :sign-releases false}]]
-  :plugins [[thomasa/mranderson "0.5.1"]]
+  :plugins [[thomasa/mranderson "0.5.2"]]
   :mranderson {:project-prefix  "refactor-nrepl.inlined-deps"
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}
