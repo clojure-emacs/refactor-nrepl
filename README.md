@@ -22,8 +22,8 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "2.5.0"]
-          [cider/cider-nrepl "0.24.0"]]
+:plugins [[refactor-nrepl "2.5.1"]
+          [cider/cider-nrepl "0.25.9"]]
 ```
 
 ### Adding the middleware via Boot
@@ -34,8 +34,8 @@ Add the following in `~/.boot/profile.boot`:
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies* conj
-       '[refactor-nrepl "2.5.0"]
-       '[cider/cider-nrepl "0.24.0"])
+       '[refactor-nrepl "2.5.1"]
+       '[cider/cider-nrepl "0.25.9"])
 
 (swap! boot.repl/*default-middleware* conj
        'refactor-nrepl.middleware/wrap-refactor)
@@ -52,7 +52,7 @@ project, in order to offer various refactorings.
 
 Most likely you're already in an environment with a nREPL client available, so you don't have to worry about anything except sending an receiving messages:
 
-```cljs
+```clj
 => (require '[nrepl.core :as repl])
 nil
 => (with-open [conn (repl/connect :port 59258)]
@@ -360,7 +360,7 @@ An extensive changelog is available [here](CHANGELOG.md).
 
 ## License
 
-Copyright © 2013-2020 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen, Bozhidar Batsov
+Copyright © 2013-2021 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen, Bozhidar Batsov
 
 Distributed under the Eclipse Public License, the same as Clojure.
 

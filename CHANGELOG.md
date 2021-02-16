@@ -2,9 +2,15 @@
 
 ## Unreleased
 
+## 2.5.1 (2021-02-16)
+
 ### Bugs fixed
 
 * [#284](https://github.com/clojure-emacs/refactor-nrepl/issues/284): Don't truncate the artifacts cache.
+
+### Changes
+
+* Updated all deps.
 
 ## 2.5.0 (2020-02-29)
 
