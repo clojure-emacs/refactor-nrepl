@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "0.8.3"]
                  ^:inline-dep [http-kit "2.3.0"]
-                 ^:inline-dep [cheshire "5.8.1"]
+                 ^:inline-dep [cheshire "5.10.0"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "0.7.3"]
                  ^:inline-dep [org.clojure/tools.namespace "0.3.1" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.2"]
