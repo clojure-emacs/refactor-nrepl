@@ -15,7 +15,7 @@
          :bind "localhost"
          :port 7777
          :handler (nrserver/default-handler
-                    #'refactor-nrepl.middleware/wrap-refactor))]
+                   #'refactor-nrepl.middleware/wrap-refactor))]
     server))
 
 (defn stop-repl-server [server]

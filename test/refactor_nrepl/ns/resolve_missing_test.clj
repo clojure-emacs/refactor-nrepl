@@ -31,8 +31,8 @@
    session-fixture
    (fn [f]
      (binding [*handler* (server/default-handler
-                           #'refactor-nrepl.middleware/wrap-refactor
-                           #'piggieback/wrap-cljs-repl)]
+                          #'refactor-nrepl.middleware/wrap-refactor
+                          #'piggieback/wrap-cljs-repl)]
        (message {:op :eval
                  :code (nrepl/code
                         (require '[cider.piggieback :as piggieback])
