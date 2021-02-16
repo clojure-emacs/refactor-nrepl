@@ -13,7 +13,7 @@
                  ^:inline-dep [cljfmt "0.7.0"]
                  ^:inline-dep [clj-commons/fs "1.5.0"]
                  ^:inline-dep [rewrite-clj "0.6.1"]
-                 ^:inline-dep [version-clj "0.1.2"]]
+                 ^:inline-dep [version-clj "1.0.0"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
 
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
