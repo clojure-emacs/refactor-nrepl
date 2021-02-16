@@ -40,7 +40,7 @@
 
              :test {:dependencies [[print-foo "1.0.2"]]
                     :src-paths ["test/resources"]}
-             :dev {:plugins [[jonase/eastwood "0.2.0"]]
+             :dev {:plugins [[jonase/eastwood "0.3.14"]]
                    :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.946"]
                                   [cider/piggieback "0.4.1"]
