@@ -1,7 +1,7 @@
 (ns refactor-nrepl.integration-tests
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
-            [nrepl.server :as nrserver]
+            [nrepl.server :as nrepl]
             [refactor-nrepl middleware
              [client :refer :all]
              [core :as core]]
@@ -11,15 +11,15 @@
 
 (defn start-up-repl-server []
   (let [server
-        (nrserver/start-server
+        (nrepl/start-server
          :bind "localhost"
          :port 7777
-         :handler (nrserver/default-handler
+         :handler (nrepl/default-handler
                    #'refactor-nrepl.middleware/wrap-refactor))]
     server))
 
 (defn stop-repl-server [server]
-  (nrserver/stop-server server))
+  (nrepl/stop-server server))
 
 (defn wrap-setup-once [f]
   (let [server (start-up-repl-server)]
