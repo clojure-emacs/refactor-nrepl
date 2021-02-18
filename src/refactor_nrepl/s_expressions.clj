@@ -8,8 +8,9 @@
   [zipper]
   (take-while (complement zip/end?) (iterate zip/next zipper)))
 
-(defn- comment-or-string-or-nil? [zloc]
+(defn- comment-or-string-or-uneval-or-nil? [zloc]
   (or (nil? zloc)
+      (= :uneval (zip/tag zloc))
       (not (zip/sexpr zloc)) ; comment node
       (string? (zip/sexpr zloc))))
 
@@ -18,7 +19,7 @@
   (let [reader (zip-reader/string-reader file-content)]
     (loop [sexp (zip-parser/parse reader)]
       (let [zloc (zip/edn sexp)]
-        (if (and zloc (not (comment-or-string-or-nil? zloc)))
+        (if (and zloc (not (comment-or-string-or-uneval-or-nil? zloc)))
           (zip/string zloc)
           (when (.peek-char reader)
             (recur (zip-parser/parse reader))))))))
@@ -26,7 +27,7 @@
 (defn get-last-sexp
   ^String [file-content]
   (let [zloc (->> file-content zip/of-string zip/rightmost)]
-    (some (fn [zloc] (when-not (comment-or-string-or-nil? zloc)
+    (some (fn [zloc] (when-not (comment-or-string-or-uneval-or-nil? zloc)
                        (zip/string zloc)))
           (take-while (complement nil?) (iterate zip/left zloc)))))
 

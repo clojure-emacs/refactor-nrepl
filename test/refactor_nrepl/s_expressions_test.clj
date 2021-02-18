@@ -10,6 +10,9 @@
   #{foo bar baz}
   ;; some other stuff
   (foobar baz)")
+(def file-content-with-uneval "#_ foo
+(foobar baz)")
+
 (def binding-location [3 8])
 (def set-location [7 35])
 (def map-location [7 28])
@@ -33,3 +36,9 @@
            (apply sut/get-enclosing-sexp file-content when-not-location)))
   (t/is (= nil (sut/get-first-sexp weird-file-content)))
   (t/is (=  "#{foo bar baz}" (sut/get-first-sexp file-content-with-set))))
+
+(t/deftest get-first-sexp
+  (t/is (= "(ns resources.testproject.src.com.example.sexp-test)"
+           (sut/get-first-sexp file-content)))
+  (t/is (= "(foobar baz)"
+           (sut/get-first-sexp file-content-with-uneval))))
