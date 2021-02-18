@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#294](https://github.com/clojure-emacs/refactor-nrepl/pull/294): Properly skip uneval nodes when looking for the first/last sexp
+
 ## 2.5.1 (2021-02-16)
 
 ### Bugs fixed
