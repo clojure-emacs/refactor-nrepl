@@ -14,6 +14,9 @@ test: .inline-deps
 cljfmt:
 	lein with-profile +$(VERSION),+cljfmt cljfmt check
 
+kondo:
+	clj-kondo --lint src
+
 # When releasing, the BUMP variable controls which field in the
 # version string will be incremented in the *next* snapshot
 # version. Typically this is either "major", "minor", or "patch".
