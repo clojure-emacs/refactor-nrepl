@@ -9,9 +9,9 @@
             [refactor-nrepl.ns.ns-parser :as ns-parser]
             [clojure.java.io :as io]))
 
-(defn- find-symbol-ns [{:keys [:require :require-macros] :as dependencies} sym]
+(defn- find-symbol-ns [{:keys [:require :require-macros]} sym]
   (some->> (into require require-macros)
-           (filter (fn [{:keys [refer refer-macros] :as libspec}]
+           (filter (fn [{:keys [refer refer-macros]}]
                      (or
                       (and (sequential? refer)
                            (some (partial = (symbol sym)) refer))

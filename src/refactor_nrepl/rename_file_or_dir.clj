@@ -27,19 +27,19 @@
                            re-pattern
                            (str/split (str/lower-case path))
                            second))
-        shortest (fn [^String acc ^String val] (if (< (.length acc) (.length val)) acc val))]
-    (let [relative-paths (->> (core/dirs-on-classpath)
-                              (map (memfn ^File getAbsolutePath))
-                              (map util/normalize-to-unix-path)
-                              (map chop-prefix)
-                              (remove nil?))]
-      (if-let [^String p (cond
-                           (= (count relative-paths) 1) (first relative-paths)
-                           (> (count relative-paths) 1) (reduce shortest relative-paths))]
-        (if (.startsWith p "/")
-          (.substring p 1)
-          p)
-        (throw (IllegalStateException. (str "Can't find src dir prefix for path " path)))))))
+        shortest (fn [^String acc ^String val] (if (< (.length acc) (.length val)) acc val))
+        relative-paths (->> (core/dirs-on-classpath)
+                            (map (memfn ^File getAbsolutePath))
+                            (map util/normalize-to-unix-path)
+                            (map chop-prefix)
+                            (remove nil?))]
+    (if-let [^String p (cond
+                         (= (count relative-paths) 1) (first relative-paths)
+                         (> (count relative-paths) 1) (reduce shortest relative-paths))]
+      (if (.startsWith p "/")
+        (.substring p 1)
+        p)
+      (throw (IllegalStateException. (str "Can't find src dir prefix for path " path))))))
 
 ;; Taken from raynes' fs and modified to work with cljc and cljs
 (defn path-ns

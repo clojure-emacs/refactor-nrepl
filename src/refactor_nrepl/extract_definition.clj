@@ -8,10 +8,6 @@
   (:import [java.io PushbackReader StringReader]
            java.util.regex.Pattern))
 
-(defn- occurrence-to-map
-  [occurrence]
-  (zipmap (take-nth 2 occurrence) (take-nth 2 (rest occurrence))))
-
 (defn- extract-definition-from-def
   ^String [^String sexp]
   (let [def-form (read-string sexp)
@@ -41,7 +37,7 @@
       (str/trim (zip/string (zip/right zloc))))))
 
 (defn- -extract-definition
-  [{:keys [match file ^long line-beg ^long col-beg name]}]
+  [{:keys [file ^long line-beg ^long col-beg name]}]
   (let [literal-sexp (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
                                               col-beg)
         form (read-string literal-sexp)]
@@ -63,11 +59,12 @@
       def- true
       defn true
       defn- true
-      false)))
+      false)
+    false))
 
 (defn- def?
   "Is the OCCURRENCE the defining form?"
-  [{:keys [file name ^long col-beg ^long line-beg] :as occurrence}]
+  [{:keys [file name ^long col-beg ^long line-beg]}]
   (let [form (read-string (sexp/get-enclosing-sexp (slurp file) (dec line-beg)
                                                    col-beg))
         name (symbol (suffix (read-string name)))]

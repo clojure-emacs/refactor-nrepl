@@ -4,8 +4,7 @@
              [core :as core]
              [util :as util]]
             [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
-            [refactor-nrepl.config :as config]
-            [refactor-nrepl.s-expressions :as sexp]))
+            [refactor-nrepl.config :as config]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]
@@ -20,7 +19,7 @@
   (= (lookup-symbol-ns current-ns symbol-in-file) ns))
 
 (defn- libspec-in-use-without-refer-all?
-  [{:keys [as ns refer refer-macros require-macros] :as libspec} symbol-in-file]
+  [{:keys [as ns refer refer-macros require-macros]} symbol-in-file]
   (or
    ;; Used through refer clause
    (and (not= refer :all)
@@ -37,11 +36,11 @@
    (and as (.startsWith ^String symbol-in-file (str as "/")))))
 
 (defn- libspec-in-use-with-rename?
-  [{:keys [rename] :as libspec} symbols-in-file]
+  [{:keys [rename]} symbols-in-file]
   (some (set symbols-in-file) (map str (vals rename))))
 
 (defn- libspec-in-use?
-  [{:keys [ns as refer] :as libspec} symbols-in-file current-ns]
+  [{:keys [refer] :as libspec} symbols-in-file current-ns]
   (when (or (if (= refer :all)
               (some (partial libspec-in-use-with-refer-all? libspec current-ns)
                     symbols-in-file)
@@ -94,12 +93,6 @@
    ;; Static/fieldOrMethod
    ((set (map static-method-or-field-access->Classname symbols-in-file))
     (core/suffix c))))
-
-(defn- get-referred-symbols
-  [libspec]
-  (when-not (or (symbol? libspec)
-                (= (:refer libspec) :all))
-    (:refer libspec)))
 
 (defn- remove-unused-requires [symbols-in-file current-ns libspec]
   (remove-unused-syms-and-specs symbols-in-file current-ns libspec))

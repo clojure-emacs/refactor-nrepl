@@ -1,0 +1,2 @@
+{:linters {:unresolved-symbol {:exclude [(refactor-nrepl.ns.ns-parser/with-libspecs-from [libspecs])]}
+           :unresolved-namespace {:exclude [clojure.main]}}}

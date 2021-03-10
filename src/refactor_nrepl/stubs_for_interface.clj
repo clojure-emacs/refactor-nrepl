@@ -17,7 +17,7 @@
 (defn- format-parameter-name
   ([index num-params]
    (str "arg" (if (= num-params 1) "" index)))
-  ([index num-params protocol]
+  ([index _num-params _protocol]
    (if (= index 0) "this" (str "arg" index))))
 
 (defn- format-parameter-list
@@ -52,7 +52,7 @@
   The result should match the return value of clojure.reflect/reflect"
   [info]
   (for [arglist (:arglists info)
-        :let [params (map-indexed (fn [i a] (format-parameter-name
+        :let [params (map-indexed (fn [i _] (format-parameter-name
                                              i (count arglist) :protocol))
                                   arglist)]]
     {:name (str (:name info))
@@ -61,10 +61,9 @@
 (defn stubs-for-interface
   "Get functions defined by protocol / interface."
   [{:keys [interface]}]
-  (try
-    (if-let [v (-> interface symbol resolve)]
-      (if (instance? java.lang.Class v)
-        (prune-reflect-result (reflect/reflect v) v)
-        (mapcat extract-fn-info (-> v deref :sigs vals)))
-      (throw (IllegalArgumentException.
-              (str "Can't find interface " interface))))))
+  (if-let [v (-> interface symbol resolve)]
+    (if (instance? java.lang.Class v)
+      (prune-reflect-result (reflect/reflect v) v)
+      (mapcat extract-fn-info (-> v deref :sigs vals)))
+    (throw (IllegalArgumentException.
+            (str "Can't find interface " interface)))))

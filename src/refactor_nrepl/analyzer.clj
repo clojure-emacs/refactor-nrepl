@@ -10,8 +10,7 @@
             [clojure.walk :as walk]
             [refactor-nrepl
              [config :as config]]
-            [refactor-nrepl.ns.tracker :as tracker]
-            [clojure.string :as str])
+            [refactor-nrepl.ns.tracker :as tracker])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
 
@@ -67,7 +66,7 @@
           symbol-name)
    :children []})
 
-(defn- shadow-wrong-tag-handler [tag-key origination-ast]
+(defn- shadow-wrong-tag-handler [_tag-key _origination-ast]
   nil)
 
 (defn- build-ast
@@ -110,7 +109,7 @@
       error?
       (throw-ast-in-bad-state file-content (.getMessage ^Throwable ast-or-err))
 
-      :default
+      :else
       ast-or-err)))
 
 (defn- ast-stats []
@@ -126,7 +125,7 @@
   (doseq [f (tracker/project-files-in-topo-order)]
     (try
       (ns-ast (slurp f))
-      (catch Throwable th))) ;noop, ast-status will be reported separately
+      (catch Throwable _th))) ;noop, ast-status will be reported separately
   (ast-stats))
 
 (defn node-at-loc? [^long loc-line ^long loc-column node]

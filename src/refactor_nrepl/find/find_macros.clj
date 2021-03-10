@@ -10,10 +10,9 @@
              [ns-parser :as ns-parser]
              [tracker :as tracker]]
             [rewrite-clj.zip :as zip]
-            [clojure.string :as str]
             [clojure.java.io :as io])
   (:import clojure.lang.LineNumberingPushbackReader
-           [java.io BufferedReader File FileReader StringReader]))
+           [java.io File FileReader StringReader]))
 
 ;; The structure here is {path [timestamp macros]}
 (def ^:private macro-defs-cache (atom {}))
@@ -36,8 +35,7 @@
         file-ns (core/ns-from-string file-content)
         content (keep-lines file-content end-line)
         sexp (sexp/get-last-sexp content)
-        macro-name (name (second form))
-        col-beg (dec (.indexOf sexp macro-name))]
+        macro-name (name (second form))]
     {:name (str file-ns "/" macro-name)
      :col-beg column
      :col-end end-column
