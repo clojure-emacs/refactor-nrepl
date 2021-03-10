@@ -66,7 +66,7 @@
   (-> full-ast first :alias-info))
 
 (defn- contains-const?
-  [var-name alias-info node]
+  [var-name _alias-info node]
   (let [[ns name] (str/split var-name #"/")
         const-node? (= :const (:op node))
         node-val-words (when const-node?
@@ -148,7 +148,7 @@
        encl-sexp-level2 (read-string encl-sexp-level2)])))
 
 (defn- optmap-with-default?
-  [var-name file-content [_ [_ level1-form _ level2-form]]]
+  [var-name _file-content [_ [_ level1-form _ level2-form]]]
   (and (vector? level1-form)
        (map? level2-form)
        (= #{:or :keys} (set/intersection #{:or :keys} (set (keys level2-form))))

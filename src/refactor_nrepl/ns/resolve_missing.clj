@@ -16,7 +16,7 @@
 
 (defn- get-type [sym]
   (let [info (info 'user sym)]
-    (if-let [clazz (:class info)]
+    (if-let [_clazz (:class info)]
       (cond
         ((set (:interfaces info)) 'clojure.lang.IType) :type
         ((set (:interfaces info)) 'clojure.lang.IRecord) :type
@@ -31,7 +31,7 @@
 
            ;; This happends when class `candidate` depends on a class that is
            ;; not available on the classpath.
-           (catch NoClassDefFoundError e
+           (catch NoClassDefFoundError _e
              {:name candidate :type :class})))
        candidates))
 

@@ -4,14 +4,9 @@
              [edn :as edn]
              [string :as str]]
             [clojure.java.io :as io]
-            [clojure.tools.namespace.find :as find]
             [org.httpkit.client :as http]
-            [refactor-nrepl.ns.slam.hound.search :as slamhound]
-            [refactor-nrepl.ns.slam.hound.regrow :as slamhound-regrow]
             [version-clj.core :as versions])
-  (:import java.util.Date
-           java.util.zip.GZIPInputStream
-           java.util.jar.JarFile))
+  (:import java.util.zip.GZIPInputStream))
 
 (def artifacts-file (str (System/getProperty "java.io.tmpdir")
                          "/refactor-nrepl-artifacts-cache"))
@@ -147,5 +142,5 @@
        list*))
 
 (defn hotload-dependency
-  [{:keys [coordinates]}]
+  []
   (throw (IllegalArgumentException. "Temporarily disabled until a solution for java 10 is found.")))

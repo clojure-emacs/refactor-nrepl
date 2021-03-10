@@ -13,8 +13,7 @@
    :require-macros true}"
   (:require [clojure.java.io :as io]
             [clojure.set :as set]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.util :as util])
+            [refactor-nrepl.core :as core])
   (:import java.io.File))
 
 (defn- libspec-vector->map
@@ -54,10 +53,6 @@
   [ns-form key & body]
   `(let [~'libspecs (rest (core/get-ns-component ~ns-form ~key))]
      ~@body))
-
-(defn- extract-required-macros [libspec-vector]
-  {:ns (first libspec-vector)
-   :require-macros (drop-while #(not= :refer %) libspec-vector)})
 
 (defn- extract-libspecs [ns-form]
   (mapcat identity
@@ -147,7 +142,7 @@
   e.g {str clojure.string}"
   [libspecs]
   (->> libspecs
-       (map (fn alias [{:keys [ns as] :as libspec}]
+       (map (fn alias [{:keys [ns as]}]
               (when as
                 {as ns})))
        (remove nil?)

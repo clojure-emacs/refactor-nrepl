@@ -71,7 +71,7 @@
 (defmethod path-class-files :jar
   ;; Build class info for all jar entry class files.
   [^File f ^File loc]
-  (let [lp (.getPath loc)]
+  (let [_lp (.getPath loc)]
     (try
       (into ()
             (comp
@@ -79,7 +79,7 @@
              (filter class-file?)
              (map class-or-ns-name))
             (enumeration-seq (.entries (JarFile. f))))
-      (catch Exception e []))))          ; fail gracefully if jar is unreadable
+      (catch Exception _e []))))          ; fail gracefully if jar is unreadable
 
 (defmethod path-class-files :dir
   ;; Dispatch directories and files (excluding jars) recursively.

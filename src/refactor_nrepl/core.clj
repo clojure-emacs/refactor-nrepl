@@ -335,14 +335,14 @@
    (try
      (with-meta (parse/read-ns-decl (PushbackReader. (StringReader. file-content)))
        (extract-ns-meta file-content))
-     (catch Exception e
+     (catch Exception _e
        (throw (IllegalArgumentException. "Malformed ns form!")))))
   ([dialect file-content]
    (let [rdr-opts {:read-cond :allow :features #{dialect}}]
      (try
        (with-meta (parse/read-ns-decl (PushbackReader. (StringReader. file-content)) rdr-opts)
          (extract-ns-meta file-content))
-       (catch Exception e
+       (catch Exception _e
          (throw (IllegalArgumentException. "Malformed ns form!")))))))
 
 (defn ^String fully-qualify

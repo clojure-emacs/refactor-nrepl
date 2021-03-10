@@ -42,9 +42,8 @@
         project))))
 
 (defn- warn-no-project []
-  (do
-    (lein/warn "Warning: refactor-nrepl needs to run in the context of a project.")
-    (lein/warn "Warning: refactor-nrepl middleware won't be activated.")))
+  (lein/warn "Warning: refactor-nrepl needs to run in the context of a project.")
+  (lein/warn "Warning: refactor-nrepl middleware won't be activated."))
 
 (defn middleware
   [project]

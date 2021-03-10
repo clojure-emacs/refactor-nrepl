@@ -20,7 +20,6 @@
              [ns-parser :as ns-parser]
              [prune-dependencies :refer [prune-dependencies]]
              [rebuild :refer [rebuild-ns-form]]]
-            [clojure.string :as str]
             [clojure.java.io :as io]))
 
 (defn- assert-no-exclude-clause

@@ -4,7 +4,7 @@
 
 (defn spurious?
   "True if the occurrence doesn't exist at the given coordinates."
-  ([{:keys [file ^long line-beg ^long col-beg ^long col-end name ^String match] :as occ}]
+  ([{:keys [file ^long line-beg ^long col-beg ^long col-end name ^String match]}]
    ;; coordinates are wrong for def forms, they match the beginning of
    ;; the form not the first mention of the symbol being defined
    (when-not (and match (.startsWith match "(def"))

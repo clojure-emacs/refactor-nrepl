@@ -3,12 +3,10 @@
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
 (ns refactor-nrepl.ns.slam.hound.regrow
   (:require [clojure.set :as set]
-            [clojure.string :as string]
             [refactor-nrepl.ns.slam.hound.future :refer [as->* cond->*]]
             [refactor-nrepl.ns.slam.hound.search :as search]
             [nrepl.middleware.interruptible-eval :refer [*msg*]])
-  (:import (clojure.lang IMapEntry IRecord)
-           (java.util.regex Pattern)))
+  (:import (clojure.lang IMapEntry IRecord)))
 
 (def ^:dynamic *cache* (atom {}))
 (def ^:dynamic *dirty-ns* (atom #{}))
@@ -91,10 +89,10 @@
         (instance? IRecord form) (reduce (fn [r x] (conj r (f x))) form form)
         (coll? form) (into (empty form) (map f form))
         :else form)
-      (as->* form'
+      (as->* form
         (if-let [m (meta form)]
-          (with-meta form' m)
-          form'))))
+          (with-meta form m)
+          form))))
 
 (defn- prewalk [f form]
   (walk (partial prewalk f) (f form)))
@@ -130,7 +128,7 @@
               s))
           #{} (vals (all-ns-imports))))
 
-(defn- alias-candidates [type missing body]
+(defn- alias-candidates [_type missing body]
   (set
    (let [syms-with-alias (get (ns-qualifed-syms body) missing)]
      (when (seq syms-with-alias)

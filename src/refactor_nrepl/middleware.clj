@@ -62,7 +62,7 @@
                      :else v))
                  data))
 
-(defn- serialize-response [{:keys [serialization-format] :as msg} response]
+(defn- serialize-response [{:keys [serialization-format]} response]
   (binding [*print-length* nil
             *print-level* nil]
     (condp = serialization-format
@@ -114,7 +114,7 @@
   (delay
    (require-and-resolve 'refactor-nrepl.ns.pprint/pprint-ns)))
 
-(defn- clean-ns-reply [{:keys [transport path] :as msg}]
+(defn- clean-ns-reply [{:keys [transport] :as msg}]
   (reply transport msg :ns (some-> msg (@clean-ns) (@pprint-ns)) :status :done))
 
 (def ^:private find-used-locals

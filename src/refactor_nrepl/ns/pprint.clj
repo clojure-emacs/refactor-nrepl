@@ -64,9 +64,9 @@
   [m & {:keys [newlines]
         :or {newlines false}}]
   (let [short? #(= (str %) "true")
-        shorthand (sort (filter (fn [[k v]] (short? v)) m))
-        longhand (remove (fn [[k v]] (short? v)) m)]
-    (doseq [[k v] shorthand]
+        shorthand (sort (filter (fn [[_ v]] (short? v)) m))
+        longhand (remove (fn [[_ v]] (short? v)) m)]
+    (doseq [[k _] shorthand]
       (print "^" (str k) ""))
     (when-not (empty? longhand)
       (printf "^{")
@@ -92,7 +92,7 @@
         (do
           (print key "[")
           (doseq [method val]           ;val are all the methods
-            (pprint-meta (filter (fn [[k v]]
+            (pprint-meta (filter (fn [[k _]]
                                    (contains? metadata k))
                                  (meta method)))
             (print method)

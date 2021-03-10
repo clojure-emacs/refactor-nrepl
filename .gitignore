@@ -25,3 +25,4 @@ install.cmd
 /out/
 /.lein-env
 .inline-deps
+.clj-kondo/.cache/
