@@ -314,7 +314,7 @@ contains among other things a full stacktrace.
 
 ## Development with `mranderson`
 
-[mranderson][] is used to avoid classpath collisions.
+[mranderson][] is used to avoid classpath collisions between any application deps and the deps of `refactor-nrepl` itself.
 
 First make sure you have Leiningen 2.9.1 or later, `lein upgrade` if necessary.
 
@@ -324,23 +324,21 @@ To work with `mranderson` the first thing to do is:
 
     lein do clean, inline-deps
 
-this creates the munged local dependencies in target/srcdeps directory
-
-after that you can run your tests or your repl with:
+This creates the munged local dependencies in `target/srcdeps` directory.
+After that you can run your tests or your REPL with:
 
     lein with-profile +plugin.mranderson/config repl
     lein with-profile +plugin.mranderson/config test
 
-note the plus sign before the leiningen profile.
+Note the plus sign (`+`) before the leiningen profile.
 
-If you want to use `mranderson` while developing locally with the repl the source has to be modified in the `target/srcdeps` directory.
+If you want to use `mranderson` while developing locally with the REPL, the source has to be modified in the `target/srcdeps` directory.
 
-When you want to release
-locally:
+When you want to release locally to the following:
 
     lein with-profile plugin.mranderson/config install
 
-to clojars:
+And here's how to deploy to Clojars:
 
     lein with-profile plugin.mranderson/config deploy clojars
 
