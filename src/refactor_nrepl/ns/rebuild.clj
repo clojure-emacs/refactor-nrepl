@@ -242,14 +242,23 @@
       forms)))
 
 (defn build-cljc-dep-forms [deps]
-  (let [rdr-cond (symbol "#?@")
-        clj-forms (build-clj-or-cljs-dep-forms deps :clj)
+  (let [clj-forms  (build-clj-or-cljs-dep-forms deps :clj)
         cljs-forms (build-clj-or-cljs-dep-forms deps :cljs)]
-    (if (and clj-forms
-             cljs-forms
-             (not= clj-forms cljs-forms))
-      (list rdr-cond `(:clj ~(vec clj-forms) :cljs ~(vec cljs-forms)))
-      (or clj-forms cljs-forms))))
+    (cond
+      ;; if we have *both* clj and cljs forms, and they're identical, just
+      ;; return the forms with no conditionals.
+      (and clj-forms
+           cljs-forms
+           (= clj-forms cljs-forms))
+      clj-forms
+
+      ;; otherwise if we have *both* clj and cljs form (but they're different),
+      ;; or just one or the other, generate a splicing conditional form.
+      (or clj-forms cljs-forms)
+      (list (symbol "#?@") (concat (when clj-forms
+                                     (list :clj (vec clj-forms)))
+                                   (when cljs-forms
+                                     (list :cljs (vec cljs-forms))))))))
 
 (defn build-dep-forms
   [{:keys [source-dialect] :as deps}]
