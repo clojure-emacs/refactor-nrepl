@@ -269,6 +269,8 @@ Eagerly builds, and caches ASTs for all clojure files in the project.  Returns `
 '(com.foo "OK" com.bar "OK" com.baz '("error" "Could not resolve var: keyw"))
 ```
 
+> If a given end user sets their `clojure.tools.namespace.repl/refresh-dirs`, files outside said `refresh-dirs` won't be analyzed, resulting in safer, more efficient analysis.
+
 ### rename-file-or-dir
 
 The `rename-file-or-dir` op takes an `old-path` and a `new-path` which are absolute paths to a file or directory.

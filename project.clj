@@ -38,13 +38,13 @@
              :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]
                                    [org.clojure/clojurescript "1.10.520"]]}
 
+             :lein-plugin {:source-paths ["lein-plugin"]}
              :test {:dependencies [[print-foo "1.0.2"]]
                     :src-paths ["test/resources"]}
              :dev {:plugins [[jonase/eastwood "0.3.14"]]
                    :global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.946"]
                                   [cider/piggieback "0.5.2"]
-                                  [leiningen-core "2.9.5"]
                                   [commons-io/commons-io "2.8.0"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
