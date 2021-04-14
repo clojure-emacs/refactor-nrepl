@@ -218,7 +218,7 @@
           origin-ns (symbol (core/prefix fully-qualified-name))
           dependents (tracker/get-dependents tracker origin-ns)]
       (some->> macro-def
-               :file
+               ^String (:file)
                File.
                (conj dependents)
                (mapcat (partial find-usages-in-file [macro-def]))

@@ -35,7 +35,7 @@
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
-                    (doseq [[path content] deps]
+                    (doseq [[^String path content] deps]
                       (when (.endsWith path "clj")
                         (swap! dependents conj content))))]
       (rename-file-or-dir from-file-path to-file-path)
@@ -58,7 +58,7 @@
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
       (rename-file-or-dir from-file-path to-file-path)
-      (doseq [[f content] @dependents
+      (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.clj")]
         (is (.contains content new-ns-ref))
         (is (not (.contains content old-ns-ref)))
@@ -82,7 +82,7 @@
 
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
-                    (doseq [[path content] deps]
+                    (doseq [[^String path content] deps]
                       (when (.endsWith path ".clj")
                         (swap! dependents conj content))))]
       (rename-file-or-dir from-dir-path to-dir-path)
@@ -114,7 +114,7 @@
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
       (rename-file-or-dir from-dir-path to-dir-path)
-      (doseq [[f content] @dependents
+      (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.clj")]
         (is (.contains content new-ns-ref-dir))
         (is (not (.contains content old-ns-ref-dir)))
@@ -131,7 +131,7 @@
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
       (rename-file-or-dir from-dir-path to-dir-path)
       (is (= (count @files) 9))
-      (doseq [[old new] @files]
+      (doseq [[^String old ^String new] @files]
         (is (.contains old "/move/"))
         (is (.contains new "/moved/"))))))
 
@@ -143,8 +143,8 @@
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
       (rename-file-or-dir from-dir-path to-dir-path)
-      (is (some #(.endsWith % "non_clj_file") @files))
-      (is (= 4 (count (filter #(.endsWith % ".cljs") @files)))))))
+      (is (some #(.endsWith ^String % "non_clj_file") @files))
+      (is (= 4 (count (filter #(.endsWith ^String % ".cljs") @files)))))))
 
 
 ;;; cljs
@@ -187,7 +187,7 @@
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
       (rename-file-or-dir from-file-path-cljs to-file-path-cljs)
-      (doseq [[f content] @dependents
+      (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.cljs")]
         (is (.contains content new-ns-ref))
         (is (not (.contains content old-ns-ref)))
@@ -211,7 +211,7 @@
 
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
-                    (doseq [[path content] deps]
+                    (doseq [[^String path content] deps]
                       (when (.endsWith path ".cljs")
                         (swap! dependents conj content))))]
       (rename-file-or-dir from-dir-path to-dir-path)
@@ -246,7 +246,7 @@
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
       (rename-file-or-dir from-dir-path to-dir-path)
-      (doseq [[f content] @dependents
+      (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.cljs")]
         (is (.contains content new-ns-ref-dir))
         (is (not (.contains content old-ns-ref-dir)))
@@ -263,7 +263,7 @@
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
       (rename-file-or-dir from-dir-path to-dir-path)
       (is (= (count @files) 9))
-      (doseq [[old new] @files]
+      (doseq [[^String old ^String new] @files]
         (is (.contains old "/move/"))
         (is (.contains new "/moved/"))))))
 
@@ -275,5 +275,5 @@
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
       (rename-file-or-dir from-dir-path to-dir-path)
-      (is (some #(.endsWith % "non_clj_file") @files))
-      (is (= 4 (count (filter #(.endsWith % ".clj") @files)))))))
+      (is (some #(.endsWith ^String % "non_clj_file") @files))
+      (is (= 4 (count (filter #(.endsWith ^String % ".clj") @files)))))))

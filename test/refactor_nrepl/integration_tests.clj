@@ -55,7 +55,7 @@
 
       (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two"))))
 
-(defn ns-ast-throw-error-for-five [content]
+(defn ns-ast-throw-error-for-five [^String content]
   (if (.contains content "com.example.five")
     (throw (IllegalThreadStateException. "FAILED!"))
     (#'refactor-nrepl.analyzer/cachable-ast content)))
@@ -89,7 +89,7 @@
           result (remove keyword? response)]
       ;;(clojure.pprint/pprint result)
 
-      (is (not-any? #(.contains % "(assert (> x 0)") result) "`assert` found when searching for `clojure.core/str`"))))
+      (is (not-any? #(.contains ^String % "(assert (> x 0)") result) "`assert` found when searching for `clojure.core/str`"))))
 
 (deftest test-shouldnt-find-expanded-fn-in-place-of-macro
   (with-testproject-on-classpath
@@ -101,7 +101,7 @@
           result (remove keyword? response)]
       ;;(clojure.pprint/pprint result)
 
-      (is (not-any? #(.contains % "(nicely x)") result) "`str-nicely` found at macro call site"))))
+      (is (not-any? #(.contains ^String % "(nicely x)") result) "`str-nicely` found at macro call site"))))
 
 (deftest test-find-fn-in-similarly-named-ns
   (with-testproject-on-classpath

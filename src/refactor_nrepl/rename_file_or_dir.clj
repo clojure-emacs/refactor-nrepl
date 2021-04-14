@@ -125,7 +125,7 @@
 
 (defn- rename-file!
   "Actually rename a file."
-  [old-path new-path]
+  [^String old-path new-path]
   (fs/mkdirs (fs/parent new-path))
   (when-not (fs/rename old-path new-path)
     (throw (ex-info "Failed renaming file!"
@@ -143,7 +143,7 @@
 
 (defn- update-ns!
   "After moving some file to path update its ns to reflect new location."
-  [path old-ns]
+  [^String path old-ns]
   (let [new-ns (path->ns path)
         f (File. path)]
     (->> new-ns
@@ -224,7 +224,7 @@
                    :let [path (util/normalize-to-unix-path (.getAbsolutePath f))]]
                (-rename-file-or-dir path (merge-paths path old-path new-path))))))
 
-(defn- file-or-symlink-exists? [path]
+(defn- file-or-symlink-exists? [^String path]
   (let [f (File. path)]
     (if (.exists f)
       path
@@ -234,7 +234,7 @@
             (when (.. target toFile exists)
               path)))))))
 
-(defn- -rename-file-or-dir [old-path new-path]
+(defn- -rename-file-or-dir [^String old-path new-path]
   (let [affected-files  (if (fs/directory? old-path)
                           (rename-dir old-path new-path)
                           (if ((some-fn core/clj-file? core/cljs-file?)
