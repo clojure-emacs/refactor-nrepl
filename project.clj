@@ -25,7 +25,6 @@
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
-
   :profiles {;; Clojure versions matrix
              :provided {:dependencies [[cider/cider-nrepl "0.25.9"]
                                        [org.clojure/clojure "1.8.0"]]}
@@ -37,6 +36,11 @@
                                   [javax.xml.bind/jaxb-api "2.3.1"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]
                                    [org.clojure/clojurescript "1.10.520"]]}
+
+             :master {:repositories [["snapshots"
+                                      "https://oss.sonatype.org/content/repositories/snapshots"]]
+                      :dependencies [[org.clojure/clojure "1.11.0-master-SNAPSHOT"]
+                                     [org.clojure/clojure "1.11.0-master-SNAPSHOT" :classifier "sources"]]}
 
              :lein-plugin {:source-paths ["lein-plugin"]}
              :test {:dependencies [[print-foo "1.0.2"]]
