@@ -1,4 +1,7 @@
 [![CircleCI](https://circleci.com/gh/clojure-emacs/refactor-nrepl/tree/master.svg?style=svg)](https://circleci.com/gh/clojure-emacs/refactor-nrepl/tree/master)
+[![Dependencies Status](https://versions.deps.co/clojure-emacs/refactor-nrepl/status.svg)](https://versions.deps.co/clojure-emacs/refactor-nrepl)
+[![cljdoc badge](https://cljdoc.org/badge/refactor-nrepl/refactor-nrepl)](https://cljdoc.org/d/refactor-nrepl/refactor-nrepl/CURRENT)
+[![downloads badge](https://versions.deps.co/refactor-nrepl/refactor-nrepl/downloads.svg)](https://clojars.org/refactor-nrepl/refactor-nrepl)
 [![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true)](https://discord.com/invite/nFPpynQPME)
 
 # Refactor nREPL
