@@ -60,4 +60,6 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]}
+             :clj-kondo [:test
+                         {:dependencies [[clj-kondo "2021.03.31"]]}]}
   :jvm-opts ["-Djava.net.preferIPv4Stack=true"])
