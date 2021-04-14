@@ -15,7 +15,7 @@ cljfmt:
 	lein with-profile +$(VERSION),+cljfmt,+lein-plugin cljfmt check
 
 kondo:
-	clj-kondo --lint src
+	lein with-profile -dev,+$(VERSION),+clj-kondo run -m clj-kondo.main --lint src 
 
 # When releasing, the BUMP variable controls which field in the
 # version string will be incremented in the *next* snapshot
