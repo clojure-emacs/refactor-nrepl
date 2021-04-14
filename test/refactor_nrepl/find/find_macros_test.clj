@@ -7,8 +7,8 @@
 
 (deftest find-macro-test
   (let [occurrences (find-macro "com.example.macro-def/my-macro" false)
-        {:keys [line-beg col-beg file match]}
-        (first (filter #(.contains (:match %) "defmacro") occurrences))]
+        {:keys [line-beg col-beg ^String file match]}
+        (first (filter #(.contains ^String (:match %) "defmacro") occurrences))]
     (testing "finds the macro definition"
       (is (found? #"defmacro my-macro" occurrences)))
     (testing "finds fully qualified reference"

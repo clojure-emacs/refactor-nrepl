@@ -107,14 +107,24 @@
 
 (defn read-ns-form
   ([path]
-   (with-open [file-reader (FileReader. path)]
-     (parse/read-ns-decl (readers/indexing-push-back-reader
-                          (PushbackReader. file-reader)))))
+   (let [^String path-string (when (string? path)
+                               path)
+         ^File path-file (when-not path-string
+                           path)]
+     (with-open [file-reader (or (some-> path-string FileReader.)
+                                 (some-> path-file FileReader.))]
+       (parse/read-ns-decl (readers/indexing-push-back-reader
+                            (PushbackReader. file-reader))))))
   ([dialect path]
-   (with-open [file-reader (FileReader. path)]
-     (parse/read-ns-decl (readers/indexing-push-back-reader
-                          (PushbackReader. file-reader))
-                         {:read-cond :allow :features #{dialect}}))))
+   (let [^String path-string (when (string? path)
+                               path)
+         ^File path-file (when-not path-string
+                           path)]
+     (with-open [file-reader (or (some-> path-string FileReader.)
+                                 (some-> path-file FileReader.))]
+       (parse/read-ns-decl (readers/indexing-push-back-reader
+                            (PushbackReader. file-reader))
+                           {:read-cond :allow :features #{dialect}})))))
 
 (defn- data-file?
   "True of f is named like a clj file but represents data.
@@ -264,7 +274,9 @@
   looking for comes after, by 'incing' by default we can just check
   for zero?"
   [ns-form]
-  (let [gen-class (get-ns-component ns-form :gen-class)
+  (let [^clojure.lang.PersistentVector gen-class (some-> ns-form
+                                                         (get-ns-component :gen-class)
+                                                         vec)
         methods_index (inc (if-not (nil? gen-class)
                              (.indexOf gen-class :methods)
                              -1))]
