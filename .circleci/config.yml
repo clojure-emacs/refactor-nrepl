@@ -173,10 +173,6 @@ workflows:
       - util_job:
           name: Code Linting
           steps:
-            # - run:
-            #     name: Running Eastwood
-            #     command: |
-            #       make eastwood
             - run:
                 name: Running cljfmt
                 command: |
@@ -185,4 +181,8 @@ workflows:
                 name: Running clj-kondo
                 command: |
                   make kondo
+            - run:
+                name: Running Eastwood
+                command: |
+                  make eastwood
 

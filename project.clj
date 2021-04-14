@@ -41,8 +41,7 @@
              :lein-plugin {:source-paths ["lein-plugin"]}
              :test {:dependencies [[print-foo "1.0.2"]]
                     :src-paths ["test/resources"]}
-             :dev {:plugins [[jonase/eastwood "0.3.14"]]
-                   :global-vars {*warn-on-reflection* true}
+             :dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.946"]
                                   [cider/piggieback "0.5.2"]
                                   [commons-io/commons-io "2.8.0"]]
@@ -59,7 +58,13 @@
                                           cond->* [[:inner 0]]
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
-                                          try-if-let [[:block 1]]}}}]}
+                                          try-if-let [[:block 1]]}}}]
+             :eastwood {:plugins         [[jonase/eastwood "0.4.0"]]
+                        ;; TODO: add :test-paths
+                        :eastwood {:namespaces      [:source-paths]
+                                   ;; vendored - shouldn't be tweaked for satisfying linters:
+                                   :exclude-namespaces [refactor-nrepl.ns.slam.hound.regrow]
+                                   :exclude-linters [:unused-ret-vals]}}
              :clj-kondo [:test
                          {:dependencies [[clj-kondo "2021.03.31"]]}]}
   :jvm-opts ["-Djava.net.preferIPv4Stack=true"])

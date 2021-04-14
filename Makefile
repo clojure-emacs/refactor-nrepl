@@ -14,6 +14,9 @@ test: .inline-deps
 cljfmt:
 	lein with-profile +$(VERSION),+cljfmt,+lein-plugin cljfmt check
 
+eastwood:
+	lein with-profile +$(VERSION),+eastwood eastwood
+
 kondo:
 	lein with-profile -dev,+$(VERSION),+clj-kondo run -m clj-kondo.main --lint src 
 
