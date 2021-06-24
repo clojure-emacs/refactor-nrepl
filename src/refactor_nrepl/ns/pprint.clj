@@ -36,7 +36,7 @@
 
 (defn pprint-require-form
   [[_ & libspecs]]
-  (print "(:require ")
+  (print "(:require\n")
   (dorun
    (map-indexed
     (fn [idx libspec]
