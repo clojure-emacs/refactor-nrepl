@@ -1,13 +1,14 @@
 (ns refactor-nrepl.artifacts
-  (:require [clojure
-             [edn :as edn]
-             [string :as str]]
-            [clojure.data.json :as json]
-            [clojure.java.io :as io]
-            [nrepl
-             [middleware :refer [set-descriptor!]]
-             [misc :refer [response-for]]
-             [transport :as transport]]
-            [org.httpkit.client :as http]
-            [refactor-nrepl.externs :refer [add-dependencies]])
+  (:require
+   [clojure
+    [edn :as edn]
+    [string :as str]]
+   [clojure.data.json :as json]
+   [clojure.java.io :as io]
+   [nrepl
+    [middleware :refer [set-descriptor!]]
+    [misc :refer [response-for]]
+    [transport :as transport]]
+   [org.httpkit.client :as http]
+   [refactor-nrepl.externs :refer [add-dependencies]])
   (:import java.util.Date))

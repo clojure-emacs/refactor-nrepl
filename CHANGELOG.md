@@ -2,8 +2,10 @@
 
 ## Unreleased
 
+* [clojure-emacs/clj-refactor.el#459](https://github.com/clojure-emacs/clj-refactor.el/issues/459): `clean-ns` should conform to the style guide: `(:require` in the ns form should be followed by a newline.
 * [#294](https://github.com/clojure-emacs/refactor-nrepl/pull/294): Properly skip uneval nodes when looking for the first/last sexp
 * From now on, if you set the `clojure.tools.namespace.repl/refresh-dirs`, files outside said `refresh-dirs` won't be analyzed, resulting in safer, more efficient analysis.
+
 
 ## 2.5.1 (2021-02-16)
 
