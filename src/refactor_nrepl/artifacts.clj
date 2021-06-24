@@ -19,7 +19,7 @@
 
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
 (defonce artifacts (atom (if (.exists (io/as-file artifacts-file))
-                           (->> artifacts-file slurp edn/read-string (into (sorted-map)))
+                           (->> artifacts-file slurp edn/read-string (into {}))
                            {})
                          :meta {:last-modified
                                 (get-last-modified-from-file artifacts-file)}))
@@ -107,7 +107,7 @@
 (defn- get-artifacts-from-clojars!
   []
   (reduce #(update %1 (str (first %2)) conj (second %2))
-          (sorted-map)
+          {}
           (get-clojars-artifacts!)))
 
 (defn- update-artifact-cache!
