@@ -75,3 +75,21 @@
     (is (nil? (#'artifacts/edn-read-or-nil bad-form)))
     (is (= 'foo/bar (first (#'artifacts/edn-read-or-nil good-form))))
     (is (= "1.1" (second (#'artifacts/edn-read-or-nil good-form))))))
+
+(deftest hotload-dependency-throws-exceptions
+  (reset! artifacts/artifacts {"prismatic/schema" ["0.1"]})
+  (with-redefs
+   [artifacts/make-resolve-missing-aware-of-new-deps! (fn [& _])
+    artifacts/stale-cache? (constantly false)
+    artifacts/jar-at-the-top-of-dependency-hierarchy (fn [& _])
+    artifacts/add-dependencies! (constantly true)]
+    (testing "Throws for non existing version"
+      (is (thrown? IllegalArgumentException
+                   (artifacts/hotload-dependency
+                    {:coordinates "[prismatic/schema \"1.0\"]"}))))
+    (testing "Throws for non existing artifact"
+      (is (thrown? IllegalArgumentException
+                   (artifacts/hotload-dependency
+                    {:coordinates "[imaginary \"1.0\"]"}))))
+    (testing "No exception when all is OK"
+      (is (artifacts/hotload-dependency {:coordinates "[prismatic/schema \"0.1\"]"})))))

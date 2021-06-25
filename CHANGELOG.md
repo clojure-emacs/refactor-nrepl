@@ -17,6 +17,7 @@
 * Build ASTs more robustly (by using locks, `require`, and ruling out certain namespaces like refactor-nrepl itself)
 * Improve `namespace-aliases` performance and make it return more accurate results.
 * Honor internal `future-cancel` calls, improving overall responsiveness and stability.
+* [clojure-emacs/clj-refactor.el#466](https://github.com/clojure-emacs/clj-refactor.el/issues/466): Bring the `hotload-dependency` operation back.
 
 ### Bugs fixed
 
