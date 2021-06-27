@@ -13,7 +13,7 @@
    :prune-ns-form true
 
    ;; Should `clean-ns` favor prefix forms in the ns macro?
-   :prefix-rewriting true
+   :prefix-rewriting false
 
    ;; Should `pprint-ns` place a newline after the `:require` and `:import` tokens?
    :insert-newline-after-require true

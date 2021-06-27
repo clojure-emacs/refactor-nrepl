@@ -9,15 +9,13 @@
    :extends java.lang.Exception
    :methods [[binomial [int int] double]])
   (:require
-   clojure.data
-   clojure.edn
-   [clojure.instant :as inst :reload true]
-   [clojure.pprint :refer [cl-format formatter get-pretty-writer]]
-   [clojure.string :refer :all :reload-all true]
-   [clojure.test :refer :all]
-   clojure.test.junit
-   [clojure.walk :refer [postwalk prewalk]]
-   clojure.xml)
+   [clojure data edn xml
+    [instant :as inst :reload true]
+    [pprint :refer [cl-format formatter get-pretty-writer]]
+    [string :refer :all :reload-all true]
+    [test :refer :all]
+    [walk :refer [postwalk prewalk]]]
+   clojure.test.junit)
   (:import
    [java.io Closeable FilenameFilter PushbackReader]
    [java.util Calendar Date Random]
