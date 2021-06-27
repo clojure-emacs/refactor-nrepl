@@ -63,12 +63,12 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]
-             :eastwood {:plugins         [[jonase/eastwood "0.4.0"]]
+             :eastwood {:plugins         [[jonase/eastwood "0.6.0"]]
                         ;; TODO: add :test-paths
                         :eastwood {:namespaces      [:source-paths]
                                    ;; vendored - shouldn't be tweaked for satisfying linters:
                                    :exclude-namespaces [refactor-nrepl.ns.slam.hound.regrow]
                                    :exclude-linters [:unused-ret-vals]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2021.03.31"]]}]}
+                         {:dependencies [[clj-kondo "2021.06.18"]]}]}
   :jvm-opts ["-Djava.net.preferIPv4Stack=true"])
