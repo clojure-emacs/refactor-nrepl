@@ -159,10 +159,12 @@
                     (:import java.util.Date)))
 
 (deftest test-pprint-artifact-ns
-  (let [path (.getAbsolutePath (File. "test/resources/artifacts_pprinted"))
-        actual (pprint-ns (with-meta artifact-ns nil))
-        expected (slurp path)]
-    (is (= expected actual))))
+  (are [setting filename] (let [actual (config/with-config {:insert-newline-after-require setting}
+                                         (pprint-ns (with-meta artifact-ns nil)))
+                                expected (-> filename File. .getAbsolutePath slurp)]
+                            (= expected actual))
+    true  "test/resources/artifacts_pprinted"
+    false "test/resources/artifacts_pprinted_traditional_newline"))
 
 (deftest handles-imports-when-only-enum-is-used
   (let [new-ns (clean-ns ns2)
@@ -231,7 +233,7 @@
 
 (deftest does-not-break-import-for-inner-class
   (let [cleaned (pprint-ns (clean-ns ns-with-inner-classes))]
-    (is (re-find #":import.*Line2D\$Double" cleaned))))
+    (is (re-find #":import\n.*Line2D\$Double" cleaned))))
 
 (deftest fallback-to-relative-path
   (is (= (pprint-ns (clean-ns ns1))
