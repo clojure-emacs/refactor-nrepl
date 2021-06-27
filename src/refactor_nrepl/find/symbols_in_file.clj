@@ -34,6 +34,12 @@
               (.substring s 0 (dec (.length s)))
               s))))
 
+(defn- strip-meta-from-reader
+  [metadata]
+  (-> metadata
+      (dissoc :line :column :end-line :end-column)
+      not-empty))
+
 (defn symbols-in-file
   "Return a set of all the symbols occurring in the file at path.
 
@@ -63,24 +69,33 @@
          (let [rdr (-> path slurp core/file-content-sans-ns
                        readers/indexing-push-back-reader)
                rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
-               syms (atom #{})
-               collect-symbol (fn [form]
-                                ;; Regular symbol
-                                (when (symbol? form)
-                                  (swap! syms conj (normalize-ctor-call form)))
-                                ;; Classes used in typehints
-                                (when-let [t (:tag (meta form))]
-                                  (swap! syms conj t))
-                                (when (and (keyword? form)
-                                           (core/fully-qualified? form))
-                                  (swap! syms conj
-                                         (symbol (core/prefix form)
-                                                 (core/suffix form))))
-                                form)]
-           (loop [form (reader/read rdr-opts rdr)]
-             (when (not= form :eof)
-               (walk/prewalk collect-symbol form)
-               (recur (reader/read rdr-opts rdr))))
-           (->> @syms
-                (map (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)))
-                set)))))))
+               syms (atom #{})]
+           (letfn [(collect-symbols [form]
+                     (let [minimal-meta (strip-meta-from-reader (meta form))]
+                       ;; metadata used in metadata-based protocol extensions
+                       ;; see #239 for an example
+                       (when minimal-meta
+                         (->> minimal-meta
+                              seq
+                              flatten
+                              (run! collect-symbols)))
+                       ;; Regular symbol
+                       (when (symbol? form)
+                         (swap! syms conj (normalize-ctor-call form)))
+                       ;; Classes used in typehints
+                       (when-let [t (:tag minimal-meta)]
+                         (swap! syms conj t))
+                       (when (and (keyword? form)
+                                  (core/fully-qualified? form))
+                         (swap! syms conj
+                                (symbol (core/prefix form)
+                                        (core/suffix form)))))
+                     form)]
+             (loop [form (reader/read rdr-opts rdr)]
+               (when (not= form :eof)
+                 (walk/prewalk collect-symbols form)
+                 (recur (reader/read rdr-opts rdr))))
+             (->> @syms
+                  (map
+                   (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)))
+                  set))))))))
