@@ -144,25 +144,29 @@
     (is (= clean-requires requires))
     (is (= clean-imports imports))))
 
-(def artifact-ns '(ns refactor-nrepl.artifacts
-                    (:require [clojure
-                               [edn :as edn]
-                               [string :as str]]
-                              [clojure.data.json :as json]
-                              [clojure.java.io :as io]
-                              [nrepl
-                               [middleware :refer [set-descriptor!]]
-                               [misc :refer [response-for]]
-                               [transport :as transport]]
-                              [org.httpkit.client :as http]
-                              [refactor-nrepl.externs :refer [add-dependencies]])
-                    (:import java.util.Date)))
+(def artifact-ns
+  '(ns refactor-nrepl.artifacts
+     (:require
+      [clojure
+       [edn :as edn]
+       [string :as str]]
+      [clojure.data.json :as json]
+      [clojure.java.io :as io]
+      [nrepl
+       [middleware :refer [set-descriptor!]]
+       [misc :refer [response-for]]
+       [transport :as transport]]
+      [org.httpkit.client
+       :as very-very-very-very-long-alias-causing-line-wrap]
+      [refactor-nrepl.externs :refer [add-dependencies]])
+     (:import java.util.Date)))
 
 (deftest test-pprint-artifact-ns
-  (are [setting filename] (let [actual (config/with-config {:insert-newline-after-require setting}
-                                         (pprint-ns (with-meta artifact-ns nil)))
-                                expected (-> filename File. .getAbsolutePath slurp)]
-                            (= expected actual))
+  (are [setting filename]
+       (let [actual (config/with-config {:insert-newline-after-require setting}
+                      (pprint-ns (with-meta artifact-ns nil)))
+             expected (-> filename File. .getAbsolutePath slurp)]
+         (= expected actual))
     true  "test/resources/artifacts_pprinted"
     false "test/resources/artifacts_pprinted_traditional_newline"))
 
@@ -200,13 +204,10 @@
 (deftest does-not-remove-ns-with-rename
   (is (= (nthrest ns-with-rename-cleaned 2) (nthrest (clean-ns ns-with-rename) 2))))
 
-;; Order of stuff in maps aren't stable across versions which messes
-;; with pretty-printing
-(when (= (clojure-version) "1.7.0")
-  (deftest test-pprint
-    (let [ns-str (pprint-ns (clean-ns ns1))
-          ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_and_pprinted")))]
-      (is (= ns1-str ns-str)))))
+(deftest test-pprint
+  (let [ns-str (pprint-ns (clean-ns ns1))
+        ns1-str (slurp (.getAbsolutePath (File. "test/resources/ns1_cleaned_and_pprinted")))]
+    (is (= ns1-str ns-str))))
 
 (deftest preserves-shorthand-meta
   (let [cleaned (pprint-ns (clean-ns ns-with-shorthand-meta))]
