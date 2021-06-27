@@ -109,10 +109,11 @@
   [artifact]
   (let [{:keys [body status]} @(http/get (str "https://clojars.org/api/artifacts/"
                                               artifact))]
-    (when (= 200 status)
-      (->> (json/read-str body :key-fn keyword)
-           :recent_versions
-           (keep :version)))))
+    (if (= 200 status)
+      (map :version (:recent_versions (json/read-str body :key-fn keyword)))
+      (throw (ex-info (str "Unexpected response from Clojars")
+                      {:status status
+                       :body body})))))
 
 (defn- get-artifacts-from-clojars!
   []
