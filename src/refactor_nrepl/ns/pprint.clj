@@ -14,7 +14,7 @@
   (vec (concat (remove sequential? libspecs)
                (filter sequential? libspecs))))
 
-(defn- pprint-prefix-form [[name & libspecs]]
+(defn- pprint-libspec-with-prefix-form [[name & libspecs]]
   (printf "[%s" name)
   (let [ordered-libspecs (libspec-vectors-last libspecs)]
     (dorun
@@ -35,10 +35,21 @@
                             (printf "%s " libspec))))))
                   ordered-libspecs))))
 
-(defn insert-clause-delimiter []
+(defn- insert-clause-delimiter []
   (if (:insert-newline-after-require *config*)
     (println)
     (print " ")))
+
+(def ^:const ^:private as-or-refer-re-pattern
+  (re-pattern (str "(:as|:refer)" (System/lineSeparator))))
+
+(defn- pprint-libspec [libspec]
+  ;; If a vector gets too long `pprint` will print one element per line.
+  ;; This puts `:as` and `:refer` on their own line, which causes the ns form
+  ;; to take up too much vertical space.
+  (printf (str/replace (with-out-str (pprint libspec))
+                       as-or-refer-re-pattern
+                       "$1")))
 
 (defn pprint-require-form
   [[_ & libspecs]]
@@ -48,13 +59,15 @@
    (map-indexed
     (fn [idx libspec]
       (if (= idx (dec (count libspecs)))
-        (printf "%s)\n" (str/trim-newline
-                         (with-out-str (if (prefix-form? libspec)
-                                         (pprint-prefix-form libspec)
-                                         (pprint libspec)))))
+        (printf "%s)\n"
+                (str/trim-newline
+                 (with-out-str
+                   (if (prefix-form? libspec)
+                     (pprint-libspec-with-prefix-form libspec)
+                     (pprint libspec)))))
         (if (prefix-form? libspec)
-          (pprint-prefix-form libspec)
-          (pprint libspec))))
+          (pprint-libspec-with-prefix-form libspec)
+          (pprint-libspec libspec))))
     libspecs)))
 
 (defn- form-is? [form type]
