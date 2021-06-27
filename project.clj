@@ -3,15 +3,16 @@
   :url "http://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "0.8.3"]
+  :dependencies [^:inline-dep [cider/orchard "0.6.5"]
+                 ^:inline-dep [clj-commons/fs "1.6.307"]
+                 ^:inline-dep [cljfmt "0.7.0"]
                  ^:inline-dep [http-kit "2.5.1"]
+                 ^:inline-dep [http-kit "2.5.1"]
+                 [nrepl "0.8.3"]
                  ^:inline-dep [org.clojure/data.json "2.3.1"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.1.0"]
                  ^:inline-dep [org.clojure/tools.namespace "1.1.0" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.5"]
-                 ^:inline-dep [cider/orchard "0.6.5"]
-                 ^:inline-dep [cljfmt "0.7.0"]
-                 ^:inline-dep [clj-commons/fs "1.6.307"]
                  ^:inline-dep [rewrite-clj "0.6.1"]
                  ^:inline-dep [version-clj "1.0.0"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
@@ -44,9 +45,9 @@
              :test {:dependencies [[print-foo "1.0.2"]]
                     :src-paths ["test/resources"]}
              :dev {:global-vars {*warn-on-reflection* true}
-                   :dependencies [[org.clojure/clojurescript "1.9.946"]
-                                  [cider/piggieback "0.5.2"]
-                                  [commons-io/commons-io "2.8.0"]]
+                   :dependencies [[cider/piggieback "0.5.2"]
+                                  [commons-io/commons-io "2.8.0"]
+                                  [org.clojure/clojurescript "1.9.946"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                    :java-source-paths ["test/java"]
                    :resource-paths ["test/resources"
