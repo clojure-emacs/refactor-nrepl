@@ -17,13 +17,15 @@
   (let [lm (.lastModified (io/file file))]
     (if (zero? lm) nil lm)))
 
-;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
-(defonce artifacts (atom (if (.exists (io/file artifacts-file))
-                           (->> artifacts-file slurp edn/read-string (into {}))
-                           {})
-                         :meta {:last-modified
-                                (get-last-modified-from-file artifacts-file)}))
-
+;;  structure here is (mostly) {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
+;;  The exceptions are the mvn based artifacts.  There's a ratelimit in place
+;;  for those artifacts so we get the available versions on demand instead.
+(defonce artifacts
+  (atom (if (.exists (io/as-file artifacts-file))
+          (->> artifacts-file slurp edn/read-string (into {}))
+          {})
+        :meta {:last-modified
+               (get-last-modified-from-file artifacts-file)}))
 (def millis-per-day (* 24 60 60 1000))
 
 (defn- get-proxy-opts
