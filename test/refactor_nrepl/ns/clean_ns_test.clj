@@ -235,9 +235,10 @@
     (is (= expected actual))))
 
 (deftest preserves-all-meta
-  (let [actual (pprint-ns (clean-ns ns-with-lots-of-meta))
-        expected (slurp (:path ns-with-lots-of-meta-clean))]
-    (is (= expected actual))))
+  (config/with-config {:prefix-rewriting false}
+    (let [actual (pprint-ns (clean-ns ns-with-lots-of-meta))
+          expected (slurp (:path ns-with-lots-of-meta-clean))]
+      (is (= expected actual)))))
 
 (deftest does-not-remove-dollar-sign-if-valid-symbol
   (let [cleaned (pprint-ns (clean-ns ns-using-dollar))]

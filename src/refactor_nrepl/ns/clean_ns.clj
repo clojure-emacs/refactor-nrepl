@@ -43,10 +43,11 @@
     (assert (core/source-file? path))
     ;; Prefix notation not supported in cljs.
     ;; We also turn it off for cljc for reasons of symmetry
-    (config/with-config {:prefix-rewriting (if (or (core/cljs-file? path)
-                                                   (core/cljc-file? path))
-                                             false
-                                             (:prefix-rewriting config/*config*))}
+    (config/with-config {:prefix-rewriting
+                         (if (or (core/cljs-file? path)
+                                 (core/cljc-file? path))
+                           false
+                           (:prefix-rewriting config/*config*))}
       (let [ns-form (validate (core/read-ns-form-with-meta path))
             deps-preprocessor (if (get config/*config* :prune-ns-form)
                                 #(prune-dependencies % path)
