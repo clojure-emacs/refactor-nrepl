@@ -15,6 +15,9 @@
    ;; Should `clean-ns` favor prefix forms in the ns macro?
    :prefix-rewriting true
 
+   ;; Should `pprint-ns` place a newline after the `:require` and `:import` tokens?
+   :insert-newline-after-require true
+
    ;; Some libspecs are side-effecting and shouldn't be pruned by `clean-ns`
    ;; even if they're otherwise unused.
    ;; This seq of strings will be used as regexp patterns to match

@@ -4,6 +4,7 @@
              [pprint :refer [pprint]]
              [string :as str]]
             [refactor-nrepl
+             [config :refer [*config*]]
              [core :as core :refer [prefix-form?]]
              [util :as util :refer [replace-last]]])
 
@@ -34,9 +35,15 @@
                             (printf "%s " libspec))))))
                   ordered-libspecs))))
 
+(defn insert-clause-delimiter []
+  (if (:insert-newline-after-require *config*)
+    (println)
+    (print " ")))
+
 (defn pprint-require-form
   [[_ & libspecs]]
-  (print "(:require\n")
+  (print "(:require")
+  (insert-clause-delimiter)
   (dorun
    (map-indexed
     (fn [idx libspec]
@@ -107,7 +114,8 @@
 
 (defn- pprint-import-form
   [[_ & imports]]
-  (printf "(:import ")
+  (print "(:import")
+  (insert-clause-delimiter)
   (dorun
    (map-indexed
     (fn [idx import]
