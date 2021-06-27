@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "0.8.3"]
                  ^:inline-dep [http-kit "2.5.1"]
-                 ^:inline-dep [cheshire "5.10.0"]
+                 ^:inline-dep [org.clojure/data.json "2.3.1"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.1.0"]
                  ^:inline-dep [org.clojure/tools.namespace "1.1.0" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.5"]
@@ -29,11 +29,9 @@
              :provided {:dependencies [[cider/cider-nrepl "0.25.9"]
                                        [org.clojure/clojure "1.9.0"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]
-                                  [org.clojure/clojurescript "1.8.51"]
-                                  [javax.xml.bind/jaxb-api "2.3.1"]]}
+                                  [org.clojure/clojurescript "1.8.51"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]
-                                  [org.clojure/clojurescript "1.9.946"]
-                                  [javax.xml.bind/jaxb-api "2.3.1"]]}
+                                  [org.clojure/clojurescript "1.9.946"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]
                                    [org.clojure/clojurescript "1.10.520"]]}
 
