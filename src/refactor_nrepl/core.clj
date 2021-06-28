@@ -25,7 +25,11 @@
 (defn ns-from-string
   "Retrieve the symbol naming the ns from file-content."
   [file-content]
-  (second (parse/read-ns-decl (PushbackReader. (java.io.StringReader. file-content)))))
+  (-> file-content
+      java.io.StringReader.
+      PushbackReader.
+      parse/read-ns-decl
+      second))
 
 (defn ns-name-from-readable
   "Call slurp on readable and extract the ns-name from the content."
