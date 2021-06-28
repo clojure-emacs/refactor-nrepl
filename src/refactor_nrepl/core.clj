@@ -380,3 +380,12 @@
   [symbol-or-keyword]
   (when (prefix symbol-or-keyword)
     symbol-or-keyword))
+
+(defmacro with-clojure-version->=
+  "Guard the evaluation of `body` with a test on the current clojure version."
+  {:style/indent 1}
+  [{:keys [major minor] :as _clojure-version} & body]
+  (when (or (> (:major *clojure-version*) major)
+            (and (= (:major *clojure-version*) major)
+                 (>= (:minor *clojure-version*) minor)))
+    `(do ~@body)))

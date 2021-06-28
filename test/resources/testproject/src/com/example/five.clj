@@ -1,5 +1,6 @@
 (ns com.example.five
-  (:require [clojure.string :refer [join split blank? trim] :as str]))
+  (:require [clojure.string :refer [join split blank? trim] :as str]
+            [refactor-nrepl.core :as core]))
 
 ;;  remove parameters to run the tests
 (defn fn-with-unbounds [s sep]
@@ -57,6 +58,13 @@
   (let [{:keys [foo bar] :or {foo "foo"}} (hash-map)]
     [:bar :foo]
     (count foo)))
+
+(core/with-clojure-version->= {:major 1 :minor 9}
+  (defn fn-with-let-with-namespaced-keyword-destructuring []
+    ;; https://github.com/clojure-emacs/refactor-nrepl/issues/289
+    (let [{::str/keys [foo bar]} (hash-map)]
+      [:bar :foo]
+      (count foo))))
 
 ;; This was causing both find-local-symbol and find-macros to blow up, for
 ;; different reasons

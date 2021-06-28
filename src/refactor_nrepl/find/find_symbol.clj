@@ -10,7 +10,8 @@
              [s-expressions :as sexp]]
             [refactor-nrepl.find.find-macros :refer [find-macro]]
             [refactor-nrepl.find.util :as find-util]
-            [refactor-nrepl.ns.libspecs :as libspecs])
+            [refactor-nrepl.ns.libspecs :as libspecs]
+            [clojure.tools.reader :as reader])
   (:import (java.io File)))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
@@ -140,12 +141,14 @@
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [^long line-beg ^long col-beg]}]
-  (binding [*read-eval* false]
+  (binding [*read-eval* false
+            clojure.tools.reader/*alias-map*
+            (ns-aliases (core/ns-from-string file-content))]
     (let [line (dec line-beg)
           encl-sexp-level1 (or (sexp/get-enclosing-sexp file-content line col-beg) "")
           encl-sexp-level2 (or (sexp/get-enclosing-sexp file-content line col-beg 2) "")]
-      [encl-sexp-level1 (read-string encl-sexp-level1)
-       encl-sexp-level2 (read-string encl-sexp-level2)])))
+      [encl-sexp-level1 (reader/read-string encl-sexp-level1)
+       encl-sexp-level2 (reader/read-string encl-sexp-level2)])))
 
 (defn- optmap-with-default?
   [var-name _file-content [_ [_ level1-form _ level2-form]]]

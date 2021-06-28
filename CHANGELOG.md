@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+### Bugs fixed
+* [#289](https://github.com/clojure-emacs/refactor-nrepl/issues/289): Fix an edge-case with involving keywords that caused find-symbol to crash.
 * [#305](https://github.com/clojure-emacs/refactor-nrepl/issues/305): Don't put `:as` or `:refer` on their own lines in the ns form, when the libspec is so long it causes the line to wrap.
 * [clojure-emacs/clj-refactor.el#459](https://github.com/clojure-emacs/clj-refactor.el/issues/459): `clean-ns` should conform to the style guide: `(:require` in the ns form should be followed by a newline.
   * You can opt out via the new `:insert-newline-after-require` configuration option.

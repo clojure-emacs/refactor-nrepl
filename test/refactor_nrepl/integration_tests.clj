@@ -3,6 +3,7 @@
             [clojure.test :refer :all]
             [nrepl.server :as nrepl]
             [refactor-nrepl middleware
+             [analyzer :as analyzer]
              [client :refer :all]
              [core :as core]]
             [clojure.string :as str])
@@ -58,11 +59,11 @@
 (defn ns-ast-throw-error-for-five [^String content]
   (if (.contains content "com.example.five")
     (throw (IllegalThreadStateException. "FAILED!"))
-    (#'refactor-nrepl.analyzer/cachable-ast content)))
+    (#'analyzer/cachable-ast content)))
 
 (deftest test-find-two-foo-errors-ignored
   (with-testproject-on-classpath
-    (with-redefs [refactor-nrepl.analyzer/ns-ast ns-ast-throw-error-for-five]
+    (with-redefs [analyzer/ns-ast ns-ast-throw-error-for-five]
       (let [transport (connect :port 7777)
             response (find-usages :transport transport :ns 'com.example.two
                                   :file (str test-project-dir "/src/com/example/one.clj")
@@ -186,7 +187,7 @@
   (with-testproject-on-classpath
     (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)
-          response (find-usages :transport transport :name "foo" :file five-file :line 46 :column 10)
+          response (find-usages :transport transport :name "foo" :file five-file :line 47 :column 10)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
@@ -194,7 +195,7 @@
   (with-testproject-on-classpath
     (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)
-          response (find-usages :transport transport :name "foo" :file five-file :line 49 :column 12)
+          response (find-usages :transport transport :name "foo" :file five-file :line 50 :column 12)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
 
@@ -202,30 +203,39 @@
   (with-testproject-on-classpath
     (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)
-          response (find-usages :transport transport :name "foo" :file five-file :line 59 :column 12)
+          response (find-usages :transport transport :name "foo" :file five-file :line 60 :column 12)
           result (remove keyword? response)]
       (is (= 3 (count result)) (format "expected 3 results but got %d" (count result))))))
+
+(core/with-clojure-version->= {:major 1 :minor 9}
+  (deftest find-local-in-namespaced-destructuring
+    (with-testproject-on-classpath
+      (let [five-file (str test-project-dir "/src/com/example/five.clj")
+            transport (connect :port 7777)
+            response (find-usages :transport transport :name "foo" :file five-file :line 67 :column 16)
+            result (remove keyword? response)]
+        (is (= 2 (count result)) (format "expected 3 results but got %d" (count result)))))))
 
 (deftest test-find-used-locals
   (with-testproject-on-classpath
     (let [five-file (str test-project-dir "/src/com/example/five.clj")
           transport (connect :port 7777)]
-      (is (= (find-unbound :transport transport :file five-file :line 12 :column 6)
+      (is (= (find-unbound :transport transport :file five-file :line 13 :column 6)
              '(s)))
-      (is (= (find-unbound :transport transport :file five-file :line 13 :column 13)
+      (is (= (find-unbound :transport transport :file five-file :line 14 :column 13)
              '(s sep)))
 
-      (is (= (find-unbound :transport transport :file five-file :line 20 :column 16)
+      (is (= (find-unbound :transport transport :file five-file :line 21 :column 16)
              '(p)))
-      (is (= (find-unbound :transport transport :file five-file :line 27 :column 8)
+      (is (= (find-unbound :transport transport :file five-file :line 28 :column 8)
              '(sep strings)))
 
-      (is (= (find-unbound :transport transport :file five-file :line 34 :column 8)
+      (is (= (find-unbound :transport transport :file five-file :line 35 :column 8)
              '(name)))
 
-      (is (= (find-unbound :transport transport :file five-file :line 37 :column 5)
+      (is (= (find-unbound :transport transport :file five-file :line 38 :column 5)
              '(n)))
-      (is (= (find-unbound :transport transport :file five-file :line 41 :column 4)
+      (is (= (find-unbound :transport transport :file five-file :line 42 :column 4)
              '(x y z a b c))))))
 
 (deftest find-unbound-fails-on-cljs
