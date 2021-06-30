@@ -43,16 +43,15 @@
                                      [org.clojure/clojure "1.11.0-master-SNAPSHOT" :classifier "sources"]]}
 
              :lein-plugin {:source-paths ["lein-plugin"]}
-             :test {:dependencies [[print-foo "1.0.2"]]
-                    :src-paths ["test/resources"]}
+             :test {:dependencies [[print-foo "1.0.2"]]}
              :dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.9.946"]
                                   [cider/piggieback "0.5.2"]
                                   [commons-io/commons-io "2.8.0"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
-                   :java-source-paths ["test/java"]
-                   :resource-paths ["test/resources"
-                                    "test/resources/testproject/src"]
+                   :java-source-paths ["java-test"]
+                   :resource-paths ["test-resources"
+                                    "testproject/src"]
                    :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots"]]}
              :cljfmt [:test
                       {:plugins [[lein-cljfmt "0.7.0"]]

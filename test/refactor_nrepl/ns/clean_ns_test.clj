@@ -14,47 +14,47 @@
   {:path (absolute-path path)
    :relative-path path})
 
-(def ns1 (clean-msg "test/resources/ns1.clj"))
-(def ns1-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/ns1_cleaned.clj")))
-(def ns2 (clean-msg "test/resources/ns2.clj"))
-(def ns2-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/ns2_cleaned.clj")))
-(def ns2-meta (clean-msg "test/resources/ns2_meta.clj"))
-(def ns3 (clean-msg "test/resources/ns3.clj"))
-(def ns3-rebuilt (core/read-ns-form-with-meta (absolute-path "test/resources/ns3_rebuilt.clj")))
-(def ns-with-exclude (clean-msg "test/resources/ns_with_exclude.clj"))
-(def ns-with-rename (clean-msg "test/resources/ns_with_rename.clj"))
-(def ns-with-rename-cleaned (core/read-ns-form-with-meta "test/resources/ns_with_rename_cleaned.clj"))
-(def ns-with-unused-deps (clean-msg "test/resources/unused_deps.clj"))
+(def ns1 (clean-msg "test-resources/ns1.clj"))
+(def ns1-cleaned (core/read-ns-form-with-meta (absolute-path "test-resources/ns1_cleaned.clj")))
+(def ns2 (clean-msg "test-resources/ns2.clj"))
+(def ns2-cleaned (core/read-ns-form-with-meta (absolute-path "test-resources/ns2_cleaned.clj")))
+(def ns2-meta (clean-msg "test-resources/ns2_meta.clj"))
+(def ns3 (clean-msg "test-resources/ns3.clj"))
+(def ns3-rebuilt (core/read-ns-form-with-meta (absolute-path "test-resources/ns3_rebuilt.clj")))
+(def ns-with-exclude (clean-msg "test-resources/ns_with_exclude.clj"))
+(def ns-with-rename (clean-msg "test-resources/ns_with_rename.clj"))
+(def ns-with-rename-cleaned (core/read-ns-form-with-meta "test-resources/ns_with_rename_cleaned.clj"))
+(def ns-with-unused-deps (clean-msg "test-resources/unused_deps.clj"))
 (def ns-without-unused-deps (core/read-ns-form-with-meta
-                             (absolute-path "test/resources/unused_removed.clj")))
-(def cljs-file (clean-msg "test/resources/file.cljs"))
-(def ns-referencing-macro (absolute-path "test/resources/ns_referencing_macro.clj"))
-(def cljs-ns (clean-msg "test/resources/cljsns.cljs"))
-(def cljs-ns-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/cljsns_cleaned.cljs")))
+                             (absolute-path "test-resources/unused_removed.clj")))
+(def cljs-file (clean-msg "test-resources/file.cljs"))
+(def ns-referencing-macro (absolute-path "test-resources/ns_referencing_macro.clj"))
+(def cljs-ns (clean-msg "test-resources/cljsns.cljs"))
+(def cljs-ns-cleaned (core/read-ns-form-with-meta (absolute-path "test-resources/cljsns_cleaned.cljs")))
 
-(def cljc-ns (clean-msg "test/resources/cljcns.cljc"))
-(def cljc-ns-cleaned-clj (core/read-ns-form-with-meta (absolute-path "test/resources/cljcns_cleaned.cljc")))
-(def cljc-ns-cleaned-cljs (core/read-ns-form-with-meta :cljs (absolute-path "test/resources/cljcns_cleaned.cljc")))
+(def cljc-ns (clean-msg "test-resources/cljcns.cljc"))
+(def cljc-ns-cleaned-clj (core/read-ns-form-with-meta (absolute-path "test-resources/cljcns_cleaned.cljc")))
+(def cljc-ns-cleaned-cljs (core/read-ns-form-with-meta :cljs (absolute-path "test-resources/cljcns_cleaned.cljc")))
 
-(def cljc-ns-same-clj-cljs (clean-msg "test/resources/cljcns_same_clj_cljs.cljc"))
-(def cljc-ns-same-clj-cljs-cleaned (core/read-ns-form-with-meta (absolute-path "test/resources/cljcns_same_clj_cljs_cleaned.cljc")))
+(def cljc-ns-same-clj-cljs (clean-msg "test-resources/cljcns_same_clj_cljs.cljc"))
+(def cljc-ns-same-clj-cljs-cleaned (core/read-ns-form-with-meta (absolute-path "test-resources/cljcns_same_clj_cljs_cleaned.cljc")))
 
-(def ns-with-shorthand-meta (clean-msg "test/resources/ns_with_shorthand_meta.clj"))
-(def ns-with-multiple-shorthand-meta (clean-msg "test/resources/ns_with_multiple_shorthand_meta.clj"))
-(def ns-with-gen-class-methods-meta (clean-msg "test/resources/ns_with_gen_class_methods_meta.clj"))
-(def ns-with-gen-class-methods-meta-clean (clean-msg "test/resources/ns_with_gen_class_methods_meta_clean.clj"))
-(def ns-with-lots-of-meta (clean-msg "test/resources/ns_with_lots_of_meta.clj"))
-(def ns-with-lots-of-meta-clean (clean-msg "test/resources/ns_with_lots_of_meta_clean.clj"))
+(def ns-with-shorthand-meta (clean-msg "test-resources/ns_with_shorthand_meta.clj"))
+(def ns-with-multiple-shorthand-meta (clean-msg "test-resources/ns_with_multiple_shorthand_meta.clj"))
+(def ns-with-gen-class-methods-meta (clean-msg "test-resources/ns_with_gen_class_methods_meta.clj"))
+(def ns-with-gen-class-methods-meta-clean (clean-msg "test-resources/ns_with_gen_class_methods_meta_clean.clj"))
+(def ns-with-lots-of-meta (clean-msg "test-resources/ns_with_lots_of_meta.clj"))
+(def ns-with-lots-of-meta-clean (clean-msg "test-resources/ns_with_lots_of_meta_clean.clj"))
 
-(def ns-with-inner-classes (clean-msg "test/resources/ns_with_inner_classes.clj"))
+(def ns-with-inner-classes (clean-msg "test-resources/ns_with_inner_classes.clj"))
 
-(def ns-using-dollar (clean-msg "test/resources/ns_using_dollar.clj"))
+(def ns-using-dollar (clean-msg "test-resources/ns_using_dollar.clj"))
 
 (def ns1-relative-path {:path "I do not exist.clj"
-                        :relative-path "test/resources/ns1.clj"})
+                        :relative-path "test-resources/ns1.clj"})
 
-(def ns-with-npm-strs (clean-msg "test/resources/ns_with_npm_strs.cljs"))
-(def ns-with-npm-strs-clean (clean-msg "test/resources/ns_with_npm_strs_clean.cljs"))
+(def ns-with-npm-strs (clean-msg "test-resources/ns_with_npm_strs.cljs"))
+(def ns-with-npm-strs-clean (clean-msg "test-resources/ns_with_npm_strs_clean.cljs"))
 
 (deftest combines-requires
   (let [prefix-requires (config/with-config {:prefix-rewriting true}
@@ -103,7 +103,7 @@
 (deftest throws-on-malformed-ns
   (is (thrown? IllegalStateException
                (core/read-ns-form-with-meta (.getAbsolutePath
-                                             (File. "test/resources/clojars-artifacts.edn"))))))
+                                             (File. "test-resources/clojars-artifacts.edn"))))))
 
 (deftest preserves-other-elements
   (let [actual (clean-ns ns1)
@@ -173,8 +173,8 @@
                       (pprint-ns (with-meta artifact-ns nil)))
              expected (-> filename File. .getAbsolutePath slurp)]
          (= expected actual))
-    true  "test/resources/artifacts_pprinted"
-    false "test/resources/artifacts_pprinted_traditional_newline"))
+    true  "test-resources/artifacts_pprinted"
+    false "test-resources/artifacts_pprinted_traditional_newline"))
 
 (deftest handles-imports-when-only-enum-is-used
   (let [new-ns (clean-ns ns2)
@@ -213,8 +213,8 @@
 
 (deftest test-pprint
   (let [ns-str (pprint-ns (clean-ns ns1))
-        ns1-str (slurp "test/resources/ns1_cleaned_and_pprinted")
-        ns1-prefix-notation (slurp "test/resources/ns1_cleaned_and_pprinted_prefix_notation")]
+        ns1-str (slurp "test-resources/ns1_cleaned_and_pprinted")
+        ns1-prefix-notation (slurp "test-resources/ns1_cleaned_and_pprinted_prefix_notation")]
     (is (= ns1-str ns-str))
     (is (= ns1-prefix-notation (config/with-config
                                  {:prefix-rewriting true}

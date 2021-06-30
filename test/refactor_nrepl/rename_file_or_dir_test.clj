@@ -6,10 +6,10 @@
             [refactor-nrepl.rename-file-or-dir :refer :all])
   (:import java.io.File))
 
-(def from-file-path (.getAbsolutePath (File. "test/resources/testproject/src/com/move/ns_to_be_moved.clj")))
-(def to-file-path (.getAbsolutePath (File. "test/resources/testproject/src/com/move/moved_ns.clj")))
-(def from-dir-path (.getAbsolutePath (File. "test/resources/testproject/src/com/move/")))
-(def to-dir-path (.getAbsolutePath (File. "test/resources/testproject/src/com/moved/")))
+(def from-file-path (.getAbsolutePath (File. "testproject/src/com/move/ns_to_be_moved.clj")))
+(def to-file-path (.getAbsolutePath (File. "testproject/src/com/move/moved_ns.clj")))
+(def from-dir-path (.getAbsolutePath (File. "testproject/src/com/move/")))
+(def to-dir-path (.getAbsolutePath (File. "testproject/src/com/moved/")))
 (def new-ns-ref "com.move.moved-ns/")
 (def old-ns-ref "com.move.ns-to-be-moved/")
 (def new-package-prefix "com.move.moved-ns/")
@@ -150,8 +150,8 @@
 ;;; cljs
 
 
-(def from-file-path-cljs (.getAbsolutePath (File. "test/resources/testproject/src/com/move/ns_to_be_moved_cljs.cljs")))
-(def to-file-path-cljs (.getAbsolutePath (File. "test/resources/testproject/src/com/move/moved_ns_cljs.cljs")))
+(def from-file-path-cljs (.getAbsolutePath (File. "testproject/src/com/move/ns_to_be_moved_cljs.cljs")))
+(def to-file-path-cljs (.getAbsolutePath (File. "testproject/src/com/move/moved_ns_cljs.cljs")))
 
 (deftest returns-list-of-affected-files-for-cljs
   (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
