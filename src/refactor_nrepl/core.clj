@@ -317,6 +317,18 @@
      (with-meta ns-form (extract-ns-meta (slurp path)))
      (throw (IllegalStateException. (str "No ns form at " path))))))
 
+(def require-lock (Object.))
+
+(defn safe-find-ns [n ignore-error?]
+  (try
+    (locking require-lock
+      (require n))
+    (find-ns n)
+    (catch Throwable e
+      (-> e .printStackTrace)
+      (when-not ignore-error?
+        (throw e)))))
+
 (defn path->namespace
   "Read the ns form found at PATH and return the namespace object for
   that ns.
@@ -324,11 +336,8 @@
   if NO-ERROR is passed just return nil instead of an exception if we
   can't successfully read an ns form."
   ([path] (path->namespace nil path))
-  ([no-error path] (try
-                     (some->> path read-ns-form-with-meta second find-ns)
-                     (catch Exception e
-                       (when-not no-error
-                         (throw e))))))
+  ([no-error path] (when-not (cljs-file? path)
+                     (some-> path read-ns-form-with-meta parse/name-from-ns-decl (safe-find-ns no-error)))))
 
 (defn file-content-sans-ns
   "Read the content of file after the ns.
