@@ -16,6 +16,10 @@
                  ^:inline-dep [version-clj "1.0.0"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
 
+  :pedantic? ~(if (System/getenv "CI")
+                :abort
+                ;; :pedantic? can be problematic for certain local dev workflows:
+                false)
   :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
                                     :username :env/clojars_username
                                     :password :env/clojars_password
@@ -27,15 +31,13 @@
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {;; Clojure versions matrix
              :provided {:dependencies [[cider/cider-nrepl "0.25.9"]
-                                       [org.clojure/clojure "1.9.0"]]}
-             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]
-                                  [org.clojure/clojurescript "1.8.51"]
-                                  [javax.xml.bind/jaxb-api "2.3.1"]]}
-             :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]
-                                  [org.clojure/clojurescript "1.9.946"]
-                                  [javax.xml.bind/jaxb-api "2.3.1"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]
-                                   [org.clojure/clojurescript "1.10.520"]]}
+                                       [org.clojure/clojure "1.9.0"]
+                                       ;; For satisfying `:pedantic?`:
+                                       [com.google.code.findbugs/jsr305 "3.0.2"]
+                                       [com.google.errorprone/error_prone_annotations "2.1.3"]]}
+             :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]]}
 
              :master {:repositories [["snapshots"
                                       "https://oss.sonatype.org/content/repositories/snapshots"]]
@@ -45,7 +47,8 @@
              :lein-plugin {:source-paths ["lein-plugin"]}
              :test {:dependencies [[print-foo "1.0.2"]]}
              :dev {:global-vars {*warn-on-reflection* true}
-                   :dependencies [[org.clojure/clojurescript "1.9.946"]
+                   :dependencies [[org.clojure/clojurescript "1.10.520"]
+                                  [javax.xml.bind/jaxb-api "2.3.1"]
                                   [cider/piggieback "0.5.2"]
                                   [commons-io/commons-io "2.8.0"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
@@ -55,7 +58,8 @@
                                     "testproject/src"]
                    :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots"]]}
              :cljfmt [:test
-                      {:plugins [[lein-cljfmt "0.7.0"]]
+                      {:plugins [[lein-cljfmt "0.7.0" :exclusions [org.clojure/clojure
+                                                                   org.clojure/clojurescript]]]
                        :cljfmt {:indents {as-> [[:inner 0]]
                                           as->* [[:inner 0]]
                                           cond-> [[:inner 0]]
