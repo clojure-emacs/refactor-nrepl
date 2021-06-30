@@ -1,5 +1,5 @@
 (ns refactor-nrepl.artifacts
-  (:require [cheshire.core :as json]
+  (:require [clojure.data.json :as json]
             [clojure
              [edn :as edn]
              [string :as str]]
@@ -69,7 +69,7 @@
         search-suffix "%22+AND+p:%22jar%22&rows=2000&wt=json"
         search-url (str search-prefix group-id search-suffix)
         {:keys [_ _ body _]} @(http/get search-url (assoc (get-proxy-opts) :as :text))
-        search-result (json/parse-string body true)]
+        search-result (json/read-str body :key-fn keyword)]
     (map :a (-> search-result :response :docs))))
 
 (defn- get-mvn-versions!
@@ -83,7 +83,7 @@
                                              artifact
                                              "%22&core=gav&rows=100&wt=json")
                                         (assoc (get-proxy-opts) :as :text))]
-    (->> (json/parse-string body true)
+    (->> (json/read-str body :key-fn keyword)
          :response
          :docs
          (map :v))))
@@ -102,7 +102,7 @@
   (let [{:keys [body status]} @(http/get (str "https://clojars.org/api/artifacts/"
                                               artifact))]
     (when (= 200 status)
-      (map :version (:recent_versions (json/parse-string body true))))))
+      (map :version (:recent_versions (json/read-str body :key-fn keyword))))))
 
 (defn- get-artifacts-from-clojars!
   []
