@@ -3,7 +3,7 @@
 VERSION ?= 1.10
 
 .inline-deps:
-	lein with-profile -user inline-deps
+	lein with-profile -user,+$(VERSION) inline-deps
 	touch .inline-deps
 
 inline-deps: .inline-deps
