@@ -121,14 +121,13 @@
                               :line-end end-line
                               :col-beg column
                               :col-end end-column})))))
-        gather (fn [info]
-                 (merge info
-                        {:file (.getCanonicalPath file)
-                         :name fully-qualified-name
-                         :match (match file-content
-                                  (:line-beg info)
-                                  (:line-end  info))}))]
-    (map gather locs)))
+        gather (fn [{:keys [line-beg line-end] :as info}]
+                 (some-> info
+                         (merge
+                          {:file  (.getCanonicalPath file)
+                           :name  fully-qualified-name
+                           :match (match file-content line-beg line-end)})))]
+    (keep gather locs)))
 
 (defn- find-global-symbol [file ns var-name ignore-errors]
   (let [namespace (or ns (core/ns-from-string (slurp file)))
@@ -220,12 +219,11 @@
                                 first
                                 :name)
             local-occurrences
-            (map #(merge %
-                         {:name var-name
-                          :file (.getCanonicalPath (java.io.File. file))
-                          :match (match file-content
-                                   (:line-beg %)
-                                   (:line-end %))})
+            (map (fn [{:keys [line-beg line-end] :as m}]
+                   (merge m
+                          {:name  var-name
+                           :file  (.getCanonicalPath (java.io.File. file))
+                           :match (match file-content line-beg line-end)}))
                  (find-nodes var-name
                              [top-level-form-ast]
                              #(and (#{:local :binding} (:op %))
