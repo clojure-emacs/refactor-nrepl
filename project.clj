@@ -9,7 +9,7 @@
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.1.0"]
                  ^:inline-dep [org.clojure/tools.namespace "1.1.0" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.5"]
-                 ^:inline-dep [cider/orchard "0.6.5"]
+                 ^:inline-dep [cider/orchard "0.7.1"]
                  ^:inline-dep [cljfmt "0.7.0"]
                  ^:inline-dep [clj-commons/fs "1.6.307"]
                  ^:inline-dep [rewrite-clj "0.6.1"]
@@ -49,6 +49,7 @@
                                   [cider/piggieback "0.5.2"]
                                   [commons-io/commons-io "2.8.0"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
+                   :jvm-opts ["-Dorchard.use-dynapath=false"]
                    :java-source-paths ["java-test"]
                    :resource-paths ["test-resources"
                                     "testproject/src"]
