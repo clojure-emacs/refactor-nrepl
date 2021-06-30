@@ -2,7 +2,7 @@
   (:require [refactor-nrepl.s-expressions :as sut]
             [clojure.test :as t]))
 
-(def file-content (slurp "test/resources/testproject/src/com/example/sexp_test.clj"))
+(def file-content (slurp "testproject/src/com/example/sexp_test.clj"))
 (def weird-file-content ";; some weird file
   ;; not even clojure
   ;; perhaps? no parens!")
@@ -38,7 +38,7 @@
   (t/is (=  "#{foo bar baz}" (sut/get-first-sexp file-content-with-set))))
 
 (t/deftest get-first-sexp
-  (t/is (= "(ns resources.testproject.src.com.example.sexp-test)"
+  (t/is (= "(ns com.example.sexp-test)"
            (sut/get-first-sexp file-content)))
   (t/is (= "(foobar baz)"
            (sut/get-first-sexp file-content-with-uneval))))
