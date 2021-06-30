@@ -139,7 +139,9 @@
     (->> (core/dirs-on-classpath)
          (mapcat (partial core/find-in-dir (every-pred (some-fn core/clj-file? core/cljc-file?)
                                                        (fn [f]
-                                                         (let [n (core/read-ns-form f)]
+                                                         (let [n (some-> f
+                                                                         core/read-ns-form
+                                                                         parse/name-from-ns-decl)]
                                                            (if-not n
                                                              false
                                                              (not (invalid-fqn? n))))))))

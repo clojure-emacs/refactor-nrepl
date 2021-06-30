@@ -56,8 +56,12 @@
   ([path parsed-ns dialect]
    (util/with-additional-ex-data [:file path]
      (let [dialect (or dialect (core/file->dialect path))
-           file-ns (or (find-ns (symbol (:ns parsed-ns))) *ns*)
-           ns-aliases (if (= dialect :cljs)
+           cljs? (= dialect :cljs)
+           file-ns (or (when-let [s (-> parsed-ns :ns symbol)]
+                         (when-not cljs?
+                           (core/safe-find-ns s true)))
+                       *ns*)
+           ns-aliases (if cljs?
                         (ns-parser/aliases
                          (ns-parser/get-libspecs-from-file :cljs (io/file path)))
                         (ns-aliases file-ns))]
