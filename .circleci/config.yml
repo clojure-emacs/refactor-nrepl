@@ -151,8 +151,7 @@ workflows:
       - test_code:
           matrix:
             parameters:
-              # TODO: add "master" (tests would fail due to piggieback)
-              clojure_version: ["1.8", "1.9", "1.10"]
+              clojure_version: ["1.8", "1.9", "1.10", "master"]
               jdk_version: [openjdk8, openjdk11, openjdk16]
       - util_job:
           name: Code Linting
