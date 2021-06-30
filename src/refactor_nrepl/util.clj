@@ -52,3 +52,17 @@
     (string/replace-first _ match rep)
     (reverse _)
     (apply str _)))
+
+(defn inlined-dependency? [candidate]
+  (or (-> candidate str (.startsWith "deps."))
+      (-> candidate str (.startsWith "mranderson"))
+      (-> candidate str (.startsWith "eastwood.copieddeps"))))
+
+(defn- refactor-nrepl? [candidate]
+  ;; the refactor-nrepl implmentation should never analyse itself w/ tools.analyzer, as this can cause opaque issues:
+  (and (-> candidate str (.startsWith "refactor-nrepl"))
+       (not (-> candidate str (.contains "test")))))
+
+(def invalid-fqn?
+  "Does the argument represent namespace name (or a fully qualified name) that should not be analyzed?"
+  (some-fn inlined-dependency? refactor-nrepl?))

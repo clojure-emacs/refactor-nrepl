@@ -2,6 +2,7 @@
   (:require [clojure
              [set :as set]
              [string :as str]]
+            [refactor-nrepl.util :refer [invalid-fqn?]]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.parse :as parse]
             [refactor-nrepl
@@ -136,7 +137,12 @@
                                (str/join "/" [namespace var-name]))
         referred-syms (libspecs/referred-syms-by-file&fullname)]
     (->> (core/dirs-on-classpath)
-         (mapcat (partial core/find-in-dir (some-fn core/clj-file? core/cljc-file?)))
+         (mapcat (partial core/find-in-dir (every-pred (some-fn core/clj-file? core/cljc-file?)
+                                                       (fn [f]
+                                                         (let [n (core/read-ns-form f)]
+                                                           (if-not n
+                                                             false
+                                                             (not (invalid-fqn? n))))))))
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors referred-syms)))))
 
 (defn- get&read-enclosing-sexps
