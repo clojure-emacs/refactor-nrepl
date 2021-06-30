@@ -5,6 +5,7 @@
             [orchard.cljs.analysis :as cljs-ana]
             [clojure.string :as str]
             [refactor-nrepl.core :refer [prefix suffix]]
+            [refactor-nrepl.util :refer [invalid-fqn?]]
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [sym]
@@ -34,11 +35,6 @@
            (catch NoClassDefFoundError _e
              {:name candidate :type :class})))
        candidates))
-
-(defn- inlined-dependency? [candidate]
-  (or (-> candidate str (.startsWith "deps."))
-      (-> candidate str (.startsWith "mranderson"))
-      (-> candidate str (.startsWith "eastwood.copieddeps"))))
 
 (defn- ns-publics-cljs [env ns-name]
   (->> ns-name (cljs-ana/public-vars env) keys))
@@ -75,6 +71,6 @@
     (some->> sym
              symbol
              candidates
-             (remove inlined-dependency?)
+             (remove invalid-fqn?)
              collate-type-info
              pr-str)))
