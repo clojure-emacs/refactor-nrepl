@@ -9,7 +9,9 @@
             [clojure.tools.namespace.parse :refer [read-ns-decl]]
             [clojure.walk :as walk]
             [refactor-nrepl
-             [config :as config]]
+             [config :as config]
+             [core :as core]
+             [util :as util]]
             [refactor-nrepl.ns.tracker :as tracker])
   (:import java.io.PushbackReader
            java.util.regex.Pattern))
@@ -71,14 +73,18 @@
 
 (defn- build-ast
   [ns aliases]
-  (when (ns-on-cp? ns)
-    (let [opts {:passes-opts
-                {:validate/unresolvable-symbol-handler shadow-unresolvable-symbol-handler
-                 :validate/throw-on-arity-mismatch false
-                 :validate/wrong-tag-handler shadow-wrong-tag-handler}}]
-      (binding [ana/macroexpand-1 noop-macroexpand-1
-                reader/*data-readers* *data-readers*]
-        (assoc-in (aj/analyze-ns ns (aj/empty-env) opts) [0 :alias-info] aliases)))))
+  (when (and (ns-on-cp? ns)
+             (not (util/invalid-fqn? ns)))
+    ;; Use `locking`, because AST analysis can perform arbitrary evaluation.
+    ;; Parallel analysis is not safe, especially as it can perform `require` calls.
+    (locking core/require-lock
+      (let [opts {:passes-opts
+                  {:validate/unresolvable-symbol-handler shadow-unresolvable-symbol-handler
+                   :validate/throw-on-arity-mismatch     false
+                   :validate/wrong-tag-handler           shadow-wrong-tag-handler}}]
+        (binding [ana/macroexpand-1 noop-macroexpand-1
+                  reader/*data-readers* *data-readers*]
+          (assoc-in (aj/analyze-ns ns (aj/empty-env) opts) [0 :alias-info] aliases))))))
 
 (defn- cachable-ast [file-content]
   (let [[ns aliases] (parse-ns file-content)]
