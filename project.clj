@@ -74,4 +74,7 @@
                                    :exclude-linters [:implicit-dependencies]}}
              :clj-kondo [:test
                          {:dependencies [[clj-kondo "2021.06.18"]]}]}
-  :jvm-opts ["-Djava.net.preferIPv4Stack=true"])
+
+  :jvm-opts ~(cond-> ["-Djava.net.preferIPv4Stack=true"]
+               (System/getenv "CI")
+               (conj "-Drefactor-nrepl.internal.log-exceptions=true")))

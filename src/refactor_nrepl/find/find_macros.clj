@@ -85,6 +85,8 @@
        (mapcat #(try
                   (get-macro-definitions-in-file-with-caching %)
                   (catch Exception e
+                    (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
+                      (-> e .printStackTrace))
                     (when-not ignore-errors?
                       (throw e)))))))
 

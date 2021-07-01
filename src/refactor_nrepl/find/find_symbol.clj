@@ -109,6 +109,8 @@
                        (find-symbol-in-ast fully-qualified-name)
                        (filter :line-beg))
                   (catch Exception e
+                    (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
+                      (-> e .printStackTrace))
                     (when-not ignore-errors
                       (throw e))))
         locs (into
