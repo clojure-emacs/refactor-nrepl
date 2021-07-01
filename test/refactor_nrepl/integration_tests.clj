@@ -52,7 +52,7 @@
 
 (defn ns-ast-throw-error-for-five [^String content]
   (if (.contains content "com.example.five")
-    (throw (IllegalThreadStateException. "FAILED!"))
+    (throw (IllegalThreadStateException. "Expected!"))
     (#'analyzer/cachable-ast content)))
 
 (deftest test-find-two-foo-errors-ignored
