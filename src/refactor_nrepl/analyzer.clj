@@ -74,7 +74,7 @@
 (defn- build-ast
   [ns aliases]
   (when (and (ns-on-cp? ns)
-             (not (util/invalid-fqn? ns)))
+             (not (util/self-referential? ns)))
     ;; Use `locking`, because AST analysis can perform arbitrary evaluation.
     ;; Parallel analysis is not safe, especially as it can perform `require` calls.
     (locking core/require-lock
@@ -94,8 +94,7 @@
         (when-let [new-ast-or-err (try
                                     (build-ast ns aliases)
                                     (catch Throwable th
-                                      (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
-                                        (-> th .printStackTrace))
+                                      (util/maybe-log-exception th)
                                       th))]
           (update-ast-cache file-content ns new-ast-or-err))))))
 

@@ -63,6 +63,12 @@
   (and (-> candidate str (.startsWith "refactor-nrepl"))
        (not (-> candidate str (.contains "test")))))
 
-(def invalid-fqn?
+(defn self-referential?
   "Does the argument represent namespace name (or a fully qualified name) that should not be analyzed?"
-  (some-fn inlined-dependency? refactor-nrepl?))
+  [candidate]
+  ((some-fn inlined-dependency? refactor-nrepl?)
+   candidate))
+
+(defn maybe-log-exception [^Throwable e]
+  (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
+    (.printStackTrace e)))

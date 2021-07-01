@@ -59,7 +59,7 @@
            cljs? (= dialect :cljs)
            file-ns (or (when-let [s (-> parsed-ns :ns symbol)]
                          (when-not cljs?
-                           (core/safe-find-ns s true)))
+                           (core/safe-find-ns s :ignore-errors)))
                        *ns*)
            ns-aliases (if cljs?
                         (ns-parser/aliases
