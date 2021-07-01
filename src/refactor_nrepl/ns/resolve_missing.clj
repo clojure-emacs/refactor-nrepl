@@ -5,7 +5,7 @@
             [orchard.cljs.analysis :as cljs-ana]
             [clojure.string :as str]
             [refactor-nrepl.core :refer [prefix suffix]]
-            [refactor-nrepl.util :refer [invalid-fqn?]]
+            [refactor-nrepl.util :refer [self-referential?]]
             [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
 
 (defn- candidates [sym]
@@ -71,6 +71,6 @@
     (some->> sym
              symbol
              candidates
-             (remove invalid-fqn?)
+             (remove self-referential?)
              collate-type-info
              pr-str)))

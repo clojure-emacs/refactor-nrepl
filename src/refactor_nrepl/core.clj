@@ -6,7 +6,7 @@
             [orchard.java.classpath :as cp]
             [orchard.misc :as misc]
             [me.raynes.fs :as fs]
-            [refactor-nrepl.util :refer [normalize-to-unix-path]]
+            [refactor-nrepl.util :as util :refer [normalize-to-unix-path]]
             [refactor-nrepl.s-expressions :as sexp]
             [refactor-nrepl.config :as config])
   (:import [java.io File FileReader PushbackReader StringReader]))
@@ -325,7 +325,7 @@
       (require n))
     (find-ns n)
     (catch Throwable e
-      (-> e .printStackTrace)
+      (util/maybe-log-exception e)
       (when-not ignore-error?
         (throw e)))))
 

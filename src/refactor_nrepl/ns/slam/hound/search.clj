@@ -134,5 +134,5 @@
 (defn reset
   "Reset the cache of classes"
   []
-  (alter-var-root #'available-classes (constantly (delay (get-available-classes))))
-  (alter-var-root #'available-classes-by-last-segment (constantly (delay (get-available-classes-by-last-segment)))))
+  (alter-var-root #'available-classes (constantly (get-available-classes)))
+  (alter-var-root #'available-classes-by-last-segment (constantly (get-available-classes-by-last-segment))))

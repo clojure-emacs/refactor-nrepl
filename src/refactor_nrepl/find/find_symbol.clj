@@ -2,7 +2,7 @@
   (:require [clojure
              [set :as set]
              [string :as str]]
-            [refactor-nrepl.util :refer [invalid-fqn?]]
+            [refactor-nrepl.util :as util :refer [self-referential?]]
             [clojure.tools.analyzer.ast :refer [nodes postwalk]]
             [clojure.tools.namespace.parse :as parse]
             [refactor-nrepl
@@ -109,8 +109,7 @@
                        (find-symbol-in-ast fully-qualified-name)
                        (filter :line-beg))
                   (catch Exception e
-                    (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
-                      (-> e .printStackTrace))
+                    (util/maybe-log-exception e)
                     (when-not ignore-errors
                       (throw e))))
         locs (into
@@ -140,12 +139,16 @@
     (->> (core/dirs-on-classpath)
          (mapcat (partial core/find-in-dir (every-pred (some-fn core/clj-file? core/cljc-file?)
                                                        (fn [f]
-                                                         (let [n (some-> f
-                                                                         core/read-ns-form
-                                                                         parse/name-from-ns-decl)]
-                                                           (if-not n
-                                                             false
-                                                             (not (invalid-fqn? n))))))))
+                                                         (try
+                                                           (let [n (some-> f
+                                                                           core/read-ns-form
+                                                                           parse/name-from-ns-decl)]
+                                                             (if-not n
+                                                               false
+                                                               (not (self-referential? n))))
+                                                           (catch Exception e
+                                                             (util/maybe-log-exception e)
+                                                             false))))))
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors referred-syms)))))
 
 (defn- get&read-enclosing-sexps
