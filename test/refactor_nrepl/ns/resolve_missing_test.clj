@@ -69,7 +69,7 @@
 
 (t/deftest resolve-missing-test
   (t/testing "Finds functions is regular namespaces"
-    (let [{:keys [error] :as response} (message {:op :resolve-missing :symbol 'print-doc})
+    (let [{:keys [^String error] :as response} (message {:op :resolve-missing :symbol 'print-doc})
           {:keys [name type]} (first (edn/read-string (:candidates response)))]
       (when error
         (println error)

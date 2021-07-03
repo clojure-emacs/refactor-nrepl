@@ -66,12 +66,13 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]
-             :eastwood {:plugins         [[jonase/eastwood "0.7.0"]]
+             :eastwood {:plugins         [[jonase/eastwood "0.7.1"]]
                         :eastwood {;; vendored - shouldn't be tweaked for satisfying linters:
                                    :exclude-namespaces [refactor-nrepl.ns.slam.hound.regrow]
                                    ;; :implicit-dependencies would fail spuriously when the CI matrix runs for Clojure < 1.10,
                                    ;; because :implicit-dependencies can only work for a certain corner case starting from 1.10.
-                                   :exclude-linters [:implicit-dependencies]}}
+                                   :exclude-linters [:implicit-dependencies]
+                                   :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
                          {:dependencies [[clj-kondo "2021.06.18"]]}]}
 

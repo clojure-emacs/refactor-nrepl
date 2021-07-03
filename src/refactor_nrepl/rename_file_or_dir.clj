@@ -194,10 +194,11 @@
 
 (defn- rename-source-file
   "Move file from old to new, updating any dependents."
-  [old-path new-path]
+  [old-path new-path ignore-errors?]
   (let [old-ns (core/ns-from-string (slurp old-path))
         new-ns (path->ns new-path)
-        tracker (tracker/build-tracker)
+        tracker (tracker/build-tracker (util/wrap-ignore-errors tracker/default-predicate
+                                                                ignore-errors?))
         dependents (tracker/get-dependents tracker old-ns)
         new-dependents (atom {})]
     (doseq [^File f dependents]
@@ -214,7 +215,7 @@
   [path old-parent new-parent]
   (str/replace path old-parent new-parent))
 
-(defn- rename-dir [old-path new-path]
+(defn- rename-dir [old-path new-path ignore-errors?]
   (let [old-path (util/normalize-to-unix-path old-path)
         new-path (util/normalize-to-unix-path new-path)
         old-path (if (.endsWith old-path "/") old-path (str old-path "/"))
@@ -222,7 +223,9 @@
     (flatten (for [^File f (file-seq (File. old-path))
                    :when (not (fs/directory? f))
                    :let [path (util/normalize-to-unix-path (.getAbsolutePath f))]]
-               (-rename-file-or-dir path (merge-paths path old-path new-path))))))
+               (-rename-file-or-dir path
+                                    (merge-paths path old-path new-path)
+                                    ignore-errors?)))))
 
 (defn- file-or-symlink-exists? [^String path]
   (let [f (File. path)]
@@ -234,12 +237,12 @@
             (when (.. target toFile exists)
               path)))))))
 
-(defn- -rename-file-or-dir [^String old-path new-path]
+(defn- -rename-file-or-dir [^String old-path new-path ignore-errors?]
   (let [affected-files  (if (fs/directory? old-path)
-                          (rename-dir old-path new-path)
+                          (rename-dir old-path new-path ignore-errors?)
                           (if ((some-fn core/clj-file? core/cljs-file?)
                                (File. old-path))
-                            (rename-source-file old-path new-path)
+                            (rename-source-file old-path new-path ignore-errors?)
                             (rename-file! old-path new-path)))]
     (->> affected-files
          flatten
@@ -271,7 +274,11 @@
   old-path and new-path are expected to be aboslute paths.
 
   Returns a list of all files that were affected."
-  [old-path new-path]
-  (assert-friendly old-path new-path)
-  (binding [*print-length* nil]
-    (-rename-file-or-dir old-path new-path)))
+
+  ([old-path new-path]
+   (rename-file-or-dir old-path new-path false))
+
+  ([old-path new-path ignore-errors?]
+   (assert-friendly old-path new-path)
+   (binding [*print-length* nil]
+     (-rename-file-or-dir old-path new-path ignore-errors?))))

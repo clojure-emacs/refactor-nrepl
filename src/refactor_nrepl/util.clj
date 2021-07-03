@@ -72,3 +72,14 @@
 (defn maybe-log-exception [^Throwable e]
   (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
     (.printStackTrace e)))
+
+(defn wrap-ignore-errors [f ignore-errors?]
+  (if-not ignore-errors?
+    f
+    (fn [x]
+      (try
+        (f x)
+        (catch Exception e
+          (maybe-log-exception e)
+          ;; return false, because `wrap-ignore-errors` is oriented for predicate usage:
+          false)))))
