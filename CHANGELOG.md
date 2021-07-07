@@ -3,13 +3,12 @@
 ## Unreleased
 
 #### Changes
-* The `:ignore-errors` option will be honored in more places, making refactor-nrepl more robust in face of files not particularly meant to be part of the AST corpus.
+* [#291](https://github.com/clojure-emacs/refactor-nrepl/issues/291): The `:ignore-errors` option will be honored in more places, making refactor-nrepl more robust in face of files not particularly meant to be part of the AST corpus.
   * Examples: WIP files, Moustache template files, scripts.
-  * Closes https://github.com/clojure-emacs/refactor-nrepl/issues/291
 * Upgrade Orchard
   * Worth emphasizing: now the following options are available https://github.com/clojure-emacs/orchard/tree/v0.7.0#configuration-options
   * They can make the refactor-nrepl experience simpler / more robust.
-* Reliabilty improvement: try using `require` prior to `find-ns`
+* Reliability improvement: try using `require` prior to `find-ns`
   * This increases the chances that a namespace will be found, which in turns makes refactor-nrepl more complete/accurate.
 * Replace Cheshire with `clojure.data.json`
 * Build ASTs more robustly (by using locks and ruling out certain namespaces like refactor-nrepl itself)

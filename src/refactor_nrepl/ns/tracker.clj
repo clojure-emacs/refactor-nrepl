@@ -37,16 +37,15 @@
       ;; corner case - use the mranderson-ized refresh-dirs (for supporting this project's test suite):
       refresh-dirs))
 
-(def default-predicate (every-pred core/source-file?
-                                   safe-for-clojure-tools-namespace?))
+(def default-file-filter-predicate (every-pred core/source-file?
+                                               safe-for-clojure-tools-namespace?))
 
 (defn build-tracker
   "Build a tracker for the project.
 
   If file-predicate is provided, use that instead of `core/source-file?`"
   ([]
-   (build-tracker default-predicate))
-
+   (build-tracker default-file-filter-predicate))
   ([file-predicate]
    (file/add-files (tracker/tracker) (core/find-in-project file-predicate))))
 
@@ -81,7 +80,6 @@
 (defn project-files-in-topo-order
   ([]
    (project-files-in-topo-order false))
-
   ([ignore-errors?]
    (let [tracker (build-tracker (util/wrap-ignore-errors (every-pred (partial in-refresh-dirs? (user-refresh-dirs))
                                                                      core/clj-file?)

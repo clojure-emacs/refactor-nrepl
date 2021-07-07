@@ -197,7 +197,7 @@
   [old-path new-path ignore-errors?]
   (let [old-ns (core/ns-from-string (slurp old-path))
         new-ns (path->ns new-path)
-        tracker (tracker/build-tracker (util/wrap-ignore-errors tracker/default-predicate
+        tracker (tracker/build-tracker (util/wrap-ignore-errors tracker/default-file-filter-predicate
                                                                 ignore-errors?))
         dependents (tracker/get-dependents tracker old-ns)
         new-dependents (atom {})]

@@ -216,7 +216,7 @@
   (when (fully-qualified-name? fully-qualified-name)
     (let [all-defs (find-macro-definitions-in-project ignore-errors?)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
-          tracker (tracker/build-tracker (util/wrap-ignore-errors tracker/default-predicate
+          tracker (tracker/build-tracker (util/wrap-ignore-errors tracker/default-file-filter-predicate
                                                                   ignore-errors?))
           origin-ns (symbol (core/prefix fully-qualified-name))
           dependents (tracker/get-dependents tracker origin-ns)]

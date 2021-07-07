@@ -1,4 +1,5 @@
 (ns refactor-nrepl.unreadable-files
+  "Helpers and a self-assertion for dealing with unreadable files in a given codebase."
   (:require
    [clojure.java.io :as io]
    [clojure.test :refer [deftest is]]))

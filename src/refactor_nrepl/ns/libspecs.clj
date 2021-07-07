@@ -49,7 +49,6 @@
    :cljs {gstr goog.str}}}"
   ([]
    (namespace-aliases false))
-
   ([ignore-errors?]
    {:clj  (->> (core/find-in-project (util/wrap-ignore-errors (some-fn core/clj-file? core/cljc-file?)
                                                               ignore-errors?))
@@ -83,7 +82,6 @@
     :cljs}"
   ([]
    (referred-syms-by-file&fullname false))
-
   ([ignore-errors?]
    {:clj  (->> (core/find-in-project (util/wrap-ignore-errors (some-fn core/clj-file? core/cljc-file?)
                                                               ignore-errors?))
