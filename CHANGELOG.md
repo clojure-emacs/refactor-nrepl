@@ -3,6 +3,8 @@
 ## Unreleased
 
 #### Changes
+* [(Part of #230)](https://github.com/clojure-emacs/refactor-nrepl/issues/230) Parallelize various fuctionality
+  * This will have a noticeable improvement in e.g. clj-refactor.el's `cljr-slash` performance.
 * [#291](https://github.com/clojure-emacs/refactor-nrepl/issues/291): The `:ignore-errors` option will be honored in more places, making refactor-nrepl more robust in face of files not particularly meant to be part of the AST corpus.
   * Examples: WIP files, Moustache template files, scripts.
 * Upgrade Orchard

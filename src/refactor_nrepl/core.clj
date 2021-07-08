@@ -99,15 +99,19 @@
 (defn find-in-dir
   "Searches recursively under dir for files matching (pred ^File file).
 
-  Note that files which are non-existant, hidden or build-artifacts
+  Note that files which are non-existent, hidden or build-artifacts
   are pruned by this function."
   [pred dir]
-  (->>  dir
-        file-seq
-        (filter (every-pred fs/exists?
-                            (complement fs/hidden?)
-                            pred
-                            (complement build-artifact?)))))
+  (->> dir
+       file-seq
+       (pmap (fn [f]
+               (when ((every-pred fs/exists?
+                                  (complement fs/hidden?)
+                                  pred
+                                  (complement build-artifact?))
+                      f)
+                 f)))
+       (filter identity)))
 
 (defn read-ns-form
   ([path]
@@ -184,7 +188,10 @@
 (defn find-in-project
   "Return the files in the project satisfying (pred ^File file)."
   [pred]
-  (-> find-in-dir (partial pred) (mapcat (dirs-on-classpath)) distinct))
+  (->> (dirs-on-classpath)
+       (pmap (partial find-in-dir pred))
+       (apply concat)
+       distinct))
 
 (defn throw-unless-clj-file [file-path]
   (when-not (re-matches #".+\.clj$" file-path)

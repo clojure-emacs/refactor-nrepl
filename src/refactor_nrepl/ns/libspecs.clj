@@ -88,10 +88,10 @@
    {:clj  (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/clj-file? core/cljc-file?)
                                        ignore-errors?))
-               (map (juxt identity (partial get-libspec-from-file-with-caching :clj)))
+               (pmap (juxt identity (partial get-libspec-from-file-with-caching :clj)))
                sym-by-file&fullname)
     :cljs (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/cljs-file? core/cljc-file?)
                                        ignore-errors?))
-               (map (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
+               (pmap (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
                sym-by-file&fullname)}))
