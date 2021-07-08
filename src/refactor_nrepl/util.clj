@@ -95,5 +95,7 @@
   Observing this condition helps `future-cancel` effectively cancel `future`s."
   ([]
    (interrupted? ::_))
-  ([_x]
+  ;; The arity with a "useless" arg is there so that this can be used as a predicate
+  ;; in other places that already are using `some-fn`, `every-pred`, etc
+  ([_]
    (.isInterrupted (Thread/currentThread))))

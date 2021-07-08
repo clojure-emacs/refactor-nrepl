@@ -53,10 +53,11 @@
   "Get the dependent files for ns from tracker."
   [tracker my-ns]
   (let [deps (dep/immediate-dependents (:clojure.tools.namespace.track/deps tracker)
-                                       (symbol my-ns))]
+                                       (symbol my-ns))
+        deps-set (set deps)]
     (for [[file ns] (:clojure.tools.namespace.file/filemap tracker)
-          :when ((set deps) ns)
-          :when (not (util/interrupted?))]
+          :when (and (not (util/interrupted?))
+                     (deps-set ns))]
       file)))
 
 (defn- in-refresh-dirs? [refresh-dirs file]
