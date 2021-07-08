@@ -9,7 +9,7 @@
 (use-fixtures :each session-fixture)
 
 (defn message [arg-map]
-  (let [{:keys [error] :as response}
+  (let [{:keys [^String error] :as response}
         (refactor-nrepl.ns.resolve-missing-test/message arg-map)]
     (when error
       (throw (RuntimeException. error)))

@@ -157,8 +157,8 @@
   (delay
    (require-and-resolve 'refactor-nrepl.rename-file-or-dir/rename-file-or-dir)))
 
-(defn- rename-file-or-dir-reply [{:keys [transport old-path new-path] :as msg}]
-  (reply transport msg :touched (@rename-file-or-dir old-path new-path)
+(defn- rename-file-or-dir-reply [{:keys [transport old-path new-path ignore-errors] :as msg}]
+  (reply transport msg :touched (@rename-file-or-dir old-path new-path (= ignore-errors "true"))
          :status :done))
 
 (defn- namespace-aliases-reply [{:keys [transport] :as msg}]

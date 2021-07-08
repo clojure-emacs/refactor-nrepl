@@ -81,7 +81,9 @@
 (defn- find-macro-definitions-in-project
   "Finds all macros that are defined in the project."
   [ignore-errors?]
-  (->> (core/find-in-project (some-fn core/cljc-file? core/clj-file?))
+  (->> (core/find-in-project (util/with-suppressed-errors
+                               (some-fn core/cljc-file? core/clj-file?)
+                               ignore-errors?))
        (mapcat #(try
                   (get-macro-definitions-in-file-with-caching %)
                   (catch Exception e
@@ -215,7 +217,7 @@
   (when (fully-qualified-name? fully-qualified-name)
     (let [all-defs (find-macro-definitions-in-project ignore-errors?)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
-          tracker (tracker/build-tracker)
+          tracker (tracker/build-tracker (util/with-suppressed-errors tracker/default-file-filter-predicate ignore-errors?))
           origin-ns (symbol (core/prefix fully-qualified-name))
           dependents (tracker/get-dependents tracker origin-ns)]
       (some->> macro-def

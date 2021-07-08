@@ -3,7 +3,8 @@
             [refactor-nrepl.core
              :refer
              [get-ns-component ns-form-from-string]]
-            [refactor-nrepl.rename-file-or-dir :refer :all])
+            [refactor-nrepl.unreadable-files :refer [ignore-errors?]]
+            [refactor-nrepl.rename-file-or-dir :as sut])
   (:import java.io.File))
 
 (def from-file-path (.getAbsolutePath (File. "testproject/src/com/move/ns_to_be_moved.clj")))
@@ -25,7 +26,7 @@
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
-    (let [res (rename-file-or-dir from-file-path to-file-path)]
+    (let [res (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)]
       (is (or (list? res) (instance? clojure.lang.Cons res)))
       (is (= 4 (count res))))));; currently not tracking :require-macros!!
 
@@ -38,7 +39,7 @@
                     (doseq [[^String path content] deps]
                       (when (.endsWith path "clj")
                         (swap! dependents conj content))))]
-      (rename-file-or-dir from-file-path to-file-path)
+      (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)
       (doseq [content @dependents
               :let [ns-form (ns-form-from-string content)
                     require-form (get-ns-component ns-form :require)
@@ -57,7 +58,7 @@
                   (fn [deps]
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
-      (rename-file-or-dir from-file-path to-file-path)
+      (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)
       (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.clj")]
         (is (.contains content new-ns-ref))
@@ -73,7 +74,7 @@
                   (is (= new to-file-path)))
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
-    (rename-file-or-dir from-file-path to-file-path)))
+    (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)))
 
 (deftest replaces-ns-references-in-dependendents-when-moving-dirs
   (let [dependents (atom [])]
@@ -85,7 +86,7 @@
                     (doseq [[^String path content] deps]
                       (when (.endsWith path ".clj")
                         (swap! dependents conj content))))]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (doseq [content @dependents
               :let [ns-form (ns-form-from-string content)
                     require-form (get-ns-component ns-form :require)
@@ -101,7 +102,7 @@
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
-    (let [res (rename-file-or-dir from-dir-path to-dir-path)]
+    (let [res (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)]
       (is (seq? res))
       (is (= 8 (count res))))))
 
@@ -113,7 +114,7 @@
                   (fn [deps]
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.clj")]
         (is (.contains content new-ns-ref-dir))
@@ -129,7 +130,7 @@
                     (swap! files conj [old new]))
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (= (count @files) 9))
       (doseq [[^String old ^String new] @files]
         (is (.contains old "/move/"))
@@ -142,7 +143,7 @@
                     (swap! files conj new))
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (some #(.endsWith ^String % "non_clj_file") @files))
       (is (= 4 (count (filter #(.endsWith ^String % ".cljs") @files)))))))
 
@@ -158,7 +159,7 @@
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
-    (let [res (rename-file-or-dir from-file-path-cljs to-file-path-cljs)]
+    (let [res (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)]
       (is (or (list? res) (instance? clojure.lang.Cons res)))
       (is (= 4 (count res))))))
 
@@ -170,7 +171,7 @@
                   (fn [deps]
                     (doseq [[f content] deps]
                       (swap! dependents conj content)))]
-      (rename-file-or-dir from-file-path-cljs to-file-path-cljs)
+      (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)
       (doseq [content @dependents
               :let [ns-form (ns-form-from-string content)
                     require-form (get-ns-component ns-form :require)
@@ -186,7 +187,7 @@
                   (fn [deps]
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
-      (rename-file-or-dir from-file-path-cljs to-file-path-cljs)
+      (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)
       (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.cljs")]
         (is (.contains content new-ns-ref))
@@ -202,7 +203,7 @@
                   (is (= new to-file-path-cljs)))
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
-    (rename-file-or-dir from-file-path-cljs to-file-path-cljs)))
+    (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)))
 
 (deftest replaces-ns-references-in-dependendents-when-moving-dirs-for-cljs
   (let [dependents (atom [])]
@@ -214,7 +215,7 @@
                     (doseq [[^String path content] deps]
                       (when (.endsWith path ".cljs")
                         (swap! dependents conj content))))]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (doseq [content @dependents
               :let [ns-form (ns-form-from-string content)
                     require-form (get-ns-component ns-form :require)
@@ -233,7 +234,7 @@
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
-    (let [res (rename-file-or-dir from-dir-path to-dir-path)]
+    (let [res (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)]
       (is (seq? res))
       (is (= 8 (count res))))))
 
@@ -245,7 +246,7 @@
                   (fn [deps]
                     (doseq [[f content] deps]
                       (swap! dependents conj [f content])))]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (doseq [[^String f ^String content] @dependents
               :when (.endsWith f "ns2.cljs")]
         (is (.contains content new-ns-ref-dir))
@@ -261,7 +262,7 @@
                     (swap! files conj [old new]))
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (= (count @files) 9))
       (doseq [[^String old ^String new] @files]
         (is (.contains old "/move/"))
@@ -274,6 +275,6 @@
                     (swap! files conj new))
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
-      (rename-file-or-dir from-dir-path to-dir-path)
+      (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (some #(.endsWith ^String % "non_clj_file") @files))
       (is (= 4 (count (filter #(.endsWith ^String % ".clj") @files)))))))

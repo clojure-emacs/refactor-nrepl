@@ -1,6 +1,7 @@
 (ns refactor-nrepl.ns.libspecs
   (:require [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.ns-parser :as ns-parser])
+            [refactor-nrepl.ns.ns-parser :as ns-parser]
+            [refactor-nrepl.util :as util])
   (:import [java.io File]))
 
 ;; The structure here is {path {lang [timestamp value]}}
@@ -46,13 +47,19 @@
 
   {:clj {util com.acme.util str clojure.string
    :cljs {gstr goog.str}}}"
-  []
-  {:clj (->> (core/find-in-project (some-fn core/clj-file? core/cljc-file?))
-             (map (partial get-libspec-from-file-with-caching :clj))
-             aliases-by-frequencies)
-   :cljs (->> (core/find-in-project (some-fn core/cljs-file? core/cljc-file?))
-              (map (partial get-libspec-from-file-with-caching :cljs))
-              aliases-by-frequencies)})
+  ([]
+   (namespace-aliases false))
+  ([ignore-errors?]
+   {:clj  (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/clj-file? core/cljc-file?)
+                                       ignore-errors?))
+               (map (partial get-libspec-from-file-with-caching :clj))
+               aliases-by-frequencies)
+    :cljs (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/cljs-file? core/cljc-file?)
+                                       ignore-errors?))
+               (map (partial get-libspec-from-file-with-caching :cljs))
+               aliases-by-frequencies)}))
 
 (defn- unwrap-refer
   [file {:keys [ns refer]}]
@@ -75,10 +82,16 @@
    Example:
    {:clj  {\"/home/someuser/projects/some.clj\" [\"example.com/foobar\" foobar]}
     :cljs}"
-  []
-  {:clj (->> (core/find-in-project (some-fn core/clj-file? core/cljc-file?))
-             (map (juxt identity (partial get-libspec-from-file-with-caching :clj)))
-             sym-by-file&fullname)
-   :cljs (->> (core/find-in-project (some-fn core/cljs-file? core/cljc-file?))
-              (map (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
-              sym-by-file&fullname)})
+  ([]
+   (referred-syms-by-file&fullname false))
+  ([ignore-errors?]
+   {:clj  (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/clj-file? core/cljc-file?)
+                                       ignore-errors?))
+               (map (juxt identity (partial get-libspec-from-file-with-caching :clj)))
+               sym-by-file&fullname)
+    :cljs (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/cljs-file? core/cljc-file?)
+                                       ignore-errors?))
+               (map (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
+               sym-by-file&fullname)}))

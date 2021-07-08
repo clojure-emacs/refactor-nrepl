@@ -1,16 +1,18 @@
 (ns refactor-nrepl.extract-definition-test
   (:require [clojure.java.io :as io]
             [clojure.test :refer :all]
-            [refactor-nrepl.extract-definition :refer :all]))
+            [refactor-nrepl.extract-definition :as sut]
+            [refactor-nrepl.unreadable-files :refer [ignore-errors-str]]))
 
 (defn- -extract-definition
   [name line col]
-  (get-in (extract-definition
+  (get-in (sut/extract-definition
            {:file (.getAbsolutePath (io/file "test-resources/extract_definition.clj"))
             :ns "extract-definition"
             :line line
             :column col
             :name name
+            :ignore-errors ignore-errors-str
             :dir "test-resources"})
           [:definition :definition]))
 
@@ -72,11 +74,12 @@
          "(+ 11 17)")))
 
 (deftest returns-meta-data
-  (let [res (extract-definition
+  (let [res (sut/extract-definition
              {:file (.getAbsolutePath (io/file "test-resources/extract_definition.clj"))
               :ns "extract-definition"
               :line 44
               :column 14
+              :ignore-errors ignore-errors-str
               :name "if-let-bound"
               :dir "."})]
     (is (= (count (:occurrences res)) 1))

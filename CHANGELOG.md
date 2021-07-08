@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+#### Changes
+* [#291](https://github.com/clojure-emacs/refactor-nrepl/issues/291): The `:ignore-errors` option will be honored in more places, making refactor-nrepl more robust in face of files not particularly meant to be part of the AST corpus.
+  * Examples: WIP files, Moustache template files, scripts.
+* Upgrade Orchard
+  * Worth emphasizing: now the following options are available https://github.com/clojure-emacs/orchard/tree/v0.7.0#configuration-options
+  * They can make the refactor-nrepl experience simpler / more robust.
+* Reliability improvement: try using `require` prior to `find-ns`
+  * This increases the chances that a namespace will be found, which in turns makes refactor-nrepl more complete/accurate.
+* Replace Cheshire with `clojure.data.json`
+* Build ASTs more robustly (by using locks and ruling out certain namespaces like refactor-nrepl itself)
+
 ### Bugs fixed
 * [#289](https://github.com/clojure-emacs/refactor-nrepl/issues/289): Fix an edge-case with involving keywords that caused find-symbol to crash.
 * [#305](https://github.com/clojure-emacs/refactor-nrepl/issues/305): Don't put `:as` or `:refer` on their own lines in the ns form, when the libspec is so long it causes the line to wrap.

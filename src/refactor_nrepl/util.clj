@@ -72,3 +72,19 @@
 (defn maybe-log-exception [^Throwable e]
   (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
     (.printStackTrace e)))
+
+(defn with-suppressed-errors
+  "Wraps a predicate `f` in a try-catch, depending on `ignore-errors?`.
+
+  Typically used for making ingestion of data (`read`/`require`/`analyze`) more robust
+  in face of unconfigured or otherwise problematic source paths."
+  [f ignore-errors?]
+  (if-not ignore-errors?
+    f
+    (fn [x]
+      (try
+        (f x)
+        (catch Exception e
+          (maybe-log-exception e)
+          ;; return false, because `with-suppressed-errors` is oriented for predicate usage
+          false)))))

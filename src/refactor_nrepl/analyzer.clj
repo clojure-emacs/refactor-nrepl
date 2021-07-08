@@ -132,7 +132,7 @@
                              "OK"))))))
 
 (defn warm-ast-cache []
-  (doseq [f (tracker/project-files-in-topo-order)]
+  (doseq [f (tracker/project-files-in-topo-order true)]
     (try
       (ns-ast (slurp f))
       (catch Throwable th

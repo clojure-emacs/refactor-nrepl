@@ -81,6 +81,15 @@ Configuration settings are passed along with each msg, currently the recognized 
 
  :debug false
 
+  ;; if `true`:
+  ;;   * files that can't be `read`, `require`d or analyzed (with `tools.analyzer`) will be ignored,
+  ;;     instead of aborting the early phases of refactor-nrepl execution.
+  ;;   * ops like `find-symbol` will carry on even if there is broken namespace which we can not build AST for.
+  ;; Setting `false` will be more strict, yielding possibly more correct usage,
+  ;; but it also needs that `:ignore-paths` is correctly set, that all namespaces are valid,
+  ;; that tools.analyzer is able to analyze all of them, etc
+  :ignore-errors true
+   
  ;; When true `clean-ns` will remove unused symbols, otherwise just
  ;; sort etc
  :prune-ns-form true
