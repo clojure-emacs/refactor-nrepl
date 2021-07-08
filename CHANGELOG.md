@@ -12,6 +12,7 @@
   * This increases the chances that a namespace will be found, which in turns makes refactor-nrepl more complete/accurate.
 * Replace Cheshire with `clojure.data.json`
 * Build ASTs more robustly (by using locks and ruling out certain namespaces like refactor-nrepl itself)
+* Honor internal `future-cancel` calls, improving overall responsiveness and stability.
 
 ### Bugs fixed
 * [#289](https://github.com/clojure-emacs/refactor-nrepl/issues/289): Fix an edge-case with involving keywords that caused find-symbol to crash.

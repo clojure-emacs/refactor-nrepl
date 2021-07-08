@@ -88,3 +88,12 @@
           (maybe-log-exception e)
           ;; return false, because `with-suppressed-errors` is oriented for predicate usage
           false)))))
+
+(defn interrupted?
+  "Has the current thread been interrupted?
+
+  Observing this condition helps `future-cancel` effectively cancel `future`s."
+  ([]
+   (interrupted? ::_))
+  ([_x]
+   (.isInterrupted (Thread/currentThread))))

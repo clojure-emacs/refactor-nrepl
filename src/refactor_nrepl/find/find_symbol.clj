@@ -137,21 +137,28 @@
                                (str/join "/" [namespace var-name]))
         referred-syms (libspecs/referred-syms-by-file&fullname ignore-errors)]
     (->> (core/dirs-on-classpath)
-         (mapcat (partial core/find-in-dir (util/with-suppressed-errors
-                                             (every-pred (some-fn core/clj-file? core/cljc-file?)
-                                                         (fn [f]
-                                                           (try
-                                                             (let [n (some-> f
-                                                                             core/read-ns-form
-                                                                             parse/name-from-ns-decl)]
-                                                               (if-not n
-                                                                 false
-                                                                 (not (self-referential? n))))
-                                                             (catch Exception e
-                                                               (util/maybe-log-exception e)
-                                                               false))))
-                                             ignore-errors)))
-         (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors referred-syms)))))
+         (keep (fn [x]
+                 (when-not (util/interrupted?)
+                   (core/find-in-dir (util/with-suppressed-errors
+                                       (every-pred (some-fn core/clj-file? core/cljc-file?)
+                                                   (fn [f]
+                                                     (try
+                                                       (let [n (some-> f
+                                                                       core/read-ns-form
+                                                                       parse/name-from-ns-decl)]
+                                                         (if-not n
+                                                           false
+                                                           (not (self-referential? n))))
+                                                       (catch Exception e
+                                                         (util/maybe-log-exception e)
+                                                         false))))
+                                       ignore-errors)
+                                     x))))
+         (apply concat)
+         (keep (fn [x]
+                 (when-not (util/interrupted?)
+                   (find-symbol-in-file fully-qualified-name ignore-errors referred-syms x))))
+         (apply concat))))
 
 (defn- get&read-enclosing-sexps
   [file-content {:keys [^long line-beg ^long col-beg]}]
@@ -249,7 +256,8 @@
         macros (future (find-macro (core/fully-qualify ns name) ignore-errors?))
         globals (->> (find-global-symbol file ns name ignore-errors?)
                      distinct
-                     (remove find-util/spurious?)
+                     (remove (some-fn util/interrupted?
+                                      find-util/spurious?))
                      future)]
 
     (or

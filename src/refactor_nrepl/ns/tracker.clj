@@ -55,7 +55,8 @@
   (let [deps (dep/immediate-dependents (:clojure.tools.namespace.track/deps tracker)
                                        (symbol my-ns))]
     (for [[file ns] (:clojure.tools.namespace.file/filemap tracker)
-          :when ((set deps) ns)]
+          :when ((set deps) ns)
+          :when (not (util/interrupted?))]
       file)))
 
 (defn- in-refresh-dirs? [refresh-dirs file]
