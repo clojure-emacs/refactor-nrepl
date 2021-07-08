@@ -73,7 +73,7 @@
   (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
     (.printStackTrace e)))
 
-(defn wrap-ignore-errors
+(defn with-suppressed-errors
   "Wraps a predicate `f` in a try-catch, depending on `ignore-errors?`.
 
   Typically used for making ingestion of data (`read`/`require`/`analyze`) more robust
@@ -86,5 +86,5 @@
         (f x)
         (catch Exception e
           (maybe-log-exception e)
-          ;; return false, because `wrap-ignore-errors` is oriented for predicate usage
+          ;; return false, because `with-suppressed-errors` is oriented for predicate usage
           false)))))

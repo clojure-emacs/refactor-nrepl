@@ -81,9 +81,10 @@
   ([]
    (project-files-in-topo-order false))
   ([ignore-errors?]
-   (let [tracker (build-tracker (util/wrap-ignore-errors (every-pred (partial in-refresh-dirs? (user-refresh-dirs))
-                                                                     core/clj-file?)
-                                                         ignore-errors?))
+   (let [tracker (build-tracker (util/with-suppressed-errors
+                                  (every-pred (partial in-refresh-dirs? (user-refresh-dirs))
+                                              core/clj-file?)
+                                  ignore-errors?))
          nses (dep/topo-sort (:clojure.tools.namespace.track/deps tracker))
          filemap (:clojure.tools.namespace.file/filemap tracker)
          ns2file (zipmap (vals filemap) (keys filemap))]

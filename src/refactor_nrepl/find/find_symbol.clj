@@ -137,19 +137,20 @@
                                (str/join "/" [namespace var-name]))
         referred-syms (libspecs/referred-syms-by-file&fullname ignore-errors)]
     (->> (core/dirs-on-classpath)
-         (mapcat (partial core/find-in-dir (util/wrap-ignore-errors (every-pred (some-fn core/clj-file? core/cljc-file?)
-                                                                                (fn [f]
-                                                                                  (try
-                                                                                    (let [n (some-> f
-                                                                                                    core/read-ns-form
-                                                                                                    parse/name-from-ns-decl)]
-                                                                                      (if-not n
-                                                                                        false
-                                                                                        (not (self-referential? n))))
-                                                                                    (catch Exception e
-                                                                                      (util/maybe-log-exception e)
-                                                                                      false))))
-                                                                    ignore-errors)))
+         (mapcat (partial core/find-in-dir (util/with-suppressed-errors
+                                             (every-pred (some-fn core/clj-file? core/cljc-file?)
+                                                         (fn [f]
+                                                           (try
+                                                             (let [n (some-> f
+                                                                             core/read-ns-form
+                                                                             parse/name-from-ns-decl)]
+                                                               (if-not n
+                                                                 false
+                                                                 (not (self-referential? n))))
+                                                             (catch Exception e
+                                                               (util/maybe-log-exception e)
+                                                               false))))
+                                             ignore-errors)))
          (mapcat (partial find-symbol-in-file fully-qualified-name ignore-errors referred-syms)))))
 
 (defn- get&read-enclosing-sexps

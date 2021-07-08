@@ -27,4 +27,4 @@
           (catch Exception _
             true))
         "All these files are unreadable. And yet the refactor-nrepl test suite will pass
-(it would have failed prior to the introduction of `#'refactor-nrepl.util/wrap-ignore-errors`).")))
+(it would have failed prior to the introduction of `#'refactor-nrepl.util/with-suppressed-errors`).")))

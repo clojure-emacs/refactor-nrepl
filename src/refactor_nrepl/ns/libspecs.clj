@@ -50,12 +50,14 @@
   ([]
    (namespace-aliases false))
   ([ignore-errors?]
-   {:clj  (->> (core/find-in-project (util/wrap-ignore-errors (some-fn core/clj-file? core/cljc-file?)
-                                                              ignore-errors?))
+   {:clj  (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/clj-file? core/cljc-file?)
+                                       ignore-errors?))
                (map (partial get-libspec-from-file-with-caching :clj))
                aliases-by-frequencies)
-    :cljs (->> (core/find-in-project (util/wrap-ignore-errors (some-fn core/cljs-file? core/cljc-file?)
-                                                              ignore-errors?))
+    :cljs (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/cljs-file? core/cljc-file?)
+                                       ignore-errors?))
                (map (partial get-libspec-from-file-with-caching :cljs))
                aliases-by-frequencies)}))
 
@@ -83,11 +85,13 @@
   ([]
    (referred-syms-by-file&fullname false))
   ([ignore-errors?]
-   {:clj  (->> (core/find-in-project (util/wrap-ignore-errors (some-fn core/clj-file? core/cljc-file?)
-                                                              ignore-errors?))
+   {:clj  (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/clj-file? core/cljc-file?)
+                                       ignore-errors?))
                (map (juxt identity (partial get-libspec-from-file-with-caching :clj)))
                sym-by-file&fullname)
-    :cljs (->> (core/find-in-project (util/wrap-ignore-errors (some-fn core/cljs-file? core/cljc-file?)
-                                                              ignore-errors?))
+    :cljs (->> (core/find-in-project (util/with-suppressed-errors
+                                       (some-fn core/cljs-file? core/cljc-file?)
+                                       ignore-errors?))
                (map (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
                sym-by-file&fullname)}))
