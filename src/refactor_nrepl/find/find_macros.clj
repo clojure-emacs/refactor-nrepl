@@ -55,7 +55,8 @@
               opts {:read-cond :allow :features #{:clj} :eof :eof}]
           (loop [macros [], form (reader/read opts rdr)]
             (cond
-              (= form :eof) macros
+              (or (= form :eof)
+                  (util/interrupted?)) macros
               (and (sequential? form) (= (first form) 'defmacro))
               (recur (conj macros (build-macro-meta form f))
                      (reader/read opts rdr))
@@ -82,7 +83,8 @@
   "Finds all macros that are defined in the project."
   [ignore-errors?]
   (->> (core/find-in-project (util/with-suppressed-errors
-                               (some-fn core/cljc-file? core/clj-file?)
+                               (every-pred (complement util/interrupted?)
+                                           (some-fn core/cljc-file? core/clj-file?))
                                ignore-errors?))
        (mapcat #(try
                   (get-macro-definitions-in-file-with-caching %)
@@ -217,14 +219,20 @@
   (when (fully-qualified-name? fully-qualified-name)
     (let [all-defs (find-macro-definitions-in-project ignore-errors?)
           macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
-          tracker (tracker/build-tracker (util/with-suppressed-errors tracker/default-file-filter-predicate ignore-errors?))
+          tracker (tracker/build-tracker (util/with-suppressed-errors
+                                           (every-pred (complement util/interrupted?)
+                                                       tracker/default-file-filter-predicate)
+                                           ignore-errors?))
           origin-ns (symbol (core/prefix fully-qualified-name))
           dependents (tracker/get-dependents tracker origin-ns)]
       (some->> macro-def
                ^String (:file)
                File.
                (conj dependents)
-               (mapcat (partial find-usages-in-file [macro-def]))
+               (keep (fn [x]
+                       (when-not (util/interrupted?)
+                         (find-usages-in-file [macro-def] x))))
+               (apply concat)
                (into #{})
                (remove nil?)
                (sort-by :line-beg)))))
