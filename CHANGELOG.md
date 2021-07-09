@@ -3,6 +3,9 @@
 ## Unreleased
 
 #### Changes
+
+* [(Part of #230)](https://github.com/clojure-emacs/refactor-nrepl/issues/230): Parallelize various functionality
+  * This will have a noticeable improvement in e.g. clj-refactor.el's `cljr-slash` performance.
 * [#291](https://github.com/clojure-emacs/refactor-nrepl/issues/291): The `:ignore-errors` option will be honored in more places, making refactor-nrepl more robust in face of files not particularly meant to be part of the AST corpus.
   * Examples: WIP files, Moustache template files, scripts.
 * Upgrade Orchard
@@ -15,6 +18,7 @@
 * Honor internal `future-cancel` calls, improving overall responsiveness and stability.
 
 ### Bugs fixed
+
 * [#289](https://github.com/clojure-emacs/refactor-nrepl/issues/289): Fix an edge-case with involving keywords that caused find-symbol to crash.
 * [#305](https://github.com/clojure-emacs/refactor-nrepl/issues/305): Don't put `:as` or `:refer` on their own lines in the ns form, when the libspec is so long it causes the line to wrap.
 * [clojure-emacs/clj-refactor.el#459](https://github.com/clojure-emacs/clj-refactor.el/issues/459): `clean-ns` should conform to the style guide: `(:require` in the ns form should be followed by a newline.

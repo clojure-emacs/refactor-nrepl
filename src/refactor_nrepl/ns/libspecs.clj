@@ -77,7 +77,7 @@
 
 (defn referred-syms-by-file&fullname
   "Return a map of filename to a map of sym fullname to sym
-   the sym itself
+   the sym itself.
 
    Example:
    {:clj  {\"/home/someuser/projects/some.clj\" [\"example.com/foobar\" foobar]}
@@ -85,13 +85,14 @@
   ([]
    (referred-syms-by-file&fullname false))
   ([ignore-errors?]
+   ;; `pmap` is used as it has proved to be more efficient, both for cached and non-cached cases.
    {:clj  (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/clj-file? core/cljc-file?)
                                        ignore-errors?))
-               (map (juxt identity (partial get-libspec-from-file-with-caching :clj)))
+               (pmap (juxt identity (partial get-libspec-from-file-with-caching :clj)))
                sym-by-file&fullname)
     :cljs (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/cljs-file? core/cljc-file?)
                                        ignore-errors?))
-               (map (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
+               (pmap (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
                sym-by-file&fullname)}))
