@@ -48,7 +48,7 @@
              :test {:dependencies [[print-foo "1.0.2"]]}
              :dev {:global-vars {*warn-on-reflection* true}
                    :dependencies [[org.clojure/clojurescript "1.10.520"]
-                                  [org.clojure/core.async "1.3.618":exclusions [org.clojure/clojure org.clojure/tools.reader]]
+                                  [org.clojure/core.async "1.3.618" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
                                   [cider/piggieback "0.5.2"]
                                   [commons-io/commons-io "2.8.0"]]
                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
