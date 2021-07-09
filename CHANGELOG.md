@@ -11,7 +11,7 @@
 * Reliability improvement: try using `require` prior to `find-ns`
   * This increases the chances that a namespace will be found, which in turns makes refactor-nrepl more complete/accurate.
 * Replace Cheshire with `clojure.data.json`
-* Build ASTs more robustly (by using locks and ruling out certain namespaces like refactor-nrepl itself)
+* Build ASTs more robustly (by using locks, `require`, and ruling out certain namespaces like refactor-nrepl itself)
 * Honor internal `future-cancel` calls, improving overall responsiveness and stability.
 
 ### Bugs fixed

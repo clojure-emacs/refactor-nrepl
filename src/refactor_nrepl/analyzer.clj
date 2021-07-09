@@ -77,7 +77,13 @@
              (not (util/self-referential? ns)))
     ;; Use `locking`, because AST analysis can perform arbitrary evaluation.
     ;; Parallel analysis is not safe, especially as it can perform `require` calls.
-    (locking core/require-lock
+    (locking core/require-lock ;; for both `require` and `aj/analyze-ns`
+
+      ;; Performing this `require` makes it more likely that t.ana will succeed.
+      ;; I believe it's because `require` will also require other namespaces recursively.
+      ;; t.ana does so in theory as well, but it's slightly more rigid,
+      ;; and/or does not always do the same exact thing the Clojure compiler would.
+      (require ns)
       (let [opts {:passes-opts
                   {:validate/unresolvable-symbol-handler shadow-unresolvable-symbol-handler
                    :validate/throw-on-arity-mismatch     false
