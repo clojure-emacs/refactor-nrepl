@@ -77,7 +77,8 @@
              (not (util/self-referential? ns)))
     ;; Use `locking`, because AST analysis can perform arbitrary evaluation.
     ;; Parallel analysis is not safe, especially as it can perform `require` calls.
-    (locking core/require-lock
+    (locking core/require-lock ;; for both `require` and `aj/analyze-ns`
+      (require ns) ;; ease the work for t.ana
       (let [opts {:passes-opts
                   {:validate/unresolvable-symbol-handler shadow-unresolvable-symbol-handler
                    :validate/throw-on-arity-mismatch     false
