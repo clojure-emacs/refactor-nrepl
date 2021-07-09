@@ -104,6 +104,7 @@
   [pred dir]
   (->> dir
        file-seq
+       ;; `pmap` performs better in large projects.
        (pmap (fn [f]
                (when ((every-pred fs/exists?
                                   (complement fs/hidden?)
