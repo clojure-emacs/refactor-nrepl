@@ -1,14 +1,10 @@
 (ns refactor-nrepl.integration-tests
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is use-fixtures]]
             [nrepl.server :as nrepl]
             [refactor-nrepl middleware
              [analyzer :as analyzer]
-             [client :refer :all]
-             [core :as core]]
-            [clojure.string :as str])
-  (:import java.io.File
-           org.apache.commons.io.FileUtils))
+             [client :refer [connect find-unbound find-usages resolve-missing version]]
+             [core :as core]]))
 
 (defn start-up-repl-server []
   (let [server

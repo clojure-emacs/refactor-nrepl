@@ -1,6 +1,6 @@
 (ns refactor-nrepl.extract-definition-test
   (:require [clojure.java.io :as io]
-            [clojure.test :refer :all]
+            [clojure.test :refer [deftest is]]
             [refactor-nrepl.extract-definition :as sut]
             [refactor-nrepl.unreadable-files :refer [ignore-errors-str]]))
 
