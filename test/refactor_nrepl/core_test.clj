@@ -1,5 +1,5 @@
 (ns refactor-nrepl.core-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [refactor-nrepl.config :as config]
             [refactor-nrepl.core :refer [ignore-dir-on-classpath?]]))
 

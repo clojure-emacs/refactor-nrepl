@@ -1,5 +1,5 @@
 (ns refactor-nrepl.ns.clean-ns-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [are deftest is]]
             [refactor-nrepl.config :as config]
             [refactor-nrepl.core :as core]
             [refactor-nrepl.ns.clean-ns :refer [clean-ns]]

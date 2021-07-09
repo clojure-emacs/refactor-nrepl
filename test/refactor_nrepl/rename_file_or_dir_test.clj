@@ -1,5 +1,5 @@
 (ns refactor-nrepl.rename-file-or-dir-test
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is]]
             [refactor-nrepl.core
              :refer
              [get-ns-component ns-form-from-string]]
@@ -22,9 +22,9 @@
 (def old-package-prefix-dir "com.move.ns_to_be_moved/")
 
 (deftest returns-list-of-affected-files
-  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
+  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
     (let [res (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)]
       (is (or (list? res) (instance? clojure.lang.Cons res)))
@@ -32,8 +32,8 @@
 
 (deftest replaces-ns-references-in-dependents
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
                     (doseq [[^String path content] deps]
@@ -52,8 +52,8 @@
 
 (deftest replaces-fully-qualified-vars-in-dependents
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
                     (doseq [[f content] deps]
@@ -72,14 +72,14 @@
                 (fn [old new]
                   (is (= old from-file-path))
                   (is (= new to-file-path)))
-                refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
+                refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
     (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)))
 
 (deftest replaces-ns-references-in-dependendents-when-moving-dirs
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
 
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
@@ -98,9 +98,9 @@
           (is (= 'com.moved.ns_to_be_moved imported-ns)))))))
 
 (deftest returns-list-of-affected-files-when-moving-dirs
-  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
+  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
     (let [res (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)]
       (is (seq? res))
@@ -108,8 +108,8 @@
 
 (deftest replaces-fully-qualified-vars-in-dependents-when-moving-dirs
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
                     (doseq [[f content] deps]
@@ -128,8 +128,8 @@
     (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file!
                   (fn [old new]
                     (swap! files conj [old new]))
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
       (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (= (count @files) 9))
       (doseq [[^String old ^String new] @files]
@@ -139,10 +139,10 @@
 (deftest moves-any-non-clj-files-contained-in-the-dir
   (let [files (atom [])]
     (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file!
-                  (fn [old new]
+                  (fn [_old new]
                     (swap! files conj new))
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
       (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (some #(.endsWith ^String % "non_clj_file") @files))
       (is (= 4 (count (filter #(.endsWith ^String % ".cljs") @files)))))))
@@ -155,9 +155,9 @@
 (def to-file-path-cljs (.getAbsolutePath (File. "testproject/src/com/move/moved_ns_cljs.cljs")))
 
 (deftest returns-list-of-affected-files-for-cljs
-  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
+  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
     (let [res (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)]
       (is (or (list? res) (instance? clojure.lang.Cons res)))
@@ -165,11 +165,11 @@
 
 (deftest replaces-ns-references-in-dependent-for-cljs
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
-                    (doseq [[f content] deps]
+                    (doseq [[_f content] deps]
                       (swap! dependents conj content)))]
       (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)
       (doseq [content @dependents
@@ -181,8 +181,8 @@
 
 (deftest replaces-fully-qualified-vars-in-dependents-for-cljs
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
                     (doseq [[f content] deps]
@@ -201,14 +201,14 @@
                 (fn [old new]
                   (is (= old from-file-path-cljs))
                   (is (= new to-file-path-cljs)))
-                refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
+                refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
     (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)))
 
 (deftest replaces-ns-references-in-dependendents-when-moving-dirs-for-cljs
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
 
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
@@ -230,9 +230,9 @@
                   (= 'com.moved.ns-to-be-moved required-macro-ns))))))))
 
 (deftest returns-list-of-affected-files-when-moving-dirs-for-cljs
-  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [dependents])
+  (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
     (let [res (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)]
       (is (seq? res))
@@ -240,8 +240,8 @@
 
 (deftest replaces-fully-qualified-vars-in-dependents-when-moving-dirs-for-cljs
   (let [dependents (atom [])]
-    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [old new])
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
+    (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents!
                   (fn [deps]
                     (doseq [[f content] deps]
@@ -260,8 +260,8 @@
     (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file!
                   (fn [old new]
                     (swap! files conj [old new]))
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
       (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (= (count @files) 9))
       (doseq [[^String old ^String new] @files]
@@ -271,10 +271,10 @@
 (deftest moves-any-non-cljs-files-contained-in-the-dir-for-cljs
   (let [files (atom [])]
     (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file!
-                  (fn [old new]
+                  (fn [_old new]
                     (swap! files conj new))
-                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [path old-ns])
-                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [deps])]
+                  refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
+                  refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
       (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
       (is (some #(.endsWith ^String % "non_clj_file") @files))
       (is (= 4 (count (filter #(.endsWith ^String % ".clj") @files)))))))

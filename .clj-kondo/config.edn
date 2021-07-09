@@ -1,2 +1,4 @@
-{:linters {:unresolved-symbol {:exclude [(refactor-nrepl.ns.ns-parser/with-libspecs-from [libspecs])]}
+;; `nrepl.core/code` can contain intentionally broken code in the test suite, so we silence related resolution errors:
+{:lint-as {nrepl.core/code clojure.core/quote}
+ :linters {:unresolved-symbol {:exclude [(refactor-nrepl.ns.ns-parser/with-libspecs-from [libspecs])]}
            :unresolved-namespace {:exclude [clojure.main]}}}

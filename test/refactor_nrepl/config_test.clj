@@ -1,6 +1,5 @@
 (ns refactor-nrepl.config-test
-  (:require [clojure.set :as set]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [refactor-nrepl
              [analyzer :as analyzer]
              [config :as sut]]))

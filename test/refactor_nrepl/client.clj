@@ -1,12 +1,11 @@
 (ns refactor-nrepl.client
   (:require [clojure
-             [edn :as edn]
-             [string :as str]]
+             [edn :as edn]]
             [nrepl.core :as nrepl])
-  (:import java.io.File))
+  (:import (java.io File)))
 
 (def ^:private nrepl-port
-  (when (.exists (java.io.File. ".nrepl-port"))
+  (when (.exists (File. ".nrepl-port"))
     (-> ".nrepl-port" slurp Integer/parseInt)))
 
 (def ^:private transp (atom nil))
@@ -42,7 +41,7 @@
                            (#(if file (assoc % :file file) %))
                            (nrepl-message 60000 tr)
                            (map (juxt :occurrence :count :error)))]
-    (if-let [error (some last found-symbols)]
+    (when-let [error (some last found-symbols)]
       (throw (IllegalStateException. (str error))))
     (->> found-symbols
          (map first)
@@ -51,7 +50,7 @@
          (map action)
          doall)))
 
-(defn- prettify-found-symbol-result [{:keys [line-beg name file match]}]
+(defn- prettify-found-symbol-result [{:keys [line-beg _name file match]}]
   (->> match
        (str file " " "[" line-beg "]" ": ")))
 

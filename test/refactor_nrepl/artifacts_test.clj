@@ -1,7 +1,7 @@
 (ns refactor-nrepl.artifacts-test
   (:require [clojure
              [edn :as edn]
-             [test :refer :all]]
+             [test :refer [deftest is testing]]]
             [clojure.java.io :as io]
             [refactor-nrepl.artifacts :as artifacts]))
 
