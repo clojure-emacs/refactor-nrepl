@@ -12,7 +12,9 @@
 
 (defn session-fixture
   [f]
-  (with-open [server (server/start-server :bind "localhost" :handler *handler*)
+  (with-open [^nrepl.server.Server
+              server (server/start-server :bind "localhost" :handler *handler*)
+              ^nrepl.transport.FnTransport
               transport (nrepl/connect :port (:port server))]
     (let [client (nrepl/client transport Long/MAX_VALUE)]
       (binding [*session* (nrepl/client-session client)]
@@ -77,7 +79,7 @@
       (t/is (= 'cljs.repl name))
       (t/is (= :ns type)))
     (t/testing "Finds macros"
-      (let [{:keys [error] :as response} (message {:op :resolve-missing :symbol 'dir})
+      (let [{:keys [^String error] :as response} (message {:op :resolve-missing :symbol 'dir})
             {:keys [name type]} (first (edn/read-string (:candidates response)))]
         (when error
           (throw (RuntimeException. error)))

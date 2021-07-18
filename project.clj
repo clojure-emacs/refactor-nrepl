@@ -46,8 +46,7 @@
 
              :lein-plugin {:source-paths ["lein-plugin"]}
              :test {:dependencies [[print-foo "1.0.2"]]}
-             :dev {:global-vars {*warn-on-reflection* true}
-                   :dependencies [[org.clojure/clojurescript "1.10.520"]
+             :dev {:dependencies [[org.clojure/clojurescript "1.10.520"]
                                   [org.clojure/core.async "1.3.618" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
                                   [cider/piggieback "0.5.2"]
                                   [commons-io/commons-io "2.8.0"]]
@@ -67,7 +66,7 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]
-             :eastwood {:plugins         [[jonase/eastwood "0.7.1"]]
+             :eastwood {:plugins         [[jonase/eastwood "0.9.1"]]
                         :eastwood {;; vendored - shouldn't be tweaked for satisfying linters:
                                    :exclude-namespaces [refactor-nrepl.ns.slam.hound.regrow]
                                    ;; :implicit-dependencies would fail spuriously when the CI matrix runs for Clojure < 1.10,
