@@ -8,7 +8,8 @@
                  ^:inline-dep [clj-commons/pomegranate "1.2.1"
                                :exclusions
                                [org.slf4j/jcl-over-slf4j
-                                org.tcrawley/dynapath]]
+                                org.tcrawley/dynapath
+                                javax.inject]]
                  ;; Override conflicting dep in Pomegranate
                  ^:inlined-dep [org.apache.httpcomponents/httpclient
                                 "4.5.9" :exclusions [commons-logging]]
