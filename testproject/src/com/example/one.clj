@@ -7,3 +7,6 @@
 
 (defn from-registry [k]
   (k four/registry))
+
+;; Tries reproducing https://github.com/clojure-emacs/clj-refactor.el/issues/485
+(set! *warn-on-reflection* true)
