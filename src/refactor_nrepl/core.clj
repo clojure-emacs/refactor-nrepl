@@ -122,8 +122,10 @@
                            path)]
      (with-open [file-reader (or (some-> path-string FileReader.)
                                  (some-> path-file FileReader.))]
-       (parse/read-ns-decl (readers/indexing-push-back-reader
-                            (PushbackReader. file-reader))))))
+       (try
+         (parse/read-ns-decl (readers/indexing-push-back-reader
+                              (PushbackReader. file-reader)))
+         (catch Exception _ nil)))))
   ([dialect path]
    (let [^String path-string (when (string? path)
                                path)
@@ -131,9 +133,11 @@
                            path)]
      (with-open [file-reader (or (some-> path-string FileReader.)
                                  (some-> path-file FileReader.))]
-       (parse/read-ns-decl (readers/indexing-push-back-reader
-                            (PushbackReader. file-reader))
-                           {:read-cond :allow :features #{dialect}})))))
+       (try
+         (parse/read-ns-decl (readers/indexing-push-back-reader
+                              (PushbackReader. file-reader))
+                             {:read-cond :allow :features #{dialect}})
+         (catch Exception _ nil))))))
 
 (defn- data-file?
   "True of f is named like a clj file but represents data.
