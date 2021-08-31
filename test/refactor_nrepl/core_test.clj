@@ -1,7 +1,10 @@
 (ns refactor-nrepl.core-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [refactor-nrepl.config :as config]
-            [refactor-nrepl.core :refer [ignore-dir-on-classpath?]]))
+  (:require
+   [clojure.test :refer [are deftest is testing]]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.core :refer [ignore-dir-on-classpath? read-ns-form]])
+  (:import
+   (java.io File)))
 
 (defmacro assert-ignored-paths
   [paths pred]
@@ -24,3 +27,14 @@
                                        [#".+checkouts/.+" #"resources"])]
         (assert-ignored-paths not-ignored false?)
         (assert-ignored-paths (concat always-ignored sometimes-ignored) true?)))))
+
+(deftest test-read-ns-form
+  (are [input expected] (testing input
+                          (assert (-> input File. .exists))
+                          (is (= expected
+                                 (read-ns-form input)))
+                          true)
+    "test-resources/readable_file_incorrect_aliases.clj" nil
+    "testproject/src/com/example/one.clj"                '(ns com.example.one
+                                                            (:require [com.example.two :as two :refer [foo]]
+                                                                      [com.example.four :as four]))))
