@@ -1,5 +1,5 @@
 (ns refactor-nrepl.integration-tests
-  (:require [clojure.test :refer [deftest is use-fixtures]]
+  (:require [clojure.test :refer [deftest is use-fixtures testing]]
             [nrepl.server :as nrepl]
             [refactor-nrepl middleware
              [analyzer :as analyzer]
@@ -36,15 +36,15 @@
                               :line 6 :column 19
                               :name "foo" :dir test-project-dir)
         result (remove keyword? response)]
+    (testing (pr-str result)
+      (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
+      (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
-    (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
-    (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
+      (is (some (partial re-matches #"(?s).*one.clj \[2\].*") result) "call of foo not found in ns com.example.one")
 
-    (is (some (partial re-matches #"(?s).*one.clj \[2\].*") result) "call of foo not found in ns com.example.one")
+      (is (some (partial re-matches #"(?s).*one.clj \[6\].*") result) "call of foo not found in ns com.example.one")
 
-    (is (some (partial re-matches #"(?s).*one.clj \[6\].*") result) "call of foo not found in ns com.example.one")
-
-    (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two")))
+      (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two"))))
 
 (defn ns-ast-throw-error-for-five [^String content]
   (if (.contains content "com.example.five")
@@ -60,14 +60,16 @@
                                 :name "foo" :dir test-project-dir)
           result (remove keyword? response)]
 
-      (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
-      (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
+      (testing (pr-str result)
 
-      (is (some (partial re-matches #"(?s).*one.clj \[2\].*") result) "call of foo not found in ns com.example.one")
+        (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))
+        (is (every? (partial re-matches #"(?s).*(one|two)\.clj.*") result) "one.clj or two.clj not found in result")
 
-      (is (some (partial re-matches #"(?s).*one.clj \[6\].*") result) "call of foo not found in ns com.example.one")
+        (is (some (partial re-matches #"(?s).*one.clj \[2\].*") result) "call of foo not found in ns com.example.one")
 
-      (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two"))))
+        (is (some (partial re-matches #"(?s).*one.clj \[6\].*") result) "call of foo not found in ns com.example.one")
+
+        (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two")))))
 
 (deftest test-shouldnt-find-str-in-assert
   (let [transport (connect :port 7777)
