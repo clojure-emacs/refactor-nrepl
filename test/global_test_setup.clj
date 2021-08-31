@@ -3,7 +3,7 @@
 
 (def set-refresh-dirs
   (try
-    (require '[refactor-nrepl.inlined-deps.toolsnamespace.v1v1v0.clojure.tools.namespace.repl :refer [set-refresh-dirs]])
+    (require '[refactor-nrepl.inlined-deps.toolsnamespace.v1v1v0.clojure.tools.namespace.repl])
     @(resolve 'refactor-nrepl.inlined-deps.toolsnamespace.v1v1v0.clojure.tools.namespace.repl/set-refresh-dirs)
     (catch Exception _
       (require '[clojure.tools.namespace.repl])
