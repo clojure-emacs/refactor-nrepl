@@ -293,9 +293,9 @@
   (let [^clojure.lang.PersistentVector gen-class (some-> ns-form
                                                          (get-ns-component :gen-class)
                                                          vec)
-        methods_index (inc (if-not (nil? gen-class)
-                             (.indexOf gen-class :methods)
-                             -1))]
+        methods_index (if-not (nil? gen-class)
+                        (-> gen-class (.indexOf :methods) inc)
+                        0)]
     (if-not (zero? methods_index)
       (apply merge (map #(meta %) (nth gen-class methods_index)))
       nil)))
@@ -406,7 +406,9 @@
   "Guard the evaluation of `body` with a test on the current clojure version."
   {:style/indent 1}
   [{:keys [major minor] :as _clojure-version} & body]
-  (when (or (> (:major *clojure-version*) major)
-            (and (= (:major *clojure-version*) major)
-                 (>= (:minor *clojure-version*) minor)))
-    `(do ~@body)))
+  (let [major (long major)
+        minor (long minor)]
+    (when (or (> (-> *clojure-version* :major long) major)
+              (and (= (-> *clojure-version* :major long) major)
+                   (>= (-> *clojure-version* :minor long) minor)))
+      `(do ~@body))))

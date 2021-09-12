@@ -37,7 +37,9 @@
   []
   (or (empty? @artifacts)
       (if-let [last-modified (some-> artifacts meta :last-modified)]
-        (neg? (- millis-per-day (- (.getTime (java.util.Date.)) last-modified)))
+        (neg? (- (long millis-per-day)
+                 (long (- (.getTime (java.util.Date.))
+                          (long last-modified)))))
         true)))
 
 (defn- edn-read-or-nil
