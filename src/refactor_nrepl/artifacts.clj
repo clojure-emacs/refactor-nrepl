@@ -8,8 +8,8 @@
             [version-clj.core :as versions])
   (:import java.util.zip.GZIPInputStream))
 
-(def artifacts-file (str (System/getProperty "java.io.tmpdir")
-                         "/refactor-nrepl-artifacts-cache"))
+(def artifacts-file (str (io/file (System/getProperty "java.io.tmpdir")
+                                  "refactor-nrepl-artifacts-cache")))
 
 (defn get-last-modified-from-file
   "Returns last modified time in milliseconds or nil if file does not exist."
@@ -18,11 +18,12 @@
     (if (zero? lm) nil lm)))
 
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
-(defonce artifacts (atom (if (.exists (io/as-file artifacts-file))
+(defonce artifacts (atom (if (.exists (io/file artifacts-file))
                            (->> artifacts-file slurp edn/read-string (into {}))
                            {})
                          :meta {:last-modified
                                 (get-last-modified-from-file artifacts-file)}))
+
 (def millis-per-day (* 24 60 60 1000))
 
 (defn- get-proxy-opts
