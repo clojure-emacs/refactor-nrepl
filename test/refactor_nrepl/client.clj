@@ -1,12 +1,14 @@
 (ns refactor-nrepl.client
-  (:require [clojure
-             [edn :as edn]]
-            [nrepl.core :as nrepl])
-  (:import (java.io File)))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.string :as string]
+   [nrepl.core :as nrepl])
+  (:import
+   (java.io File)))
 
 (def ^:private nrepl-port
   (when (.exists (File. ".nrepl-port"))
-    (-> ".nrepl-port" slurp Integer/parseInt)))
+    (-> ".nrepl-port" slurp string/split-lines first Integer/parseInt)))
 
 (def ^:private transp (atom nil))
 
