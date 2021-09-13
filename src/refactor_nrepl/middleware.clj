@@ -11,7 +11,8 @@
             [nrepl.transport :as transport]))
 
 (defn- require-and-resolve [sym]
-  (require (symbol (namespace sym)))
+  (locking core/require-lock
+    (require (symbol (namespace sym))))
   (resolve sym))
 
 (defn err-info
