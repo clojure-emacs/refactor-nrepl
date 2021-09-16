@@ -102,6 +102,8 @@
   Note that files which are non-existent, hidden or build-artifacts
   are pruned by this function."
   [pred dir]
+  ;; ensure pmap is not used lazily:
+  {:post [(vector? %)]}
   (->> dir
        file-seq
        ;; `pmap` performs better in large projects.
@@ -112,7 +114,7 @@
                                   (complement build-artifact?))
                       f)
                  f)))
-       (filter identity)))
+       (filterv identity)))
 
 (defn read-ns-form
   ([path]
