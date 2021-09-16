@@ -1,8 +1,10 @@
 (ns refactor-nrepl.ns.libspecs
-  (:require [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.ns-parser :as ns-parser]
-            [refactor-nrepl.util :as util])
-  (:import [java.io File]))
+  (:require
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
+   [refactor-nrepl.util :as util])
+  (:import
+   (java.io File)))
 
 ;; The structure here is {path {lang [timestamp value]}}
 ;; where lang is either :clj or :cljs
@@ -43,23 +45,34 @@
     (put-cached-libspec f lang)))
 
 (defn namespace-aliases
-  "Return a map of file type to a map of aliases to namespaces
+  "Returns a map of file type to a map of aliases to namespaces
 
   {:clj {util com.acme.util str clojure.string
    :cljs {gstr goog.str}}}"
   ([]
    (namespace-aliases false))
   ([ignore-errors?]
-   {:clj  (->> (core/find-in-project (util/with-suppressed-errors
-                                       (some-fn core/clj-file? core/cljc-file?)
-                                       ignore-errors?))
-               (map (partial get-libspec-from-file-with-caching :clj))
-               aliases-by-frequencies)
-    :cljs (->> (core/find-in-project (util/with-suppressed-errors
-                                       (some-fn core/cljs-file? core/cljc-file?)
-                                       ignore-errors?))
-               (map (partial get-libspec-from-file-with-caching :cljs))
-               aliases-by-frequencies)}))
+   (namespace-aliases ignore-errors? (core/source-dirs-on-classpath)))
+  ([ignore-errors? dirs]
+   (let [;; fetch the file list just once (as opposed to traversing the project once for each dialect)
+         files (core/source-files-with-clj-like-extension ignore-errors? dirs)
+         ;; pmap parallelizes a couple things:
+         ;;   - `pred`, which is IO-intentive
+         ;;   - `aliases-by-frequencies`, which is moderately CPU-intensive
+         [clj-files cljs-files] (pmap (fn [[dialect pred] corpus]
+                                        (->> corpus
+                                             (filter pred)
+                                             (map (partial get-libspec-from-file-with-caching dialect))
+                                             aliases-by-frequencies))
+                                      [[:clj (util/with-suppressed-errors
+                                               (some-fn core/clj-file? core/cljc-file?)
+                                               ignore-errors?)]
+                                       [:cljs (util/with-suppressed-errors
+                                                (some-fn core/cljs-file? core/cljc-file?)
+                                                ignore-errors?)]]
+                                      (repeat files))]
+     {:clj  clj-files
+      :cljs cljs-files})))
 
 (defn- unwrap-refer
   [file {:keys [ns refer]}]

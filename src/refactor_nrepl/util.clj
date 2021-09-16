@@ -1,6 +1,10 @@
 (ns refactor-nrepl.util
-  (:require [clojure.string :as string])
-  (:import java.util.regex.Pattern))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string])
+  (:import
+   (java.io File)
+   (java.util.regex Pattern)))
 
 (defn normalize-to-unix-path
   "Replace use / as separator and lower-case."
@@ -99,3 +103,34 @@
   ;; in other places that already are using `some-fn`, `every-pred`, etc
   ([_]
    (.isInterrupted (Thread/currentThread))))
+
+(defn dir-outside-root-dir?
+  "Dirs outside the root dir often represent uninteresting dirs to examine, e.g.
+  Lein checkouts, .gitlibs from deps.edn, or other extraneous source paths
+  which aren't directly related to the project.
+
+  By excluding them, one gets better and more accurate performance."
+  [^File f]
+  {:pre [(-> f .isDirectory)]}
+  (let [f (-> f .getCanonicalPath File.)
+        root-dir (File. (System/getProperty "user.dir"))
+        parent-dirs (->> f
+                         (iterate (fn [^File f]
+                                    (some-> f .getCanonicalPath File. .getParent File.)))
+                         (take-while some?)
+                         (set))]
+    (not (parent-dirs root-dir))))
+
+(defn data-file?
+  "True of f is named like a clj file but represents data.
+
+  E.g. true for data_readers.clj"
+  [path-or-file]
+  (let [path (.getPath (io/file path-or-file))
+        data-files #{"data_readers.clj" "project.clj" "boot.clj"}]
+    (reduce (fn [acc data-file]
+              (let [v (or acc (.endsWith path data-file))]
+                (cond-> v
+                  v reduced)))
+            false
+            data-files)))

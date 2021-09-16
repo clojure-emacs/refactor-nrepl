@@ -1,15 +1,17 @@
 (ns refactor-nrepl.core
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clojure.tools.namespace.parse :as parse]
-            [clojure.tools.reader.reader-types :as readers]
-            [orchard.java.classpath :as cp]
-            [orchard.misc :as misc]
-            [me.raynes.fs :as fs]
-            [refactor-nrepl.util :as util :refer [normalize-to-unix-path]]
-            [refactor-nrepl.s-expressions :as sexp]
-            [refactor-nrepl.config :as config])
-  (:import [java.io File FileReader PushbackReader StringReader]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.tools.namespace.parse :as parse]
+   [clojure.tools.reader.reader-types :as readers]
+   [me.raynes.fs :as fs]
+   [orchard.java.classpath :as cp]
+   [orchard.misc :as misc]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.s-expressions :as sexp]
+   [refactor-nrepl.util :as util :refer [normalize-to-unix-path]])
+  (:import
+   (java.io File FileReader PushbackReader StringReader)))
 
 (defn version []
   (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
@@ -56,6 +58,18 @@
        (keep #(let [f (io/file %)]
                 (when (.isDirectory ^File f) f)))
        (remove (comp ignore-dir-on-classpath? str))))
+
+(defn source-dirs-on-classpath
+  "Like `#'dirs-on-classpath`, but restricted to dirs that look like
+  (interesting) source/test dirs."
+  []
+  (->> (dirs-on-classpath)
+       (remove (fn [^File f]
+                 (let [s (-> f .toString)]
+                   (or (-> s (.contains "resources"))
+                       (-> s (.contains "target"))
+                       (-> s (.contains ".gitlibs"))))))
+       (remove util/dir-outside-root-dir?)))
 
 (defn project-root
   "Return the project root directory.
@@ -141,34 +155,32 @@
                              {:read-cond :allow :features #{dialect}})
          (catch Exception _ nil))))))
 
-(defn- data-file?
-  "True of f is named like a clj file but represents data.
-
-  E.g. true for data_readers.clj"
-  [path-or-file]
-  (let [path (.getPath (io/file path-or-file))
-        data-files #{"data_readers.clj" "project.clj" "boot.clj"}]
-    (reduce (fn [acc data-file] (or acc (.endsWith path data-file)))
-            false
-            data-files)))
+(defn cljc-extension? [^String path]
+  (.endsWith path ".cljc"))
 
 (defn cljc-file?
   [path-or-file]
   (let [path (.getPath (io/file path-or-file))]
-    (and (.endsWith path ".cljc")
+    (and (cljc-extension? path)
          (read-ns-form path))))
+
+(defn cljs-extension? [^String path]
+  (.endsWith path ".cljs"))
 
 (defn cljs-file?
   [path-or-file]
   (let [path (.getPath (io/file path-or-file))]
-    (and (.endsWith path ".cljs")
+    (and (cljs-extension? path)
          (read-ns-form path))))
+
+(defn clj-extension? [^String path]
+  (.endsWith path ".clj"))
 
 (defn clj-file?
   [path-or-file]
   (let [path (.getPath (io/file path-or-file))]
-    (and (not (data-file? path-or-file))
-         (.endsWith path ".clj")
+    (and (not (util/data-file? path-or-file))
+         (clj-extension? path)
          (read-ns-form path))))
 
 (defn source-file?
@@ -194,11 +206,29 @@
 
 (defn find-in-project
   "Return the files in the project satisfying (pred ^File file)."
-  [pred]
-  (->> (dirs-on-classpath)
-       (pmap (partial find-in-dir pred))
-       (apply concat)
-       distinct))
+  ([pred]
+   (find-in-project pred (dirs-on-classpath)))
+  ([pred dirs]
+   (->> dirs
+        (pmap (partial find-in-dir pred))
+        (apply concat)
+        distinct)))
+
+(defn source-files-with-clj-like-extension
+  "Finds files with .clj* extension in the project, without inspecting them.
+
+  Meant as a particularly fast operation (as it doesn't slurp files)."
+  ([ignore-errors?]
+   (source-files-with-clj-like-extension ignore-errors? (source-dirs-on-classpath)))
+  ([ignore-errors? dirs]
+   (find-in-project (util/with-suppressed-errors
+                      (comp (some-fn clj-extension?
+                                     cljc-extension?
+                                     cljs-extension?)
+                            (fn [^File f]
+                              (.getPath f)))
+                      ignore-errors?)
+                    dirs)))
 
 (defn throw-unless-clj-file [file-path]
   (when-not (re-matches #".+\.clj$" file-path)

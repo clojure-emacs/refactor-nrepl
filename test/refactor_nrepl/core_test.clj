@@ -2,14 +2,14 @@
   (:require
    [clojure.test :refer [are deftest is testing]]
    [refactor-nrepl.config :as config]
-   [refactor-nrepl.core :refer [ignore-dir-on-classpath? read-ns-form]])
+   [refactor-nrepl.core :as sut])
   (:import
    (java.io File)))
 
 (defmacro assert-ignored-paths
   [paths pred]
   `(doseq [p# ~paths]
-     (is (~pred (ignore-dir-on-classpath? p#)))))
+     (is (~pred (sut/ignore-dir-on-classpath? p#)))))
 
 (deftest test-ignore-dir-on-classpath?
   (let [not-ignored ["/home/user/project/test"
@@ -32,9 +32,16 @@
   (are [input expected] (testing input
                           (assert (-> input File. .exists))
                           (is (= expected
-                                 (read-ns-form input)))
+                                 (sut/read-ns-form input)))
                           true)
     "test-resources/readable_file_incorrect_aliases.clj" nil
     "testproject/src/com/example/one.clj"                '(ns com.example.one
                                                             (:require [com.example.two :as two :refer [foo]]
                                                                       [com.example.four :as four]))))
+
+(deftest source-files-with-clj-like-extension-test
+  (let [result (sut/source-files-with-clj-like-extension true)]
+    (doseq [extension [".clj" ".cljs" ".cljc"]]
+      (is (pos? (count (filter (fn [^File f]
+                                 (-> f .getPath (.endsWith extension)))
+                               result)))))))
