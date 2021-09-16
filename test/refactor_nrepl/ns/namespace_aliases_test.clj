@@ -1,12 +1,13 @@
 (ns refactor-nrepl.ns.namespace-aliases-test
-  (:require [clojure.test :refer [deftest is]]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.libspecs :as sut]
-            [refactor-nrepl.util :as util]
-            [refactor-nrepl.unreadable-files :refer [ignore-errors?]]))
+  (:require
+   [clojure.test :refer [deftest is]]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.libspecs :as sut]
+   [refactor-nrepl.unreadable-files :refer [ignore-errors?]]
+   [refactor-nrepl.util :as util]))
 
 (defn finds [selector alias libspec]
-  (let [aliases (selector (sut/namespace-aliases ignore-errors?))]
+  (let [aliases (selector (sut/namespace-aliases ignore-errors? (core/dirs-on-classpath)))]
     (some (fn [[k vs]]
             (and (= k alias)
                  (some #{libspec} vs)))

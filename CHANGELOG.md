@@ -15,6 +15,7 @@
   * This increases the chances that a namespace will be found, which in turns makes refactor-nrepl more complete/accurate.
 * Replace Cheshire with `clojure.data.json`
 * Build ASTs more robustly (by using locks, `require`, and ruling out certain namespaces like refactor-nrepl itself)
+* Improve `namespace-aliases` performance and make it return more accurate results.
 * Honor internal `future-cancel` calls, improving overall responsiveness and stability.
 
 ### Bugs fixed
