@@ -75,7 +75,7 @@
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2021.06.18"]]}]}
+                         {:dependencies [[clj-kondo "2021.09.15"]]}]}
 
   :jvm-opts ~(cond-> []
                (System/getenv "CI")

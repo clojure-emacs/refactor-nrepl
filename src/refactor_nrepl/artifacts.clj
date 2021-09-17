@@ -51,7 +51,7 @@
          ;; Ignore artifact if not readable. See #255
          nil)))
 
-(defn get-clojars-artifacts!
+(defn- get-clojars-artifacts!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
   (try
@@ -68,18 +68,21 @@
 (defn- get-mvn-artifacts!
   "All the artifacts under org.clojure in mvn central"
   [group-id]
-  (let [search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
+  (let [search-prefix "https://search.maven.org/solrsearch/select?q=g:%22"
         search-suffix "%22+AND+p:%22jar%22&rows=2000&wt=json"
         search-url (str search-prefix group-id search-suffix)
         {:keys [_ _ body _]} @(http/get search-url (assoc (get-proxy-opts) :as :text))
         search-result (json/read-str body :key-fn keyword)]
-    (map :a (-> search-result :response :docs))))
+    (->> search-result
+         :response
+         :docs
+         (keep :a))))
 
 (defn- get-mvn-versions!
   "Fetches all the versions of particular artifact from maven repository."
   [artifact]
   (let [[group-id artifact] (str/split artifact #"/")
-        search-prefix "http://search.maven.org/solrsearch/select?q=g:%22"
+        search-prefix "https://search.maven.org/solrsearch/select?q=g:%22"
         {:keys [_ _ body _]} @(http/get (str search-prefix
                                              group-id
                                              "%22+AND+a:%22"
@@ -89,7 +92,7 @@
     (->> (json/read-str body :key-fn keyword)
          :response
          :docs
-         (map :v))))
+         (keep :v))))
 
 (defn- get-artifacts-from-mvn-central!
   []
@@ -105,7 +108,9 @@
   (let [{:keys [body status]} @(http/get (str "https://clojars.org/api/artifacts/"
                                               artifact))]
     (when (= 200 status)
-      (map :version (:recent_versions (json/read-str body :key-fn keyword))))))
+      (->> (json/read-str body :key-fn keyword)
+           :recent_versions
+           (keep :version)))))
 
 (defn- get-artifacts-from-clojars!
   []
