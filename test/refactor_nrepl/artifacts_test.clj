@@ -18,13 +18,28 @@
 (def clojure-artifacts ["clojure"])
 (def clojars-artifacts (resource "clojars-artifacts.edn"))
 
+(deftest get-mvn-artifacts!-test
+  (is (> (count (#'artifacts/get-mvn-artifacts! "org.clojure"))
+         10)))
+
+(deftest get-clojars-artifacts!-test
+  (is (> (count (#'artifacts/get-clojars-artifacts!))
+         1000)))
+
+(deftest get-mvn-versions!-test
+  (is (> (count (#'artifacts/get-mvn-versions! "org.clojure/clojure"))
+         20)))
+
+(deftest get-clojars-versions!-test
+  (is (> (count (#'artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl"))
+         30)))
+
 (deftest creates-a-map-of-artifacts
   (reset! artifacts/artifacts {})
-  (with-redefs
-   [artifacts/get-clojars-artifacts! (constantly clojars-artifacts)
-    artifacts/get-clojars-versions! (constantly aero-versions)
-    artifacts/get-mvn-artifacts! (constantly clojure-artifacts)
-    artifacts/get-mvn-versions! (constantly clojure-versions)]
+  (with-redefs [artifacts/get-clojars-artifacts! (constantly clojars-artifacts)
+                artifacts/get-clojars-versions! (constantly aero-versions)
+                artifacts/get-mvn-artifacts! (constantly clojure-artifacts)
+                artifacts/get-mvn-versions! (constantly clojure-versions)]
 
     (is (#'artifacts/stale-cache?))
 
