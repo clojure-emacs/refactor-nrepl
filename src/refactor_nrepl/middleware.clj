@@ -5,10 +5,27 @@
             [refactor-nrepl.core :as core]
             [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
             [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]
-            [clojure.walk :as walk]
-            [nrepl.middleware :refer [set-descriptor!]]
-            [nrepl.misc :refer [response-for]]
-            [nrepl.transport :as transport]))
+            [clojure.walk :as walk]))
+
+;; Compatibility with the legacy tools.nrepl.
+;; It is not recommended to use the legacy tools.nrepl,
+;; therefore it is guarded with a system property.
+;; Specifically, we don't want to require it by chance.
+(when-not (resolve 'set-descriptor!)
+  (if (and (System/getProperty "refactor-nrepl.internal.try-requiring-tools-nrepl")
+           (try
+             (require 'clojure.tools.nrepl)
+             true
+             (catch Exception _
+               false)))
+    (require
+     '[clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+     '[clojure.tools.nrepl.misc :refer [response-for]]
+     '[clojure.tools.nrepl.transport :as transport])
+    (require
+     '[nrepl.middleware :refer [set-descriptor!]]
+     '[nrepl.misc :refer [response-for]]
+     '[nrepl.transport :as transport])))
 
 (defn- require-and-resolve [sym]
   (locking core/require-lock
