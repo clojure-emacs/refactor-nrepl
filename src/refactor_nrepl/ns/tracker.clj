@@ -60,31 +60,38 @@
                      (deps-set ns))]
       file)))
 
-(defn- in-refresh-dirs? [refresh-dirs file]
+(defn- absolutize-refresh-dirs [refresh-dirs]
+  (->> refresh-dirs
+       (map (fn [^String s]
+              (File. s)))
+       (filter (fn [^File f]
+                 (.exists f)))
+       (map (fn [^File f]
+              (let [v (.getCanonicalPath f)]
+                (cond-> v
+                  (not (str/ends-with? v File/separator))
+                  ;; add a trailing slash for a more robust comparison with `file-as-absolute-paths`:
+                  (str File/separator)))))))
+
+(defn in-refresh-dirs?
+  "Is `filename` located within any of `refresh-dirs`?"
+  [refresh-dirs refresh-dirs-as-absolute-paths filename]
   (if-not (seq refresh-dirs)
     ;; the end user has not set the `refresh-dirs`, so this defn's logic should be bypassed:
     true
-    (let [file-as-absolute-paths (-> file io/file .getCanonicalPath)
-          refresh-dirs-as-absolute-paths (->> refresh-dirs
-                                              (map (fn [^String s]
-                                                     (File. s)))
-                                              (filter (fn [^File f]
-                                                        (.exists f)))
-                                              (map (fn [^File f]
-                                                     (let [v (.getCanonicalPath f)]
-                                                       (cond-> v
-                                                         (not (str/ends-with? v File/separator))
-                                                         ;; add a trailing slash for a more robust comparison with `file-as-absolute-paths`:
-                                                         (str File/separator))))))]
-      (boolean (some #(str/starts-with? % file-as-absolute-paths)
-                     refresh-dirs-as-absolute-paths)))))
+    (let [file (-> filename io/file)
+          file-as-absolute-path (-> file .getCanonicalPath)]
+      (and (-> file .exists)
+           (-> file .isFile)
+           (boolean (some (partial str/starts-with? file-as-absolute-path)
+                          refresh-dirs-as-absolute-paths))))))
 
 (defn project-files-in-topo-order
   ([]
    (project-files-in-topo-order false))
   ([ignore-errors?]
    (let [tracker (build-tracker (util/with-suppressed-errors
-                                  (every-pred (partial in-refresh-dirs? (user-refresh-dirs))
+                                  (every-pred (partial in-refresh-dirs? refresh-dirs (absolutize-refresh-dirs user-refresh-dirs))
                                               core/clj-file?)
                                   ignore-errors?))
          nses (dep/topo-sort (:clojure.tools.namespace.track/deps tracker))
