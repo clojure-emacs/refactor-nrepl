@@ -2,8 +2,11 @@
 
 VERSION ?= 1.10
 
-.inline-deps:
-	git clean -fdx
+clean:
+	lein clean
+	rm -f .inline-deps
+
+.inline-deps: clean
 	lein with-profile -user,+$(VERSION) inline-deps
 	touch .inline-deps
 
@@ -37,6 +40,5 @@ release:
 deploy: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config,+lein-plugin deploy clojars
 
-clean:
-	lein clean
-	rm -f .inline-deps
+install: .inline-deps
+	lein with-profile -user,+$(VERSION),+plugin.mranderson/config,+lein-plugin install
