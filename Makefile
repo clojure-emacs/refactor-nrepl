@@ -3,6 +3,7 @@
 VERSION ?= 1.10
 
 .inline-deps:
+	git clean -fdx
 	lein with-profile -user,+$(VERSION) inline-deps
 	touch .inline-deps
 
