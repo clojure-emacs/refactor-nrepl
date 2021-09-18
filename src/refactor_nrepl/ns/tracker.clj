@@ -4,7 +4,7 @@
             [clojure.tools.namespace
              [dependency :as dep]
              [file :as file]
-             [repl :refer [refresh-dirs]]
+             [repl :as tools.namespace.repl]
              [track :as tracker]]
             [refactor-nrepl.core :as core]
             [refactor-nrepl.util :as util]
@@ -35,7 +35,7 @@
               resolve
               deref)
       ;; corner case - use the mranderson-ized refresh-dirs (for supporting this project's test suite):
-      refresh-dirs))
+      tools.namespace.repl/refresh-dirs))
 
 (def default-file-filter-predicate (every-pred core/source-file?
                                                safe-for-clojure-tools-namespace?))
@@ -90,8 +90,9 @@
   ([]
    (project-files-in-topo-order false))
   ([ignore-errors?]
-   (let [tracker (build-tracker (util/with-suppressed-errors
-                                  (every-pred (partial in-refresh-dirs? refresh-dirs (absolutize-refresh-dirs user-refresh-dirs))
+   (let [refresh-dirs (user-refresh-dirs)
+         tracker (build-tracker (util/with-suppressed-errors
+                                  (every-pred (partial in-refresh-dirs? refresh-dirs (absolutize-refresh-dirs refresh-dirs))
                                               core/clj-file?)
                                   ignore-errors?))
          nses (dep/topo-sort (:clojure.tools.namespace.track/deps tracker))
