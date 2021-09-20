@@ -6,7 +6,7 @@
 (deftest in-refresh-dirs?
   (are [refresh-dirs file-ns expected] (= expected
                                           (sut/in-refresh-dirs? refresh-dirs
-                                                                (#'sut/absolutize-refresh-dirs refresh-dirs)
+                                                                (#'sut/absolutize-dirs refresh-dirs)
                                                                 file-ns))
     ;; if the refresh dirs are unset, we return `true` no matter what:
     []       "src/refactor_nrepl/ns/tracker.clj"       true
