@@ -1,5 +1,43 @@
 ;; `nrepl.core/code` can contain intentionally broken code in the test suite, so we silence related resolution errors:
 {:lint-as {nrepl.core/code clojure.core/quote}
- :linters {:unresolved-symbol {:exclude [(refactor-nrepl.ns.ns-parser/with-libspecs-from [libspecs])
-                                         (refactor-nrepl.middleware/set-descriptor! [set-descriptor!])]}
+ ;; Set up :refer linter, mainly for banning the refer-ing of `refresh-dirs`. We don't want to accidentally shadow it in related code.
+ ;; Feel free to add more :exclude entries - we're unopinionated about :refer (if anything, refactor-nrepl facilitates the usage of :refer)
+ :linters {:refer {:level :warning
+                   :exclude [clojure.java.io
+                             clojure.pprint
+                             clojure.stacktrace
+                             clojure.test
+                             clojure.tools.analyzer.ast
+                             clojure.tools.namespace.parse
+                             ;; please don't add `clojure.tools.namespace.repl` here, see comment above.
+                             clojure.tools.nrepl.middleware
+                             clojure.tools.nrepl.misc
+                             nrepl.middleware
+                             nrepl.middleware.interruptible-eval
+                             nrepl.misc
+                             orchard.info
+                             refactor-nrepl.client
+                             refactor-nrepl.config
+                             refactor-nrepl.core
+                             refactor-nrepl.find.find-macros
+                             refactor-nrepl.find.find-symbol
+                             refactor-nrepl.ns.clean-ns
+                             refactor-nrepl.ns.libspecs
+                             refactor-nrepl.ns.ns-parser
+                             refactor-nrepl.ns.pprint
+                             refactor-nrepl.ns.prune-dependencies
+                             refactor-nrepl.ns.rebuild
+                             refactor-nrepl.ns.resolve-missing-test
+                             refactor-nrepl.ns.slam.hound.future
+                             refactor-nrepl.stubs-for-interface
+                             refactor-nrepl.unreadable-files
+                             refactor-nrepl.util]}
+           :consistent-alias     {:aliases {clojure.tools.namespace.dependency dep
+                                            clojure.tools.namespace.file       file
+                                            ;; don't alias as `repl`, because we use this ns mainly for its `refresh-dirs`
+                                            ;; which has little to do with repls:
+                                            clojure.tools.namespace.repl       tools.namespace.repl
+                                            clojure.tools.namespace.track      tracker}}
+           :unresolved-symbol    {:exclude [(refactor-nrepl.ns.ns-parser/with-libspecs-from [libspecs])
+                                            (refactor-nrepl.middleware/set-descriptor! [set-descriptor!])]}
            :unresolved-namespace {:exclude [clojure.main]}}}
