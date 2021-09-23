@@ -71,6 +71,10 @@
                        (-> s (.contains ".gitlibs"))))))
        (remove util/dir-outside-root-dir?)))
 
+(defn jars-on-classpath []
+  (->> (cp/classpath)
+       (filter misc/jar-file?)))
+
 (defn project-root
   "Return the project root directory.
 

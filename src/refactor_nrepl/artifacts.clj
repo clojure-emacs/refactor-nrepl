@@ -1,18 +1,20 @@
 (ns refactor-nrepl.artifacts
   (:require
-   [cemerick.pomegranate :as pomegranate]
    [clojure.data.json :as json]
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [refactor-nrepl.add-lib :as add-lib]
    [clojure.tools.namespace.find :as find]
    [org.httpkit.client :as http]
+   [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.slam.hound.regrow :as slamhound-regrow]
    [refactor-nrepl.ns.slam.hound.search :as slamhound]
    [version-clj.core :as versions])
-  (:import java.io.File
-           java.util.jar.JarFile
-           java.util.zip.GZIPInputStream))
+  (:import
+   java.io.File
+   java.util.jar.JarFile
+   java.util.zip.GZIPInputStream))
 
 (def artifacts-file (str (io/file (System/getProperty "java.io.tmpdir")
                                   "refactor-nrepl-artifacts-cache")))
@@ -158,14 +160,23 @@
   [{:keys [artifact]}]
   (artifact-versions* artifact))
 
-(defn- jar-at-the-top-of-dependency-hierarchy [new-deps]
+(defn- jar-at-the-top-of-dependency-hierarchy [top-level-dep]
   ;; We only need to consider the dep at the top of the hierarchy because when we
-  ;; require those namespaces the rest of  the transitive deps will get pulled in
+  ;; require those namespaces the rest of the transitive deps will get pulled in
   ;; too.
   (letfn [(->jar [^File f]
             (JarFile. f))]
-    (let [top-level-dep  (-> new-deps keys first)]
-      (-> top-level-dep meta :file ->jar))))
+    (let [artifact-name (-> top-level-dep core/suffix)]
+      (->> (core/jars-on-classpath)
+           ;; This isn't guaranteed but at least on my system the new stuff was
+           ;; added to the end and so this increases the likelihood of picking
+           ;; the right artifact
+           reverse
+           (map io/as-file)
+           (some (fn [f]
+                   (when (.startsWith (.getName f) artifact-name)
+                     f)))
+           ->jar))))
 
 (defn- make-resolve-missing-aware-of-new-deps!
   "Once the deps are available on cp we still have to load them and
@@ -185,45 +196,32 @@
   (slamhound-regrow/clear-cache!))
 
 (defn- parse-coordinates [coordinates-str]
-  (let [coords (try (->> coordinates-str edn/read-string (take 2) vec)
+  (let [coords (try (->> coordinates-str edn/read-string)
                     (catch Exception _))]
-    (if (and (= (count coords) 2)
-             (symbol? (first coords))
-             (string? (second coords)))
-      coords
-      (throw (IllegalArgumentException. (str "Malformed dependency vector: "
+    (cond
+      ;; Leiningen dependency vector
+      (vector? coords)
+      (hash-map (first coords) {:mvn/version (second coords)})
+      ;; tools.deps map
+      (map? coords) coords
+      :else
+      (throw (IllegalArgumentException. (str "Malformed coordinates "
                                              coordinates-str))))))
-
-(defn- ensure-coordinates-exist!
-  [[artifact-id artifact-version :as coordinates]]
-  (when (stale-cache?)
-    (update-artifact-cache!))
-  (if-let [versions (artifact-versions* (str artifact-id))]
-    (if ((set versions) artifact-version)
-      coordinates
-      (throw (IllegalArgumentException.
-              (str "Version " artifact-version
-                   " does not exist for " artifact-id
-                   ". Available versions are " (pr-str (vec versions))))))
-    (throw (IllegalArgumentException. (str "Can't find artifact '"
-                                           artifact-id "'")))))
 
 (defn- add-dependencies! [coordinates]
   ;; Just so we can mock this out during testing
-  (let [repos {"clojars" "https://clojars.org/repo"
-               "central" "https://repo1.maven.org/maven2/"}]
-    (pomegranate/add-dependencies
-     :coordinates [coordinates] :repositories repos)))
+  (some-> coordinates
+          add-lib/add-libs
+          set
+          (apply (keys coordinates))))
 
 (defn- hotload-dependency! [coordinates]
-  (-> (add-dependencies! coordinates)
-      jar-at-the-top-of-dependency-hierarchy
-      make-resolve-missing-aware-of-new-deps!))
+  (some-> coordinates
+          add-dependencies!
+          jar-at-the-top-of-dependency-hierarchy
+          make-resolve-missing-aware-of-new-deps!))
 
 (defn hotload-dependency
   [{:keys [coordinates]}]
-  (->> coordinates
-       parse-coordinates
-       ensure-coordinates-exist!
-       (hotload-dependency!)
-       (str/join " ")))
+  (when (->> coordinates parse-coordinates hotload-dependency!)
+    coordinates))

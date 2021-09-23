@@ -79,17 +79,13 @@
 (deftest hotload-dependency-throws-exceptions
   (reset! artifacts/artifacts {"prismatic/schema" ["0.1"]})
   (with-redefs
-   [artifacts/make-resolve-missing-aware-of-new-deps! (fn [& _])
-    artifacts/stale-cache? (constantly false)
-    artifacts/jar-at-the-top-of-dependency-hierarchy (fn [& _])
-    artifacts/add-dependencies! (constantly true)]
+    [artifacts/make-resolve-missing-aware-of-new-deps! (constantly true)
+     artifacts/stale-cache? (constantly false)
+     artifacts/jar-at-the-top-of-dependency-hierarchy (constantly true)
+     artifacts/add-dependencies! (constantly true)]
     (testing "Throws for non existing version"
       (is (thrown? IllegalArgumentException
                    (artifacts/hotload-dependency
-                    {:coordinates "[prismatic/schema \"1.0\"]"}))))
-    (testing "Throws for non existing artifact"
-      (is (thrown? IllegalArgumentException
-                   (artifacts/hotload-dependency
-                    {:coordinates "[imaginary \"1.0\"]"}))))
+                    {:coordinates "obviously wrong"}))))
     (testing "No exception when all is OK"
       (is (artifacts/hotload-dependency {:coordinates "[prismatic/schema \"0.1\"]"})))))

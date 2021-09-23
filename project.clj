@@ -5,14 +5,16 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "0.8.3"]
                  ^:inline-dep [http-kit "2.5.3"]
-                 ^:inline-dep [clj-commons/pomegranate "1.2.1"
+                 ^:inline-dep [org.clojure/tools.deps.alpha "0.12.1048"
                                :exclusions
-                               [org.slf4j/jcl-over-slf4j
-                                org.tcrawley/dynapath
+                               [
+                                ;; `javax.inject` is only needed for mvn repos
+                                ;;  in S3 and that lib doesn't work with
+                                ;;  mranderson at present, so we might as well
+                                ;;  exlude the related s3 libs
+                                com.cognitect.aws/s3
+                                com.cognitect.aws/endpoints
                                 javax.inject]]
-                 ;; Override conflicting dep in Pomegranate
-                 ^:inlined-dep [org.apache.httpcomponents/httpclient
-                                "4.5.9" :exclusions [commons-logging]]
                  ^:inline-dep [org.clojure/data.json "2.3.1"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.1.0"]
                  ^:inline-dep [org.clojure/tools.namespace "1.1.0" :exclusions [org.clojure/tools.reader]]
