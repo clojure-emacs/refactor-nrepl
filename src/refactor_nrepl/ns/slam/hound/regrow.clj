@@ -2,11 +2,12 @@
 ;;;; Copyright © 2011-2012 Phil Hagelberg and contributors
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
 (ns refactor-nrepl.ns.slam.hound.regrow
-  (:require [clojure.set :as set]
-            [refactor-nrepl.ns.slam.hound.future :refer [as->* cond->*]]
-            [refactor-nrepl.ns.slam.hound.search :as search]
-            [nrepl.middleware.interruptible-eval :refer [*msg*]])
-  (:import (clojure.lang IMapEntry IRecord)))
+  (:require
+   [clojure.set :as set]
+   [nrepl.middleware.interruptible-eval :refer [*msg*]]
+   [refactor-nrepl.ns.slam.hound.search :as search])
+  (:import
+   (clojure.lang IMapEntry IRecord)))
 
 (def ^:dynamic *cache* (atom {}))
 (def ^:dynamic *dirty-ns* (atom #{}))
@@ -89,10 +90,9 @@
         (instance? IRecord form) (reduce (fn [r x] (conj r (f x))) form form)
         (coll? form) (into (empty form) (map f form))
         :else form)
-      (as->* form
-        (if-let [m (meta form)]
-          (with-meta form m)
-          form))))
+      (as-> form (if-let [m (meta form)]
+                   (with-meta form m)
+                   form))))
 
 (defn- prewalk [f form]
   (walk (partial prewalk f) (f form)))
@@ -155,6 +155,6 @@
     :refer (get (symbols->ns-syms) missing)
     :rename (reduce-kv
              (fn [s ns orig->rename]
-               (cond->* s
+               (cond-> s
                  (some #{missing} (vals orig->rename)) (conj ns)))
              #{} (:rename old-ns-map))))
