@@ -42,7 +42,7 @@
       (.. f getParentFile (list jar-filter))
       [f])))
 
-(def resource-separator
+(def ^String resource-separator
   "Please do not use File/separator see e.g. https://git.io/Jzig3"
   "/")
 
