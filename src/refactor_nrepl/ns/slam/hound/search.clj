@@ -3,20 +3,15 @@
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
 (ns refactor-nrepl.ns.slam.hound.search
   "Search the classpath for vars and classes."
-  (:require [orchard.java.classpath :as cp]
-            [clojure.java.io :refer [file]]
-            [clojure.string :as string])
+  (:require
+   [clojure.java.io :refer [file]]
+   [clojure.string :as string]
+   [refactor-nrepl.util :as util])
   (:import
-   [java.io File FilenameFilter]
-   [java.util.jar JarFile JarEntry]
-   java.util.regex.Pattern
-   java.util.StringTokenizer))
-
-;;; Mostly taken from leiningen.util.ns and swank.util.class-browse.
-
-;; TODO: replace with bultitude? but that doesn't do classes
-
-;;; Clojure namespaces
+   (java.io File FilenameFilter)
+   (java.util StringTokenizer)
+   (java.util.jar JarEntry JarFile)
+   (java.util.regex Pattern)))
 
 (defn jar? [^File f]
   (and (.isFile f) (.endsWith (.getName f) ".jar")))
@@ -24,15 +19,15 @@
 (defn class-file? [^String path]
   (.endsWith path ".class"))
 
-(defn clojure-fn-file? [f]
-  (re-find #"\$.*__\d+\.class" f))
+(defn clojure-fn-file? [^String file]
+  ;; originally this logic was: (re-find #"\$.*__\d+\.class" f)
+  ;; however that doesn't cover e.g. "clojure/spec/alpha$double_in.class"
+  ;; so we mimic the logic that e.g. Compliment has:
+  (or (.contains file "__")
+      (.contains file "$")))
 
 (defn clojure-ns-file? [^String path]
   (.endsWith path "__init.class"))
-
-;;; Java classes
-
-;; could probably be simplified
 
 (def jar-filter
   (proxy [FilenameFilter] []
@@ -47,24 +42,22 @@
       (.. f getParentFile (list jar-filter))
       [f])))
 
-(defn class-or-ns-name
-  "Returns the Java class or Clojure namespace name for a class relative path."
+(def resource-separator
+  "Please do not use File/separator see e.g. https://git.io/Jzig3"
+  "/")
+
+(defn class-name
   [^String path]
-  (-> (if (clojure-ns-file? path)
-        (-> path (.replace "__init.class" "") (.replace "_" "-"))
-        (.replace path ".class" ""))
-      (.replace File/separator ".")))
+  (-> path
+      (.replace ".class" "")
+      (.replace resource-separator ".")))
 
 (defmulti path-class-files
-  "Returns a list of classes found on the specified path location
-  (jar or directory), each comprised of a map with the following keys:
-    :name  Java class or Clojure namespace name
-    :loc   Classpath entry (directory or jar) on which the class is located
-    :file  Path of the class file, relative to :loc"
-  (fn [^File f _]
-    (cond (.isDirectory f) :dir
-          (jar? f) :jar
-          (class-file? (.getName f)) :class)))
+  (fn [^File f _loc]
+    (cond
+      (.isDirectory f) :dir
+      (jar? f) :jar
+      (class-file? (.getName f)) :class)))
 
 (defmethod path-class-files :default [& _] [])
 
@@ -77,9 +70,13 @@
             (comp
              (map #(.getName ^JarEntry %))
              (filter class-file?)
-             (map class-or-ns-name))
+             (remove clojure-fn-file?)
+             (map class-name))
             (enumeration-seq (.entries (JarFile. f))))
-      (catch Exception _e []))))          ; fail gracefully if jar is unreadable
+      (catch Exception e
+        (util/maybe-log-exception e)
+        ;; fail gracefully if jar is unreadable:
+        []))))
 
 (defmethod path-class-files :dir
   ;; Dispatch directories and files (excluding jars) recursively.
@@ -93,40 +90,39 @@
   ;; Build class info using file path relative to parent classpath entry
   ;; location. Make sure it decends; a class can't be on classpath directly.
   [^File f ^File loc]
-  (let [fp (str f), lp (str loc)
-        loc-pattern (re-pattern (Pattern/quote (str "^" loc)))]
-    (if (re-find loc-pattern fp)                 ; must be descendent of loc
+  (let [fp (str f)
+        lp (str loc)]
+    (if (re-find (re-pattern (Pattern/quote (str "^" loc))) fp) ; must be descendent of loc
       (let [fpr (.substring fp (inc (count lp)))]
-        [(class-or-ns-name fpr)])
+        [(class-name fpr)])
       [])))
 
 (defn path-entries-seq
   "Split a string on the 'path separator', i.e. ':'. Used for splitting multiple
   classpath entries."
   [path-str]
-  (enumeration-seq
-   (StringTokenizer. path-str File/pathSeparator)))
-
-(defn all-classpath-entries []
-  (mapcat cp/classpath-seq (cp/classpath)))
+  (-> path-str
+      (StringTokenizer. File/pathSeparator)
+      enumeration-seq))
 
 (defn- get-available-classes []
   (into ()
-        (comp (mapcat path-entries-seq)
-              (mapcat expand-wildcard)
-              (mapcat #(path-class-files % %))
+        (comp (mapcat expand-wildcard)
+              (mapcat (fn [file]
+                        (path-class-files file file)))
               (remove clojure-fn-file?)
               (distinct)
               (map symbol))
-        (all-classpath-entries)))
+        ;; We use `(System/getProperty "java.class.path")` (at least for the time being) because
+        ;; This code was originally written to handle that string, not a list
+        ;; (this code was broken for a while as `orchard.java.classpath` was being incompatibly used instead)
+        (path-entries-seq (System/getProperty "java.class.path"))))
 
 (def available-classes
   (delay (get-available-classes)))
 
-(defn- get-available-classes-by-last-segment
-  []
-  (delay
-   (group-by #(symbol (peek (string/split (str %) #"\."))) @available-classes)))
+(defn- get-available-classes-by-last-segment []
+  (group-by #(symbol (peek (string/split (str %) #"\."))) @available-classes))
 
 (def available-classes-by-last-segment
   (delay (get-available-classes-by-last-segment)))
@@ -134,5 +130,5 @@
 (defn reset
   "Reset the cache of classes"
   []
-  (alter-var-root #'available-classes (constantly (get-available-classes)))
-  (alter-var-root #'available-classes-by-last-segment (constantly (get-available-classes-by-last-segment))))
+  (alter-var-root #'available-classes (constantly (delay (get-available-classes))))
+  (alter-var-root #'available-classes-by-last-segment (constantly (delay (get-available-classes-by-last-segment)))))
