@@ -1,6 +1,6 @@
-(ns refactor-nrepl.ns.slam.hound.regrow-test
+(ns refactor-nrepl.ns.imports-and-refers-analysis-test
   (:require
-   [refactor-nrepl.ns.slam.hound.regrow :as sut]
+   [refactor-nrepl.ns.imports-and-refers-analysis :as sut]
    [clojure.test :refer [deftest is]]))
 
 (deftest works

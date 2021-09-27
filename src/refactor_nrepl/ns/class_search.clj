@@ -1,8 +1,10 @@
 ;;;; Copied from slamhound 1.5.5
 ;;;; Copyright © 2011-2012 Phil Hagelberg and contributors
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
-(ns refactor-nrepl.ns.slam.hound.search
-  "Search the classpath for vars and classes."
+(ns refactor-nrepl.ns.class-search
+  "Search the classpath for classes.
+
+  Formerly known as `refactor-nrepl.ns.slam.hound.search`."
   (:require
    [clojure.java.io :refer [file]]
    [clojure.string :as string]
