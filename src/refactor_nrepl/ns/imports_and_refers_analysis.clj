@@ -1,10 +1,11 @@
 ;;;; Copied from slamhound 1.5.5
 ;;;; Copyright © 2011-2012 Phil Hagelberg and contributors
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
-(ns refactor-nrepl.ns.slam.hound.regrow
+(ns refactor-nrepl.ns.imports-and-refers-analysis
+  "Formerly known as `refactor-nrepl.ns.slam.hound.regrow`."
   (:require
    [nrepl.middleware.interruptible-eval :refer [*msg*]]
-   [refactor-nrepl.ns.slam.hound.search :as search]))
+   [refactor-nrepl.ns.class-search :as class-search]))
 
 (def ^:dynamic *cache* (atom {}))
 (def ^:dynamic *dirty-ns* (atom #{}))
@@ -15,6 +16,7 @@
       (swap! *dirty-ns* conj ns))
     (apply f args)))
 
+;; XXX remove this if possible, we shouldn't be this sort of stuff.
 (alter-var-root #'clojure.main/repl wrap-clojure-repl)
 
 (defn cache-with-dirty-tracking
@@ -22,13 +24,13 @@
   signature which computes the result for all namespaces, and a two-operand
   version which takes the previously computed result and a list of dirty
   namespaces, and returns an updated result."
-  [key f]
+  [k f]
   (if *cache*
-    (if-let [cached (get @*cache* key)]
+    (if-let [cached (get @*cache* k)]
       (if-let [dirty (seq @*dirty-ns*)]
-        (key (swap! *cache* assoc key (f cached dirty)))
+        (k (swap! *cache* assoc k (f cached dirty)))
         cached)
-      (key (swap! *cache* assoc key (f))))
+      (k (swap! *cache* assoc k (f))))
     (f)))
 
 (defn clear-cache! []
@@ -79,5 +81,5 @@
   [type missing _body _old-ns-map]
   (case type
     :import (into (ns-import-candidates missing)
-                  (get @search/available-classes-by-last-segment missing))
+                  (get @class-search/available-classes-by-last-segment missing))
     :refer (get (symbols->ns-syms) missing)))

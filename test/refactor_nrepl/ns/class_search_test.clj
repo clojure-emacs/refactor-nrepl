@@ -1,7 +1,7 @@
-(ns refactor-nrepl.ns.slam.hound.search-test
+(ns refactor-nrepl.ns.class-search-test
   (:require
    [clojure.test :refer [deftest is]]
-   [refactor-nrepl.ns.slam.hound.search :as sut]))
+   [refactor-nrepl.ns.class-search :as sut]))
 
 (def acceptable-error-messages
   #{"com/github/luben/zstd/ZstdInputStream"

@@ -6,14 +6,14 @@
             [clojure.string :as str]
             [refactor-nrepl.core :refer [prefix suffix]]
             [refactor-nrepl.util :refer [self-referential?]]
-            [refactor-nrepl.ns.slam.hound.regrow :as slamhound]))
+            [refactor-nrepl.ns.imports-and-refers-analysis :as imports-and-refers-analysis]))
 
 (defn- candidates [sym]
   (reduce into
           [(when-let [p (prefix sym)]
-             (slamhound/candidates :import (symbol p) [] {}))
-           (slamhound/candidates :import (symbol (suffix sym)) [] {})
-           (slamhound/candidates :refer (symbol (suffix sym)) [] {})]))
+             (imports-and-refers-analysis/candidates :import (symbol p) [] {}))
+           (imports-and-refers-analysis/candidates :import (symbol (suffix sym)) [] {})
+           (imports-and-refers-analysis/candidates :refer (symbol (suffix sym)) [] {})]))
 
 (defn- get-type [sym]
   (let [info (info 'user sym)]
