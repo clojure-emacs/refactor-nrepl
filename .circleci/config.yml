@@ -11,7 +11,7 @@ version: 2.1
 defaults: &defaults
   working_directory: ~/repo
 
-# Runners for OpenJDK 8/11/16
+# Runners for OpenJDK 8/11/16/17
 
 executors:
   openjdk8:
@@ -26,14 +26,21 @@ executors:
       - image: circleci/clojure:openjdk-11-lein-2.9.1-node
     environment:
       LEIN_ROOT: "true"   # we intended to run lein as root
-      JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access
+      JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
     <<: *defaults
   openjdk16:
     docker:
       - image: circleci/clojure:openjdk-16-lein-2.9.5-buster-node
     environment:
       LEIN_ROOT: "true"   # we intended to run lein as root
-      JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access
+      JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
+    <<: *defaults
+  openjdk17:
+    docker:
+      - image: circleci/clojure:openjdk-17-lein-2.9.5-buster-node
+    environment:
+      LEIN_ROOT: "true"   # we intended to run lein as root
+      JVM_OPTS: -Xmx3200m
     <<: *defaults
 
 # Runs a given set of steps, with some standard pre- and post-
@@ -92,11 +99,11 @@ jobs:
   util_job:
     description: |
       Running utility commands/checks (linter etc.)
-      Always uses Java11 and Clojure 1.10
+      Always uses Java LTS latest and Clojure 1.10
     parameters:
       steps:
         type: steps
-    executor: openjdk11
+    executor: openjdk17
     environment:
       VERSION: "1.10"
     steps:
@@ -138,7 +145,7 @@ jobs:
 # The ci-test-matrix does the following:
 #
 # - run tests against the target matrix
-#   - Java 8 and 11
+#   - All our defined JDKs
 #   - Clojure 1.8, 1.9, 1.10, master
 # - linter, eastwood and cljfmt
 # - runs code coverage report
@@ -151,7 +158,7 @@ workflows:
           matrix:
             parameters:
               clojure_version: ["1.8", "1.9", "1.10", "master"]
-              jdk_version: [openjdk8, openjdk11, openjdk16]
+              jdk_version: [openjdk8, openjdk11, openjdk16, openjdk17]
       - util_job:
           name: Code Linting
           steps:
@@ -167,4 +174,3 @@ workflows:
                 name: Running Eastwood
                 command: |
                   make eastwood
-
