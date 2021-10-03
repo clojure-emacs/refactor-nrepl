@@ -25,7 +25,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "2.5.1"]
+:plugins [[refactor-nrepl "3.0.0-alpha11"]
           [cider/cider-nrepl "0.25.9"]]
 ```
 
@@ -37,7 +37,7 @@ Add the following in `~/.boot/profile.boot`:
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies* conj
-       '[refactor-nrepl "2.5.1"]
+       '[refactor-nrepl "3.0.0-alpha11"]
        '[cider/cider-nrepl "0.25.9"])
 
 (swap! boot.repl/*default-middleware* conj
