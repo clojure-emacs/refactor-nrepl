@@ -4,54 +4,23 @@
 (ns refactor-nrepl.ns.imports-and-refers-analysis
   "Formerly known as `refactor-nrepl.ns.slam.hound.regrow`."
   (:require
-   [nrepl.middleware.interruptible-eval :refer [*msg*]]
    [refactor-nrepl.ns.class-search :as class-search]))
 
-(def ^:dynamic *cache* (atom {}))
-(def ^:dynamic *dirty-ns* (atom #{}))
-
-(defn wrap-clojure-repl [f]
-  (fn [& args]
-    (when-let [ns (some-> *msg* :ns symbol find-ns)]
-      (swap! *dirty-ns* conj ns))
-    (apply f args)))
-
-;; XXX remove this if possible, we shouldn't be this sort of stuff.
-(alter-var-root #'clojure.main/repl wrap-clojure-repl)
-
-(defn cache-with-dirty-tracking
-  "The function to be cached, f, should have two signatures. A zero-operand
-  signature which computes the result for all namespaces, and a two-operand
-  version which takes the previously computed result and a list of dirty
-  namespaces, and returns an updated result."
-  [k f]
-  (if *cache*
-    (if-let [cached (get @*cache* k)]
-      (if-let [dirty (seq @*dirty-ns*)]
-        (k (swap! *cache* assoc k (f cached dirty)))
-        cached)
-      (k (swap! *cache* assoc k (f))))
-    (f)))
-
-(defn clear-cache! []
-  (when *cache*
-    (reset! *cache* {})
-    (reset! *dirty-ns* #{})))
-
-(defn- all-ns-imports*
+;; Benefits from `pmap` because ns-imports is somewhat expensive.
+(defn- all-ns-imports
   ([]
-   (all-ns-imports* {} (all-ns)))
+   (all-ns-imports {} (all-ns)))
   ([init namespaces]
-   (reduce (fn [imports ns]
-             (assoc imports ns (ns-imports ns)))
-           init namespaces)))
+   (->> namespaces
+        (pmap (fn [ns]
+                [ns, (ns-imports ns)]))
+        (into init))))
 
-(defn- all-ns-imports []
-  (cache-with-dirty-tracking :all-ns-imports all-ns-imports*))
-
-(defn- symbols->ns-syms*
+;; Doesn't need parallelization (unlike `all-ns-imports`),
+;; as this defn is instantaneous.
+(defn- symbols->ns-syms
   ([]
-   (symbols->ns-syms* {} (all-ns)))
+   (symbols->ns-syms {} (all-ns)))
   ([init namespaces]
    (reduce
     (fn [m ns] (let [ns-sym (ns-name ns)]
@@ -60,9 +29,6 @@
                     (assoc m k (conj (or (m k) #{}) ns-sym)))
                   m (keys (ns-publics ns)))))
     init namespaces)))
-
-(defn- symbols->ns-syms []
-  (cache-with-dirty-tracking :symbols->ns-syms symbols->ns-syms*))
 
 (defn- ns-import-candidates
   "Search (all-ns) for imports that match missing-sym, returning a set of
