@@ -18,20 +18,41 @@
 (def clojure-artifacts ["clojure"])
 (def clojars-artifacts (resource "clojars-artifacts.edn"))
 
+(defn retry-flaky
+  "Retries a flaky fn `f`.
+
+  In our case the flakiness is outside of our control since Maven Central,
+  Clojars, etc can always have hiccups."
+  ([f]
+   (retry-flaky f 0))
+  ([f ^long attempts]
+   (try
+     (f)
+     (catch Exception e
+       ;; give Maven a break:
+       (Thread/sleep 12000)
+       (if (< attempts 4)
+         (retry-flaky f (inc attempts))
+         (throw e))))))
+
 (deftest get-mvn-artifacts!-test
-  (is (> (count (#'artifacts/get-mvn-artifacts! "org.clojure"))
+  (is (> (count (retry-flaky (fn []
+                               (#'artifacts/get-mvn-artifacts! "org.clojure"))))
          10)))
 
 (deftest get-clojars-artifacts!-test
-  (is (> (count (#'artifacts/get-clojars-artifacts!))
+  (is (> (count (retry-flaky (fn []
+                               (#'artifacts/get-clojars-artifacts!))))
          1000)))
 
 (deftest get-mvn-versions!-test
-  (is (> (count (#'artifacts/get-mvn-versions! "org.clojure/clojure"))
+  (is (> (count (retry-flaky (fn []
+                               (#'artifacts/get-mvn-versions! "org.clojure/clojure"))))
          20)))
 
 (deftest get-clojars-versions!-test
-  (is (> (count (#'artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl"))
+  (is (> (count (retry-flaky (fn []
+                               (#'artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl"))))
          30)))
 
 (deftest creates-a-map-of-artifacts
