@@ -134,6 +134,12 @@ jobs:
             - run:
                 name: Running tests with inlined deps
                 command: make test
+            - run:
+                name: Exercise jarring
+                command: make jar
+            - run:
+                name: Verify that jarring includes the plugin
+                command: grep --silent "refactor_nrepl/plugin.clj" <(zipinfo -1 target/refactor-nrepl-*.jar)
 
 ######################################################################
 #
