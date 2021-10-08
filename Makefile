@@ -16,7 +16,7 @@ test: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config test
 
 cljfmt:
-	lein with-profile -user,+$(VERSION),+cljfmt,+lein-plugin cljfmt check
+	lein with-profile -user,+$(VERSION),+cljfmt cljfmt check
 
 eastwood:
 	lein with-profile -user,+$(VERSION),+eastwood eastwood
@@ -31,14 +31,14 @@ kondo:
 BUMP ?= patch
 
 release:
-	lein with-profile -user,+$(VERSION),+lein-plugin release $(BUMP)
+	lein with-profile -user,+$(VERSION) release $(BUMP)
 
 # Deploying requires the caller to set environment variables as
 # specified in project.clj to provide a login and password to the
 # artifact repository.
 
 deploy: .inline-deps
-	lein with-profile -user,+$(VERSION),+plugin.mranderson/config,+lein-plugin deploy clojars
+	lein with-profile -user,+$(VERSION),+plugin.mranderson/config deploy clojars
 
 install: .inline-deps
-	lein with-profile -user,+$(VERSION),+plugin.mranderson/config,+lein-plugin install
+	lein with-profile -user,+$(VERSION),+plugin.mranderson/config install

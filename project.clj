@@ -44,7 +44,6 @@
                       :dependencies [[org.clojure/clojure "1.11.0-master-SNAPSHOT"]
                                      [org.clojure/clojure "1.11.0-master-SNAPSHOT" :classifier "sources"]]}
 
-             :lein-plugin {:source-paths ["lein-plugin"]}
              :test {:dependencies [[print-foo "1.0.2"]]}
              :dev {:dependencies [[org.clojure/clojurescript "1.10.520"]
                                   [org.clojure/core.async "1.3.618" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
@@ -70,6 +69,7 @@
                         :eastwood {;; :implicit-dependencies would fail spuriously when the CI matrix runs for Clojure < 1.10,
                                    ;; because :implicit-dependencies can only work for a certain corner case starting from 1.10.
                                    :exclude-linters [:implicit-dependencies]
+                                   :exclude-namespaces [refactor-nrepl.plugin]
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
