@@ -40,5 +40,8 @@ release:
 deploy: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config deploy clojars
 
+jar: .inline-deps
+	lein with-profile -user,+$(VERSION),+plugin.mranderson/config jar
+
 install: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config install
