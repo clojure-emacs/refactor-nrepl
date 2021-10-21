@@ -46,7 +46,9 @@ Add the following in `~/.boot/profile.boot`:
 
 ### Embedded nREPL
 
-Use the following (more info can be found in the [nREPL Server docs](https://nrepl.org/nrepl/usage/server.html#embedding-nrepl)):
+You may want launch your own nREPL server with CIDER and refactor-nrepl in it. You'll be able to [`cider-connect`](https://github.com/clojure-emacs/cider/blob/6a17686799b7ef97bc15fa041016421e5c875bfb/cider.el#L1150) to said server.
+
+For that, you can use the following (more info can be found in the [nREPL Server docs](https://nrepl.org/nrepl/usage/server.html#embedding-nrepl) and [CIDER docs](https://docs.cider.mx/cider/basics/middleware_setup.html#using-embedded-nrepl-server)):
 
 ```clojure
 (def custom-nrepl-handler
