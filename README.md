@@ -44,6 +44,23 @@ Add the following in `~/.boot/profile.boot`:
        'refactor-nrepl.middleware/wrap-refactor)
 ```
 
+### Embedded nREPL
+
+You may want launch your own nREPL server with CIDER and refactor-nrepl in it. You'll be able to [`cider-connect`](https://github.com/clojure-emacs/cider/blob/6a17686799b7ef97bc15fa041016421e5c875bfb/cider.el#L1150) to said server.
+
+For that, you can use the following (more info can be found in the [nREPL Server docs](https://nrepl.org/nrepl/usage/server.html#embedding-nrepl) and [CIDER docs](https://docs.cider.mx/cider/basics/middleware_setup.html#using-embedded-nrepl-server)):
+
+```clojure
+(def custom-nrepl-handler
+  "We build our own custom nrepl handler, mimicking CIDER's."
+  (apply nrepl-server/default-handler
+         (conj cider.nrepl.middleware/cider-middleware 'refactor-nrepl.middleware/wrap-refactor)))
+         
+(nrepl-server/start-server :port port :address bind-address :handler custom-nrepl-handler)
+```
+
+The `cider-middleware` is technically optional but highly recommended.
+
 ### Passing messages to and from refactor-nrepl
 
 We've already called this a middleware, but we haven't really talked
