@@ -32,7 +32,8 @@
 
            ;; This happends when class `candidate` depends on a class that is
            ;; not available on the classpath.
-           (catch NoClassDefFoundError _e
+           (catch NoClassDefFoundError e
+             (refactor-nrepl.util/maybe-log-exception e)
              {:name candidate :type :class})))
        candidates))
 

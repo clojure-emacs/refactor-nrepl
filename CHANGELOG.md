@@ -11,6 +11,8 @@
 * Upgrade Orchard
   * Worth emphasizing: now the following options are available https://github.com/clojure-emacs/orchard/tree/v0.7.0#configuration-options
   * They can make the refactor-nrepl experience simpler / more robust.
+* Upgrade rewrite-clj
+  * This fixes some features such as `rename-file-or-dir`.
 * Reliability improvement: try using `require` prior to `find-ns`
   * This increases the chances that a namespace will be found, which in turns makes refactor-nrepl more complete/accurate.
 * Replace Cheshire with `clojure.data.json`

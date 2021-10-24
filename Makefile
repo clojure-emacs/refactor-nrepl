@@ -18,6 +18,9 @@ test: .inline-deps
 cljfmt:
 	lein with-profile -user,+$(VERSION),+cljfmt cljfmt check
 
+cljfmt-fix:
+	lein with-profile -user,+$(VERSION),+cljfmt cljfmt fix
+
 eastwood:
 	lein with-profile -user,+$(VERSION),+eastwood eastwood
 

@@ -7,6 +7,7 @@
   #{"com/github/luben/zstd/ZstdInputStream"
     "org/brotli/dec/BrotliInputStream"
     "org/apache/tools/ant/Task"
+    "org/apache/tools/ant/launch/AntMain"
     "com/sun/jdi/request/EventRequest"})
 
 (def non-initializable-classes
@@ -18,7 +19,7 @@
                    false
                    (-> (Thread/currentThread) .getContextClassLoader))
     (catch NoClassDefFoundError e
-      ;; there are only 4 in ~7922 classes that cause NoClassDefFoundError,
+      ;; there are only ~5 in ~7922 classes that cause NoClassDefFoundError,
       ;; see `#'acceptable-error-messages`.
       ;; They don't have to do with classpath parsing so there's nothing to be fixed.
       (is (contains? acceptable-error-messages (.getMessage e))
