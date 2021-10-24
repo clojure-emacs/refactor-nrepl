@@ -1,7 +1,10 @@
 (ns refactor-nrepl.s-expressions
-  (:require [rewrite-clj.parser :as zip-parser]
-            [rewrite-clj.reader :as zip-reader]
-            [rewrite-clj.zip :as zip]))
+  (:require
+   [rewrite-clj.parser :as zip-parser]
+   [rewrite-clj.reader :as zip-reader]
+   [rewrite-clj.zip :as zip])
+  (:import
+   (clojure.tools.reader.reader_types IndexingPushbackReader)))
 
 (defn all-zlocs
   "Generate a seq of all zlocs in a depth-first manner"
@@ -16,7 +19,8 @@
 
 (defn get-first-sexp
   ^String [file-content]
-  (let [reader (zip-reader/string-reader file-content)]
+  (let [^IndexingPushbackReader
+        reader (zip-reader/string-reader file-content)]
     (loop [sexp (zip-parser/parse reader)]
       (let [zloc (zip/edn sexp)]
         (if (and zloc (not (comment-or-string-or-uneval-or-nil? zloc)))

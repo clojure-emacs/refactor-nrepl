@@ -3,16 +3,16 @@
   :url "http://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "0.8.3"]
+  :dependencies [[nrepl "0.9.0-beta3"]
                  ^:inline-dep [http-kit "2.5.3"]
                  ^:inline-dep [org.clojure/data.json "2.3.1"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.1.0"]
                  ^:inline-dep [org.clojure/tools.namespace "1.1.0" :exclusions [org.clojure/tools.reader]]
-                 ^:inline-dep [org.clojure/tools.reader "1.3.5"]
-                 ^:inline-dep [cider/orchard "0.7.1"]
-                 ^:inline-dep [cljfmt "0.7.0"]
+                 ^:inline-dep [org.clojure/tools.reader "1.3.6"]
+                 ^:inline-dep [cider/orchard "0.7.3"]
+                 ^:inline-dep [cljfmt "0.8.0" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.307"]
-                 ^:inline-dep [rewrite-clj "0.6.1"]
+                 ^:inline-dep [rewrite-clj "1.0.699-alpha"]
                  ^:inline-dep [version-clj "1.0.0"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
 
@@ -30,7 +30,7 @@
                :unresolved-tree false}
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {;; Clojure versions matrix
-             :provided {:dependencies [[cider/cider-nrepl "0.25.9"]
+             :provided {:dependencies [[cider/cider-nrepl "0.27.2"]
                                        [org.clojure/clojure "1.9.0"]
                                        ;; For satisfying `:pedantic?`:
                                        [com.google.code.findbugs/jsr305 "3.0.2"]
@@ -45,7 +45,7 @@
                                      [org.clojure/clojure "1.11.0-master-SNAPSHOT" :classifier "sources"]]}
 
              :test {:dependencies [[print-foo "1.0.2"]]}
-             :dev {:dependencies [[org.clojure/clojurescript "1.10.520"]
+             :dev {:dependencies [[org.clojure/clojurescript "1.10.879"]
                                   [org.clojure/core.async "1.3.618" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
                                   [cider/piggieback "0.5.2"]
                                   [commons-io/commons-io "2.8.0"]]
@@ -56,7 +56,7 @@
                                     "testproject/src"]
                    :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots"]]}
              :cljfmt [:test
-                      {:plugins [[lein-cljfmt "0.7.0" :exclusions [org.clojure/clojure
+                      {:plugins [[lein-cljfmt "0.8.0" :exclusions [org.clojure/clojure
                                                                    org.clojure/clojurescript]]]
                        :cljfmt {:indents {as-> [[:inner 0]]
                                           as->* [[:inner 0]]
@@ -73,7 +73,7 @@
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2021.09.15"]]}]}
+                         {:dependencies [[clj-kondo "2021.10.19"]]}]}
 
   :jvm-opts ~(cond-> []
                (System/getenv "CI")
