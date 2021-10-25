@@ -4,7 +4,7 @@
 
 ## 3.0.0 (2021-10-25)
 
-#### Changes
+### Changes
 
 * [(Part of #230)](https://github.com/clojure-emacs/refactor-nrepl/issues/230): Parallelize various functionality
   * This will have a noticeable improvement in e.g. clj-refactor.el's `cljr-slash` performance.
