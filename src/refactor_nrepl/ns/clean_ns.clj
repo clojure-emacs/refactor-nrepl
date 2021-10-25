@@ -13,14 +13,13 @@
   * Remove any unused referred symbols.
   * Prune, or remove if uneeded, the :rename clause
   * Returns nil when nothing is changed, so the client knows not to do anything."
-  (:require [refactor-nrepl
-             [config :as config]
-             [core :as core]]
-            [refactor-nrepl.ns
-             [ns-parser :as ns-parser]
-             [prune-dependencies :refer [prune-dependencies]]
-             [rebuild :refer [rebuild-ns-form]]]
-            [clojure.java.io :as io]))
+  (:require
+   [clojure.java.io :as io]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
+   [refactor-nrepl.ns.prune-dependencies :refer [prune-dependencies]]
+   [refactor-nrepl.ns.rebuild :refer [rebuild-ns-form]]))
 
 (defn- assert-no-exclude-clause
   [use-form]
@@ -35,7 +34,9 @@
   (assert-no-exclude-clause (core/get-ns-component ns-form :use))
   ns-form)
 
-(defn clean-ns [{:keys [path relative-path]}]
+(defn clean-ns
+  "Returns nil if there's nothing to clean."
+  [{:keys [path relative-path]}]
   (let [path (some (fn [p]
                      (when (and p (.exists (io/file p)))
                        p))

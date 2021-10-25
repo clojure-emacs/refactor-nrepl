@@ -1,9 +1,9 @@
 (ns refactor-nrepl.ns.rebuild
-  (:require [clojure.string :as str]
-            [refactor-nrepl
-             [config :as config]
-             [util :as util]]
-            [refactor-nrepl.core :refer [prefix prefix-form? suffix]]))
+  (:require
+   [clojure.string :as str]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.core :refer [prefix prefix-form? suffix]]
+   [refactor-nrepl.util :as util]))
 
 (defn- assert-single-alias
   [libspecs alias]
@@ -123,14 +123,17 @@
     @libspecs-by-prefix))
 
 (defn- create-libspec
-  [{:keys [ns as refer rename refer-macros] :as libspec}]
+  [{:keys [ns as refer rename refer-macros] :as libspec} vectorize?]
   (let [all-flags #{:reload :reload-all :verbose :include-macros}
-        flags (util/filter-map #(all-flags (first %)) libspec)]
-    (if (and (not as) (not refer)
-             (empty? flags) (empty? rename) (empty? refer-macros))
-      ns
-      (into [ns]
-            (concat (when as [:as as])
+        flags (util/filter-map #(all-flags (first %)) libspec)
+        keep-as-is? (and (not as) (not refer)
+                         (empty? flags) (empty? rename) (empty? refer-macros))]
+    (cond-> ns
+      (or vectorize? (not keep-as-is?))
+      vector
+
+      (not keep-as-is?)
+      (into (concat (when as [:as as])
                     (when refer
                       [:refer (if (sequential? refer)
                                 (vec (sort-referred-symbols refer))
@@ -145,13 +148,14 @@
   [libspecs]
   (vec
    (for [libspec libspecs]
-     (create-libspec (assoc libspec :ns (ns-suffix libspec))))))
+     (create-libspec (assoc libspec :ns (ns-suffix libspec))
+                     false))))
 
 (defn- create-libspec-vectors-with-prefix
   [libspecs]
   (vec
    (for [libspec libspecs]
-     (create-libspec libspec))))
+     (create-libspec libspec true))))
 
 (defn- create-prefixed-libspec-vectors
   [[libspec & more :as libspecs]]
@@ -190,9 +194,9 @@
 
 (defn- create-import-form
   [prefix classes]
-  (if (= (count classes) 1)
-    (symbol (str prefix "." (first classes)))
-    (into [(symbol prefix)] (map symbol classes))))
+  (->> classes
+       (map symbol)
+       (apply list (symbol prefix))))
 
 (defn- create-import-components
   [classes-by-prefix]
@@ -203,8 +207,8 @@
   [imports]
   (->> imports
        (map #(if (sequential? %)
-               (vec (cons (first %)
-                          (sort dependency-comparator (rest %))))
+               (cons (first %)
+                     (sort dependency-comparator (rest %)))
                %))
        (sort dependency-comparator)))
 

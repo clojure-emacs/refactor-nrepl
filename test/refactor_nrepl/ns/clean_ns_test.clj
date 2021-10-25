@@ -1,11 +1,13 @@
 (ns refactor-nrepl.ns.clean-ns-test
-  (:require [clojure.test :refer [are deftest is]]
-            [refactor-nrepl.config :as config]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.clean-ns :refer [clean-ns]]
-            [refactor-nrepl.ns.pprint :refer [pprint-ns]]
-            [clojure.string :as str])
-  (:import java.io.File))
+  (:require
+   [clojure.string :as str]
+   [clojure.test :refer [are deftest is]]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.clean-ns :refer [clean-ns]]
+   [refactor-nrepl.ns.pprint :refer [pprint-ns]])
+  (:import
+   (java.io File)))
 
 (defn- absolute-path [^String path]
   (.getAbsolutePath (File. path)))
@@ -92,9 +94,15 @@
                     (clean-ns ns1)) :require)
         imports (core/get-ns-component (clean-ns ns1) :import)
         sorted-requires (core/get-ns-component ns1-cleaned :require)
-        sorted-imports (core/get-ns-component ns1-cleaned :import)]
-    (is (= sorted-requires requires))
-    (is (= sorted-imports imports))))
+        sorted-imports (core/get-ns-component ns1-cleaned :import)
+        collize (fn [coll transform-to]
+                  (->> coll (map (fn [x]
+                                   (cond-> x
+                                     (and (not (coll? x))
+                                          (not (keyword? x)))
+                                     transform-to)))))]
+    (is (= (collize sorted-requires vector) requires))
+    (is (= (collize sorted-imports list) imports))))
 
 (deftest throws-exceptions-for-unexpected-elements
   (is (thrown? IllegalArgumentException
@@ -179,7 +187,7 @@
 (deftest handles-imports-when-only-enum-is-used
   (let [new-ns (clean-ns ns2)
         imports (core/get-ns-component new-ns :import)]
-    (is (some #(= 'java.text.Normalizer %) imports))))
+    (is (some #(= '(java.text Normalizer) %) imports))))
 
 (deftest keeps-referred-macros-around
   (let [new-ns (clean-ns (clean-msg ns-referencing-macro))]
@@ -187,8 +195,8 @@
     (is (nil? new-ns))))
 
 (deftest handles-clojurescript-files
-  (let [new-ns (clean-ns cljs-ns)]
-    (is (= cljs-ns-cleaned new-ns))))
+  (let [actual (clean-ns cljs-ns)]
+    (is (= cljs-ns-cleaned actual))))
 
 (deftest handles-cljc-files
   (let [new-ns (str (clean-ns cljc-ns))
@@ -245,8 +253,7 @@
     (is (re-find #"\[\$\]" cleaned))))
 
 (deftest does-not-break-import-for-inner-class
-  (let [cleaned (pprint-ns (clean-ns ns-with-inner-classes))]
-    (is (re-find #":import\n.*Line2D\$Double" cleaned))))
+  (is (nil? (clean-ns ns-with-inner-classes))))
 
 (deftest fallback-to-relative-path
   (is (= (pprint-ns (clean-ns ns1))
