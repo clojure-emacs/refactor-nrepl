@@ -40,6 +40,7 @@ release:
 # specified in project.clj to provide a login and password to the
 # artifact repository.
 
+# CLOJARS_USERNAME=$USER CLOJARS_PASSWORD=$(pbpaste) make deploy
 deploy: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config deploy clojars
 
