@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.0.0 (2021-10-25)
+
 #### Changes
 
 * [(Part of #230)](https://github.com/clojure-emacs/refactor-nrepl/issues/230): Parallelize various functionality
