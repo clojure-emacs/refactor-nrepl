@@ -59,6 +59,12 @@
                 (when (.isDirectory ^File f) f)))
        (remove (comp ignore-dir-on-classpath? str))))
 
+(def ^:dynamic *skip-resources?*
+  "Whether `source-dirs-on-classpath` will skip dirs named 'resources', 'test-resources', etc.
+
+  Should generally always be true, except in a few refactor-nrepl's unit tests."
+  true)
+
 (defn source-dirs-on-classpath
   "Like `#'dirs-on-classpath`, but restricted to dirs that look like
   (interesting) source/test dirs."
@@ -66,7 +72,9 @@
   (->> (dirs-on-classpath)
        (remove (fn [^File f]
                  (let [s (-> f .toString)]
-                   (or (-> s (.contains "resources"))
+                   (or (if  *skip-resources?*
+                         (-> s (.contains "resources"))
+                         false)
                        (-> s (.contains "target"))
                        (-> s (.contains ".gitlibs"))))))
        (remove util/dir-outside-root-dir?)))

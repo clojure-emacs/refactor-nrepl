@@ -85,7 +85,8 @@
   (->> (core/find-in-project (util/with-suppressed-errors
                                (every-pred (complement util/interrupted?)
                                            (some-fn core/cljc-file? core/clj-file?))
-                               ignore-errors?))
+                               ignore-errors?)
+                             (core/source-dirs-on-classpath))
        (mapcat #(try
                   (get-macro-definitions-in-file-with-caching %)
                   (catch Exception e

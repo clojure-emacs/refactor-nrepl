@@ -136,7 +136,7 @@
                                var-name
                                (str/join "/" [namespace var-name]))
         referred-syms (libspecs/referred-syms-by-file&fullname ignore-errors)]
-    (->> (core/dirs-on-classpath)
+    (->> (core/source-dirs-on-classpath)
          (keep (fn [x]
                  (when-not (util/interrupted?)
                    (core/find-in-dir (util/with-suppressed-errors

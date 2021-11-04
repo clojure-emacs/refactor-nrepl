@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Changes
+
+* [#344](https://github.com/clojure-emacs/refactor-nrepl/issues/344): make clean-ns's style closer to the [how to ns](https://stuartsierra.com/2016/08/27/how-to-ns) style.
+* [#333](https://github.com/clojure-emacs/refactor-nrepl/issues/333): skip scanning irrelevant directories in more places (as it was already done for various other functionalities). 
+
 ## 3.0.0 (2021-10-25)
 
 ### Changes
