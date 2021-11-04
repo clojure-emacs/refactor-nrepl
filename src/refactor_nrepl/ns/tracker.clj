@@ -47,7 +47,8 @@
   ([]
    (build-tracker default-file-filter-predicate))
   ([file-predicate]
-   (file/add-files (tracker/tracker) (core/find-in-project file-predicate))))
+   (file/add-files (tracker/tracker)
+                   (core/find-in-project file-predicate (core/source-dirs-on-classpath)))))
 
 (defn get-dependents
   "Get the dependent files for ns from tracker."

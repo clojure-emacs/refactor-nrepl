@@ -101,11 +101,13 @@
    ;; `pmap` is used as it has proved to be more efficient, both for cached and non-cached cases.
    {:clj  (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/clj-file? core/cljc-file?)
-                                       ignore-errors?))
+                                       ignore-errors?)
+                                     (core/source-dirs-on-classpath))
                (pmap (juxt identity (partial get-libspec-from-file-with-caching :clj)))
                sym-by-file&fullname)
     :cljs (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/cljs-file? core/cljc-file?)
-                                       ignore-errors?))
+                                       ignore-errors?)
+                                     (core/source-dirs-on-classpath))
                (pmap (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
                sym-by-file&fullname)}))
