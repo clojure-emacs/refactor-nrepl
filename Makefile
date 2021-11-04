@@ -12,6 +12,9 @@ clean:
 
 inline-deps: .inline-deps
 
+fast-test: clean
+	lein with-profile -user,+$(VERSION) test
+
 test: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config test
 
