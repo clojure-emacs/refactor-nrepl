@@ -9,7 +9,8 @@
         (clojure data edn)
         [clojure.pprint :refer [get-pretty-writer formatter cl-format]]
         clojure.test.junit
-        [clojure.xml])
+        [clojure.xml]
+        single-segment-ns)
        (:use clojure.test
              clojure.test
              [clojure.string :rename {replace foo reverse bar} :reload-all true :reload true])
@@ -84,3 +85,5 @@
 
      (proxy [FilenameFilter] []
        (accept [d n] true))))
+
+single-segment-ns/foo

@@ -10,7 +10,8 @@
                  [clojure.test :refer :all]
                  [clojure.test.junit]
                  [clojure.walk :refer [postwalk prewalk]]
-                 [clojure.xml])
+                 [clojure.xml]
+                 [single-segment-ns])
        (:import (java.io Closeable FilenameFilter PushbackReader)
                 (java.util Calendar Date Random))]
       :cljs
