@@ -1,7 +1,7 @@
 (ns refactor-nrepl.ns.pprint
   (:require [cljfmt.core :as fmt]
             [clojure
-             [pprint :refer [pprint]]
+             [pprint]
              [string :as str]]
             [refactor-nrepl
              [config :refer [*config*]]
@@ -9,6 +9,16 @@
              [util :as util :refer [replace-last]]])
 
   (:import java.util.regex.Pattern))
+
+(defn pprint
+  "Pretty-prints `x` with custom, configurable overrides over `clojure.pprint`'s settings.
+
+  This way, we try to generate a formatting that is agnostic / decoupled from clojure.pprint,
+  and therefore that other tools can also consistently achieve."
+  [x]
+  (binding [clojure.pprint/*print-miser-width* (:print-miser-width *config*)
+            clojure.pprint/*print-right-margin* (:print-right-margin *config*)]
+    (clojure.pprint/pprint x)))
 
 (defn- libspec-vectors-last [libspecs]
   (vec (concat (remove sequential? libspecs)

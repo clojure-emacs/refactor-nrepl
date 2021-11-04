@@ -6,8 +6,9 @@
 
 * [#344](https://github.com/clojure-emacs/refactor-nrepl/issues/344): make clean-ns's style closer to the [how to ns](https://stuartsierra.com/2016/08/27/how-to-ns) style.
 * [#333](https://github.com/clojure-emacs/refactor-nrepl/issues/333): skip scanning irrelevant directories in more places (as it was already done for various other functionalities). 
-* Stop wrapping around 80 columns when pprinting ns forms.
-  * You can explicitly set the new `print-right-margin` option to 72 if desiring to revert this
+* Introduce `print-right-margin`/`print-miser-width` configuration options, used during `pprint`ing of ns forms.
+  * The default is one that is consistent with refactor-nrepl's traditional behavior.
+  * You can set both to `nil` for disabling line wrapping. 
 * ns form printing: also wrap single-segment namespaces in a vector.
 
 ## 3.0.0 (2021-10-25)
