@@ -1,10 +1,10 @@
 (ns refactor-nrepl.ns.resolve-missing-caching-test
-  (:require [clojure
-             [edn :as edn]]
-            [nrepl.core :as nrepl]
-            [refactor-nrepl.ns.resolve-missing-test :refer [session-fixture]]
-            [clojure.test :refer [deftest testing is use-fixtures]]
-            [clojure.string :as str]))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [clojure.test :refer [deftest testing is use-fixtures]]
+   [nrepl.core :as nrepl]
+   [refactor-nrepl.ns.resolve-missing-test :refer [session-fixture]]))
 
 (use-fixtures :each session-fixture)
 

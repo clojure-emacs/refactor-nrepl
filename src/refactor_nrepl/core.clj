@@ -65,18 +65,28 @@
   Should generally always be true, except in a few refactor-nrepl's unit tests."
   true)
 
+(def ^:private resources-dir-pattern
+  (re-pattern (str "resources" File/separator "?$")))
+
+(def ^:private target-dir-pattern
+  (re-pattern (str "target" File/separator "?$")))
+
+(defn irrelevant-dir?
+  "Does `f` look like a directory without files that should be analyzed/refactored?"
+  [^File f]
+  (let [s (-> f .toString)]
+    (boolean (or (if *skip-resources?*
+                   (re-find resources-dir-pattern s)
+                   false)
+                 (re-find target-dir-pattern s)
+                 (-> s (.contains ".gitlibs"))))))
+
 (defn source-dirs-on-classpath
   "Like `#'dirs-on-classpath`, but restricted to dirs that look like
   (interesting) source/test dirs."
   []
   (->> (dirs-on-classpath)
-       (remove (fn [^File f]
-                 (let [s (-> f .toString)]
-                   (or (if  *skip-resources?*
-                         (-> s (.contains "resources"))
-                         false)
-                       (-> s (.contains "target"))
-                       (-> s (.contains ".gitlibs"))))))
+       (remove irrelevant-dir?)
        (remove util/dir-outside-root-dir?)))
 
 (defn project-root
