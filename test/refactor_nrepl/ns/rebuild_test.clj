@@ -11,6 +11,14 @@
                 :cljs           {:require ({:ns clojure.string, :as str, :rename {}})
                                  :import  ()}
                 :source-dialect :cljc}))))
+  (t/testing "single segment namespaces"
+    (t/is (= '((:require [single-segment-ns]))
+             (rebuild/build-cljc-dep-forms
+              '{:clj            {:require ({:ns single-segment-ns :rename {}})
+                                 :import  ()}
+                :cljs           {:require ({:ns single-segment-ns, :rename {}})
+                                 :import  ()}
+                :source-dialect :cljc}))))
   (t/testing "shared :requires *and* :cljs conditionals"
     (t/is (= (list (symbol "#?@") '(:clj
                                     [(:require [clojure.string :as str])]

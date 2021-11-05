@@ -180,7 +180,8 @@
        (let [actual (config/with-config {:insert-newline-after-require setting}
                       (pprint-ns (with-meta artifact-ns nil)))
              expected (-> filename File. .getAbsolutePath slurp)]
-         (= expected actual))
+         (is (= expected actual))
+         true)
     true  "test-resources/artifacts_pprinted"
     false "test-resources/artifacts_pprinted_traditional_newline"))
 

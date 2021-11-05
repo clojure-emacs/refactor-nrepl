@@ -145,11 +145,11 @@
                     (flatten (seq flags)))))))
 
 (defn- create-libspec-vectors-without-prefix
-  [libspecs]
+  [libspecs vectorize?]
   (vec
    (for [libspec libspecs]
      (create-libspec (assoc libspec :ns (ns-suffix libspec))
-                     false))))
+                     vectorize?))))
 
 (defn- create-libspec-vectors-with-prefix
   [libspecs]
@@ -164,13 +164,13 @@
     (if-not more
       (create-libspec-vectors-with-prefix [libspec])
       [(into [(ns-prefix (first libspecs))]
-             (create-libspec-vectors-without-prefix libspecs))])))
+             (create-libspec-vectors-without-prefix libspecs false))])))
 
 (defn- create-libspec-vectors
   [libspecs-by-prefix]
   (apply concat (for [[prefix libspecs] libspecs-by-prefix]
                   (if (= prefix :none)
-                    (create-libspec-vectors-without-prefix libspecs)
+                    (create-libspec-vectors-without-prefix libspecs true)
                     (create-prefixed-libspec-vectors libspecs)))))
 
 (defn- build-require-form
