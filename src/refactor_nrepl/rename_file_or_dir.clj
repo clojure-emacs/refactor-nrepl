@@ -1,17 +1,17 @@
 (ns refactor-nrepl.rename-file-or-dir
-  (:require [clojure.string :as str]
-            [me.raynes.fs :as fs]
-            [refactor-nrepl
-             [core :as core]
-             [util :as util]]
-            [refactor-nrepl.ns
-             [ns-parser :as ns-parser]
-             [pprint :refer [pprint-ns]]
-             [rebuild :refer [rebuild-ns-form]]
-             [tracker :as tracker]])
-  (:import java.io.File
-           java.nio.file.Files
-           java.util.regex.Pattern))
+  (:require
+   [clojure.string :as str]
+   [me.raynes.fs :as fs]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
+   [refactor-nrepl.ns.pprint :refer [pprint-ns]]
+   [refactor-nrepl.ns.rebuild :refer [rebuild-ns-form]]
+   [refactor-nrepl.ns.tracker :as tracker]
+   [refactor-nrepl.util :as util])
+  (:import
+   (java.io File)
+   (java.nio.file Files)
+   (java.util.regex Pattern)))
 
 (declare -rename-file-or-dir)
 

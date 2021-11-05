@@ -1,11 +1,11 @@
 (ns refactor-nrepl.rename-file-or-dir-test
-  (:require [clojure.test :refer [deftest is]]
-            [refactor-nrepl.core
-             :refer
-             [get-ns-component ns-form-from-string]]
-            [refactor-nrepl.unreadable-files :refer [ignore-errors?]]
-            [refactor-nrepl.rename-file-or-dir :as sut])
-  (:import java.io.File))
+  (:require
+   [clojure.test :refer [deftest is]]
+   [refactor-nrepl.core :refer [get-ns-component ns-form-from-string]]
+   [refactor-nrepl.rename-file-or-dir :as sut]
+   [refactor-nrepl.unreadable-files :refer [ignore-errors?]])
+  (:import
+   (java.io File)))
 
 (def from-file-path (.getAbsolutePath (File. "testproject/src/com/move/ns_to_be_moved.clj")))
 (def to-file-path (.getAbsolutePath (File. "testproject/src/com/move/moved_ns.clj")))

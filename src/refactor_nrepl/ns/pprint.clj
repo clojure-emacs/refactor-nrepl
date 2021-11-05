@@ -1,14 +1,13 @@
 (ns refactor-nrepl.ns.pprint
-  (:require [cljfmt.core :as fmt]
-            [clojure
-             [pprint]
-             [string :as str]]
-            [refactor-nrepl
-             [config :refer [*config*]]
-             [core :as core :refer [prefix-form?]]
-             [util :as util :refer [replace-last]]])
-
-  (:import java.util.regex.Pattern))
+  (:require
+   [cljfmt.core :as fmt]
+   [clojure.pprint]
+   [clojure.string :as str]
+   [refactor-nrepl.config :refer [*config*]]
+   [refactor-nrepl.core :as core :refer [prefix-form?]]
+   [refactor-nrepl.util :as util :refer [replace-last]])
+  (:import
+   (java.util.regex Pattern)))
 
 (defn pprint
   "Pretty-prints `x` with custom, configurable overrides over `clojure.pprint`'s settings.

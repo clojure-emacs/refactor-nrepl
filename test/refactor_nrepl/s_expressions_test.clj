@@ -1,6 +1,7 @@
 (ns refactor-nrepl.s-expressions-test
-  (:require [refactor-nrepl.s-expressions :as sut]
-            [clojure.test :as t]))
+  (:require
+   [clojure.test :as t]
+   [refactor-nrepl.s-expressions :as sut]))
 
 (def file-content (slurp "testproject/src/com/example/sexp_test.clj"))
 (def weird-file-content ";; some weird file

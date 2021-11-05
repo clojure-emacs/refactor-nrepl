@@ -1,9 +1,10 @@
 (ns refactor-nrepl.extract-definition-test
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is use-fixtures]]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.extract-definition :as sut]
-            [refactor-nrepl.unreadable-files :refer [ignore-errors-str]]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.test :refer [deftest is use-fixtures]]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.extract-definition :as sut]
+   [refactor-nrepl.unreadable-files :refer [ignore-errors-str]]))
 
 (use-fixtures :once (fn [t]
                       (binding [core/*skip-resources?* false]

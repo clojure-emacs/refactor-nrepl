@@ -1,6 +1,7 @@
 (ns refactor-nrepl.ns.ns-parser-test
-  (:require [refactor-nrepl.ns.ns-parser :refer [get-imports get-libspecs get-required-macros]]
-            [clojure.test :refer [deftest is]]))
+  (:require
+   [clojure.test :refer [deftest is]]
+   [refactor-nrepl.ns.ns-parser :refer [get-imports get-libspecs get-required-macros]]))
 
 (deftest parses-libspecs-with-prefix-vectors-containing-specs
   (is (= (list {:ns 'compojure.core :refer '[defroutes] :reload-all true}

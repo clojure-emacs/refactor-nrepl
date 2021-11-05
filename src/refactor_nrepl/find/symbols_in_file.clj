@@ -1,13 +1,12 @@
 (ns refactor-nrepl.find.symbols-in-file
-  (:require [clojure
-             [walk :as walk]]
-            [clojure.tools.reader :as reader]
-            [clojure.tools.reader.reader-types :as readers]
-            [refactor-nrepl
-             [core :as core]
-             [util :as util]]
-            [refactor-nrepl.ns.ns-parser :as ns-parser]
-            [clojure.java.io :as io]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.tools.reader :as reader]
+   [clojure.tools.reader.reader-types :as readers]
+   [clojure.walk :as walk]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
+   [refactor-nrepl.util :as util]))
 
 (defn- find-symbol-ns [{:keys [:require :require-macros]} sym]
   (some->> (into require require-macros)

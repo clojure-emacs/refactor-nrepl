@@ -1,10 +1,11 @@
 (ns refactor-nrepl.integration-tests
-  (:require [clojure.test :refer [deftest is use-fixtures testing]]
-            [nrepl.server :as nrepl]
-            [refactor-nrepl middleware
-             [analyzer :as analyzer]
-             [client :refer [connect find-unbound find-usages resolve-missing version]]
-             [core :as core]]))
+  (:require
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [nrepl.server :as nrepl]
+   [refactor-nrepl.analyzer :as analyzer]
+   [refactor-nrepl.client :refer [connect find-unbound find-usages resolve-missing version]]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.middleware]))
 
 (defn start-up-repl-server []
   (let [server

@@ -1,19 +1,19 @@
 (ns refactor-nrepl.find.find-symbol
-  (:require [clojure
-             [set :as set]
-             [string :as str]]
-            [refactor-nrepl.util :as util :refer [self-referential?]]
-            [clojure.tools.analyzer.ast :refer [nodes postwalk]]
-            [clojure.tools.namespace.parse :as parse]
-            [refactor-nrepl
-             [analyzer :as ana]
-             [core :as core]
-             [s-expressions :as sexp]]
-            [refactor-nrepl.find.find-macros :refer [find-macro]]
-            [refactor-nrepl.find.util :as find-util]
-            [refactor-nrepl.ns.libspecs :as libspecs]
-            [clojure.tools.reader :as reader])
-  (:import (java.io File)))
+  (:require
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.tools.analyzer.ast :refer [nodes postwalk]]
+   [clojure.tools.namespace.parse :as parse]
+   [clojure.tools.reader :as reader]
+   [refactor-nrepl.analyzer :as ana]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.find.find-macros :refer [find-macro]]
+   [refactor-nrepl.find.util :as find-util]
+   [refactor-nrepl.ns.libspecs :as libspecs]
+   [refactor-nrepl.s-expressions :as sexp]
+   [refactor-nrepl.util :as util :refer [self-referential?]])
+  (:import
+   (java.io File)))
 
 (def ^:private symbol-regex #"[\w\.:\*\+\-_!\?]+")
 

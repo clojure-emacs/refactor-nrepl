@@ -1,12 +1,13 @@
 (ns refactor-nrepl.extract-definition
-  (:require [clojure.string :as str]
-            [refactor-nrepl
-             [core :refer [suffix]]
-             [s-expressions :as sexp]]
-            [refactor-nrepl.find.find-symbol :refer [find-symbol]]
-            [rewrite-clj.zip :as zip])
-  (:import [java.io PushbackReader StringReader]
-           java.util.regex.Pattern))
+  (:require
+   [clojure.string :as str]
+   [refactor-nrepl.core :refer [suffix]]
+   [refactor-nrepl.find.find-symbol :refer [find-symbol]]
+   [refactor-nrepl.s-expressions :as sexp]
+   [rewrite-clj.zip :as zip])
+  (:import
+   (java.io PushbackReader StringReader)
+   (java.util.regex Pattern)))
 
 (defn- extract-definition-from-def
   ^String [^String sexp]

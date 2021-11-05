@@ -1,9 +1,9 @@
 (ns refactor-nrepl.artifacts-test
-  (:require [clojure
-             [edn :as edn]
-             [test :refer [deftest is testing]]]
-            [clojure.java.io :as io]
-            [refactor-nrepl.artifacts :as artifacts]))
+  (:require
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.test :refer [deftest is testing]]
+   [refactor-nrepl.artifacts :as artifacts]))
 
 (defn- resource [filename]
   (edn/read-string (slurp (io/resource filename))))

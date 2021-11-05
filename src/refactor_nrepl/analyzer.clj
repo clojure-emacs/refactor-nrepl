@@ -1,20 +1,21 @@
 (ns refactor-nrepl.analyzer
   (:refer-clojure :exclude [macroexpand-1])
-  (:require [clojure.java.io :as io]
-            [clojure.tools.analyzer :as ana]
-            [clojure.tools.reader :as reader]
-            [clojure.tools.analyzer.ast :refer [nodes]]
-            [clojure.tools.analyzer.jvm :as aj]
-            [clojure.tools.analyzer.jvm.utils :as ajutils]
-            [clojure.tools.namespace.parse :refer [read-ns-decl]]
-            [clojure.walk :as walk]
-            [refactor-nrepl
-             [config :as config]
-             [core :as core]
-             [util :as util]]
-            [refactor-nrepl.ns.tracker :as tracker])
-  (:import java.io.PushbackReader
-           java.util.regex.Pattern))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.tools.analyzer :as ana]
+   [clojure.tools.analyzer.ast :refer [nodes]]
+   [clojure.tools.analyzer.jvm :as aj]
+   [clojure.tools.analyzer.jvm.utils :as ajutils]
+   [clojure.tools.namespace.parse :refer [read-ns-decl]]
+   [clojure.tools.reader :as reader]
+   [clojure.walk :as walk]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.tracker :as tracker]
+   [refactor-nrepl.util :as util])
+  (:import
+   (java.io PushbackReader)
+   (java.util.regex Pattern)))
 
 ;;; The structure here is {ns {content-hash ast}}
 (def ^:private ast-cache (atom {}))

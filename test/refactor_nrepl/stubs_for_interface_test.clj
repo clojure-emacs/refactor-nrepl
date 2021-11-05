@@ -1,6 +1,7 @@
 (ns refactor-nrepl.stubs-for-interface-test
-  (:require [refactor-nrepl.stubs-for-interface :as sut]
-            [clojure.test :refer [deftest is testing]]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [refactor-nrepl.stubs-for-interface :as sut]))
 
 (defprotocol AProtocol
   (regular-fn [arg1] "With a docstring")

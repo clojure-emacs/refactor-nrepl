@@ -1,7 +1,8 @@
 (ns refactor-nrepl.find.find-used-publics-test
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer [deftest is]]
-            [refactor-nrepl.find.find-used-publics :as fup]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.test :refer [deftest is]]
+   [refactor-nrepl.find.find-used-publics :as fup]))
 
 (defn- absolute-path [^String path]
   (.getAbsolutePath (io/file path)))

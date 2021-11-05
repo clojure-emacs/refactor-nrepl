@@ -1,10 +1,10 @@
 (ns refactor-nrepl.ns.prune-dependencies
-  (:require [cider.nrepl.middleware.info :as info]
-            [refactor-nrepl
-             [core :as core]
-             [util :as util]]
-            [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
-            [refactor-nrepl.config :as config]))
+  (:require
+   [cider.nrepl.middleware.info :as info]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
+   [refactor-nrepl.util :as util]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]

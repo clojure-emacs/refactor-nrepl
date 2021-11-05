@@ -1,12 +1,13 @@
 (ns refactor-nrepl.ns.resolve-missing
   "Resolve a missing symbol on the classpath."
-  (:require [orchard.info :refer [info]]
-            [cider.nrepl.middleware.util.cljs :as cljs]
-            [orchard.cljs.analysis :as cljs-ana]
-            [clojure.string :as str]
-            [refactor-nrepl.core :refer [prefix suffix]]
-            [refactor-nrepl.util :refer [self-referential?]]
-            [refactor-nrepl.ns.imports-and-refers-analysis :as imports-and-refers-analysis]))
+  (:require
+   [cider.nrepl.middleware.util.cljs :as cljs]
+   [clojure.string :as str]
+   [orchard.cljs.analysis :as cljs-ana]
+   [orchard.info :refer [info]]
+   [refactor-nrepl.core :refer [prefix suffix]]
+   [refactor-nrepl.ns.imports-and-refers-analysis :as imports-and-refers-analysis]
+   [refactor-nrepl.util :refer [self-referential?]]))
 
 (defn- candidates [sym]
   (reduce into
