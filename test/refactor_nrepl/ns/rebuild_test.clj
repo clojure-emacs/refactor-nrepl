@@ -1,6 +1,7 @@
 (ns refactor-nrepl.ns.rebuild-test
-  (:require [clojure.test :as t]
-            [refactor-nrepl.ns.rebuild :as rebuild]))
+  (:require
+   [clojure.test :as t]
+   [refactor-nrepl.ns.rebuild :as rebuild]))
 
 (t/deftest build-cljc-dep-forms
   (t/testing "shared :requires only, no conditionals"

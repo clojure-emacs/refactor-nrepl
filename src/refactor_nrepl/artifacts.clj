@@ -1,12 +1,13 @@
 (ns refactor-nrepl.artifacts
-  (:require [clojure.data.json :as json]
-            [clojure
-             [edn :as edn]
-             [string :as str]]
-            [clojure.java.io :as io]
-            [org.httpkit.client :as http]
-            [version-clj.core :as versions])
-  (:import java.util.zip.GZIPInputStream))
+  (:require
+   [clojure.data.json :as json]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [org.httpkit.client :as http]
+   [version-clj.core :as versions])
+  (:import
+   (java.util.zip GZIPInputStream)))
 
 (def artifacts-file (str (io/file (System/getProperty "java.io.tmpdir")
                                   "refactor-nrepl-artifacts-cache")))

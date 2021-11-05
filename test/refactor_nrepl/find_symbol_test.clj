@@ -1,8 +1,8 @@
 (ns refactor-nrepl.find-symbol-test
   (:require
    [clojure.test :refer [deftest is]]
-   [refactor-nrepl.unreadable-files :refer [ignore-errors-str]]
-   [refactor-nrepl.find.find-symbol :as sut])
+   [refactor-nrepl.find.find-symbol :as sut]
+   [refactor-nrepl.unreadable-files :refer [ignore-errors-str]])
   (:import
    (java.io File)))
 

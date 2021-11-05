@@ -1,8 +1,8 @@
 (ns refactor-nrepl.config-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [refactor-nrepl
-             [analyzer :as analyzer]
-             [config :as sut]]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [refactor-nrepl.analyzer :as analyzer]
+   [refactor-nrepl.config :as sut]))
 
 (deftest error-from-ast-is-sent-to-user-with-debug-setting
   (with-redefs [refactor-nrepl.analyzer/cachable-ast (fn [& _] (IllegalThreadStateException. "NO!"))]

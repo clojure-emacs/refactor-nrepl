@@ -1,8 +1,8 @@
 (ns refactor-nrepl.analyzer-test
   (:require
    [clojure.java.io :as io]
-   [refactor-nrepl.analyzer :as sut]
-   [clojure.test :refer [deftest is]]))
+   [clojure.test :refer [deftest is]]
+   [refactor-nrepl.analyzer :as sut]))
 
 (deftest ns-ast-test
   (doseq [f ["core_async_usage.clj"]

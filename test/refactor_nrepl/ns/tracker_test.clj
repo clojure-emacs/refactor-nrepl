@@ -1,7 +1,7 @@
 (ns refactor-nrepl.ns.tracker-test
   (:require
-   [refactor-nrepl.ns.tracker :as sut]
-   [clojure.test :refer [are deftest is]]))
+   [clojure.test :refer [are deftest is]]
+   [refactor-nrepl.ns.tracker :as sut]))
 
 (deftest in-refresh-dirs?
   (are [refresh-dirs file-ns expected] (= expected

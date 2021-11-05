@@ -1,6 +1,7 @@
 (ns refactor-nrepl.find.util
-  (:require [clojure.java.io :as io]
-            [refactor-nrepl.core :as core]))
+  (:require
+   [clojure.java.io :as io]
+   [refactor-nrepl.core :as core]))
 
 (defn spurious?
   "True if the occurrence doesn't exist at the given coordinates."

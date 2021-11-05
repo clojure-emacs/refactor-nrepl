@@ -1,7 +1,8 @@
 (ns refactor-nrepl.find.find-macros-test
-  (:require [clojure.test :refer [deftest is testing]]
-            [refactor-nrepl.find.find-macros :refer [find-macro]]
-            [refactor-nrepl.unreadable-files :refer [ignore-errors?]]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [refactor-nrepl.find.find-macros :refer [find-macro]]
+   [refactor-nrepl.unreadable-files :refer [ignore-errors?]]))
 
 (defn- found? [regexp occurrences]
   (first (filter #(re-find regexp (:match %)) occurrences)))

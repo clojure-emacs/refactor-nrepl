@@ -1,8 +1,8 @@
 (ns refactor-nrepl.stubs-for-interface
-  (:require [clojure
-             [reflect :as reflect]
-             [string :as str]]
-            [refactor-nrepl.core :as core]))
+  (:require
+   [clojure.reflect :as reflect]
+   [clojure.string :as str]
+   [refactor-nrepl.core :as core]))
 
 (defn- format-type-hint
   [t]

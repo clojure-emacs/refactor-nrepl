@@ -1,10 +1,10 @@
 (ns refactor-nrepl.find.find-locals
-  (:require [clojure.set :as set]
-            [clojure.tools.analyzer.ast :refer [nodes]]
-            [refactor-nrepl
-             [analyzer :as ana]
-             [s-expressions :as sexp]
-             [core :as core]]))
+  (:require
+   [clojure.set :as set]
+   [clojure.tools.analyzer.ast :refer [nodes]]
+   [refactor-nrepl.analyzer :as ana]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.s-expressions :as sexp]))
 
 (defn find-used-locals  [{:keys [file ^long line ^long column]}]
   {:pre [(number? line)

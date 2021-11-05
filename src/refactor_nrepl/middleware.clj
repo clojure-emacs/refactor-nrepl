@@ -1,11 +1,12 @@
 (ns refactor-nrepl.middleware
-  (:require [cider.nrepl.middleware.util.cljs :as cljs]
-            [clojure.stacktrace :refer [print-cause-trace]]
-            [refactor-nrepl.config :as config]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
-            [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]
-            [clojure.walk :as walk]))
+  (:require
+   [cider.nrepl.middleware.util.cljs :as cljs]
+   [clojure.stacktrace :refer [print-cause-trace]]
+   [clojure.walk :as walk]
+   [refactor-nrepl.config :as config]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
+   [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
 
 ;; Compatibility with the legacy tools.nrepl.
 ;; It is not recommended to use the legacy tools.nrepl,

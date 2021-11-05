@@ -1,18 +1,18 @@
 (ns refactor-nrepl.find.find-macros
-  (:require [clojure.string :as str]
-            [clojure.tools.reader :as reader]
-            [refactor-nrepl
-             [core :as core]
-             [s-expressions :as sexp]
-             [util :as util]]
-            [refactor-nrepl.find.bindings :as bindings]
-            [refactor-nrepl.ns
-             [ns-parser :as ns-parser]
-             [tracker :as tracker]]
-            [rewrite-clj.zip :as zip]
-            [clojure.java.io :as io])
-  (:import clojure.lang.LineNumberingPushbackReader
-           [java.io File FileReader StringReader]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.tools.reader :as reader]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.find.bindings :as bindings]
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
+   [refactor-nrepl.ns.tracker :as tracker]
+   [refactor-nrepl.s-expressions :as sexp]
+   [refactor-nrepl.util :as util]
+   [rewrite-clj.zip :as zip])
+  (:import
+   (clojure.lang LineNumberingPushbackReader)
+   (java.io File FileReader StringReader)))
 
 ;; The structure here is {path [timestamp macros]}
 (def ^:private macro-defs-cache (atom {}))

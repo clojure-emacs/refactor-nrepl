@@ -1,7 +1,7 @@
 (ns refactor-nrepl.ns.imports-and-refers-analysis-test
   (:require
-   [refactor-nrepl.ns.imports-and-refers-analysis :as sut]
-   [clojure.test :refer [deftest is]]))
+   [clojure.test :refer [deftest is]]
+   [refactor-nrepl.ns.imports-and-refers-analysis :as sut]))
 
 (deftest works
   (is (contains? '#{#{java.lang.Thread sun.jvm.hotspot.runtime.Thread}

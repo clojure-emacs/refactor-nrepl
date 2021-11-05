@@ -1,11 +1,12 @@
 (ns refactor-nrepl.find.find-used-publics
-  (:require [clojure.set :as set]
-            [clojure.string :as str]
-            [clojure.tools.analyzer.ast :refer [nodes]]
-            [refactor-nrepl.analyzer :as ana]
-            [refactor-nrepl.find.find-macros :as macros]
-            [refactor-nrepl.find.util :as find-util]
-            [refactor-nrepl.core :as core]))
+  (:require
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [clojure.tools.analyzer.ast :refer [nodes]]
+   [refactor-nrepl.analyzer :as ana]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.find.find-macros :as macros]
+   [refactor-nrepl.find.util :as find-util]))
 
 (defn- ns-used-in-node?
   [used-ns ast-node]

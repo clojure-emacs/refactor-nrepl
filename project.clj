@@ -1,8 +1,8 @@
 (defproject refactor-nrepl "3.0.0"
   :description "nREPL middleware to support editor-agnostic refactoring"
-  :url "http://github.com/clojure-emacs/refactor-nrepl"
+  :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
-            :url "http://www.eclipse.org/legal/epl-v10.html"}
+            :url "https://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "0.9.0-beta3"]
                  ^:inline-dep [http-kit "2.5.3"]
                  ^:inline-dep [org.clojure/data.json "2.3.1"]

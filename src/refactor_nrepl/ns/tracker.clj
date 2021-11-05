@@ -1,15 +1,16 @@
 (ns refactor-nrepl.ns.tracker
-  (:require [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clojure.tools.namespace
-             [dependency :as dep]
-             [file :as file]
-             [repl :as tools.namespace.repl]
-             [track :as tracker]]
-            [refactor-nrepl.core :as core]
-            [refactor-nrepl.util :as util]
-            [refactor-nrepl.ns.ns-parser :as ns-parser])
-  (:import [java.io File]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [clojure.tools.namespace.dependency :as dep]
+   [clojure.tools.namespace.file :as file]
+   [clojure.tools.namespace.repl :as tools.namespace.repl]
+   [clojure.tools.namespace.track :as tracker]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
+   [refactor-nrepl.util :as util])
+  (:import
+   (java.io File)))
 
 ;; Exclude cljs files that use npm string requires until they fix this bug:
 ;; https://clojure.atlassian.net/projects/TNS/issues/TNS-51

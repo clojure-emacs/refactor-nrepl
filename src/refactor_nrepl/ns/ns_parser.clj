@@ -11,10 +11,12 @@
    ;; rest are cljs specific
    :refer-macros [referred macros here]
    :require-macros true}"
-  (:require [clojure.java.io :as io]
-            [clojure.set :as set]
-            [refactor-nrepl.core :as core])
-  (:import java.io.File))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.set :as set]
+   [refactor-nrepl.core :as core])
+  (:import
+   (java.io File)))
 
 (defn- libspec-vector->map
   [libspec]
