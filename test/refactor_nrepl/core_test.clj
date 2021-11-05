@@ -45,3 +45,27 @@
       (is (pos? (count (filter (fn [^File f]
                                  (-> f .getPath (.endsWith extension)))
                                result)))))))
+
+(deftest irrelevant-dir?
+  (are [input expected] (= expected
+                           (sut/irrelevant-dir? (File. input)))
+    "resources"         true
+    "a/resources"       true
+    "a/resources/"      true
+    "a/resources/b"     false
+
+    "dev-resources"     true
+    "a/dev-resources"   true
+    "a/dev-resources/"  true
+    "a/dev-resources/b" false
+
+    "target"            true
+    "a/target"          true
+    "a/target/"         true
+    "a/target/b"        false
+
+    ;; if the string ".gitlibs" is contained, it's always irrelevant:
+    ".gitlibs"          true
+    "a/.gitlibs"        true
+    "a/.gitlibs/"       true
+    "a/.gitlibs/b"      true))
