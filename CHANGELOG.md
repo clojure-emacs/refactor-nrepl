@@ -5,7 +5,8 @@
 ### Changes
 
 * [#344](https://github.com/clojure-emacs/refactor-nrepl/issues/344): make clean-ns's style closer to the [how to ns](https://stuartsierra.com/2016/08/27/how-to-ns) style.
-* [#333](https://github.com/clojure-emacs/refactor-nrepl/issues/333): skip scanning irrelevant directories in more places (as it was already done for various other functionalities; this limits ananlysis/refactoring to your source/test paths, skipping other artifacts). 
+* [#333](https://github.com/clojure-emacs/refactor-nrepl/issues/333): skip scanning irrelevant directories in more places (as it was already done for various other functionalities; this limits ananlysis/refactoring to your source/test paths, skipping other artifacts).
+* Make `resolve-missing` able to find even more classes than before. 
 * [#346](https://github.com/clojure-emacs/refactor-nrepl/issues/346): refine the heuristic for ignoring irrelevant dirs (see the above bullet point).
 * Introduce `print-right-margin`/`print-miser-width` configuration options, used during `pprint`ing of ns forms.
   * The default is one that is consistent with refactor-nrepl's traditional behavior.
