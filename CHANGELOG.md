@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.1.0 (2021-11-09)
+
 ### Changes
 
 * [#344](https://github.com/clojure-emacs/refactor-nrepl/issues/344): make clean-ns's style closer to the [how to ns](https://stuartsierra.com/2016/08/27/how-to-ns) style.
