@@ -70,7 +70,7 @@ Specifically it's middleware for a networked REPL, which is managed by
 refactor-nrepl uses the running REPL to to gain insight about your
 project, in order to offer various refactorings.
 
-Most likely you're already in an environment with a nREPL client available, so you don't have to worry about anything except sending an receiving messages:
+Most likely you're already in an environment with a nREPL client available, so you don't have to worry about anything except sending and receiving messages:
 
 ```clj
 => (require '[nrepl.core :as repl])
