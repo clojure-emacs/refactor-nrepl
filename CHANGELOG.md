@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#355](https://github.com/clojure-emacs/refactor-nrepl/issues/355): Disable the side-effects (as protocol extensions) performed by the `fs` library.
+
 ## 3.1.0 (2021-11-09)
 
 ### Changes

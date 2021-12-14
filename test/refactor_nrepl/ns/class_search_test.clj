@@ -20,14 +20,20 @@
        ;; see `#'acceptable-error-messages`.
        ;; They don't have to do with classpath parsing so there's nothing to be fixed:
        (contains? acceptable-error-messages (.getMessage e))
-       ;; Other internal classes introduced with JDK9:
        (some (fn [prefix]
                (-> e
                    .getMessage
                    (string/includes? prefix)))
-             ["org.graalvm"
+             [;; Other internal classes introduced with JDK9:
+              "org.graalvm"
               "sun."
-              "jdk."]))
+              "jdk."
+              ;; Odd stuff brought in by the `fs` dependency:
+              "Implementing class"
+              "class org.apache.commons.compress.harmony.pack200.Segment can not implement org.objectweb.asm.ClassVisitor"])
+       (do
+         (.printStackTrace e)
+         false))
       (-> e (.getMessage)))
   e)
 
@@ -37,6 +43,8 @@
                    false
                    (-> (Thread/currentThread) .getContextClassLoader))
     (catch NoClassDefFoundError e
+      (handle e))
+    (catch IncompatibleClassChangeError e
       (handle e))
     (catch ClassNotFoundException e
       (handle e))
@@ -48,6 +56,7 @@
    (instance? NoClassDefFoundError v)
    (instance? ClassNotFoundException v)
    (instance? UnsupportedClassVersionError v)
+   (instance? IncompatibleClassChangeError v)
    (contains? non-initializable-classes v)))
 
 (defn ok []

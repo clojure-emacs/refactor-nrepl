@@ -12,7 +12,7 @@
                  ^:inline-dep [org.clojure/tools.reader "1.3.6"]
                  ^:inline-dep [cider/orchard "0.7.3"]
                  ^:inline-dep [cljfmt "0.8.0" :exclusions [rewrite-clj rewrite-cljs]]
-                 ^:inline-dep [clj-commons/fs "1.6.307"]
+                 ^:inline-dep [clj-commons/fs "1.6.310"]
                  ^:inline-dep [rewrite-clj "1.0.699-alpha"]
                  ^:inline-dep [version-clj "1.0.0"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
@@ -66,7 +66,7 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]
-             :eastwood {:plugins         [[jonase/eastwood "0.9.9"]]
+             :eastwood {:plugins         [[jonase/eastwood "1.0.0"]]
                         :eastwood {;; :implicit-dependencies would fail spuriously when the CI matrix runs for Clojure < 1.10,
                                    ;; because :implicit-dependencies can only work for a certain corner case starting from 1.10.
                                    :exclude-linters [:implicit-dependencies]
@@ -74,7 +74,7 @@
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2021.10.19"]]}]}
+                         {:dependencies [[clj-kondo "2021.12.01"]]}]}
 
   :jvm-opts ~(cond-> []
                (System/getenv "CI")
