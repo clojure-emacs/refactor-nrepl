@@ -1,7 +1,6 @@
 (ns refactor-nrepl.rename-file-or-dir
   (:require
    [clojure.string :as str]
-   [me.raynes.fs :as fs]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.ns-parser :as ns-parser]
    [refactor-nrepl.ns.pprint :refer [pprint-ns]]
@@ -12,6 +11,10 @@
    (java.io File)
    (java.nio.file Files)
    (java.util.regex Pattern)))
+
+;; Require our `fs` customizations before `fs` is loaded:
+(require '[refactor-nrepl.fs])
+(require '[me.raynes.fs :as fs])
 
 (declare -rename-file-or-dir)
 

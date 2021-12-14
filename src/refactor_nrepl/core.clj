@@ -4,7 +4,6 @@
    [clojure.string :as str]
    [clojure.tools.namespace.parse :as parse]
    [clojure.tools.reader.reader-types :as readers]
-   [me.raynes.fs :as fs]
    [orchard.java.classpath :as cp]
    [orchard.misc :as misc]
    [refactor-nrepl.config :as config]
@@ -12,6 +11,10 @@
    [refactor-nrepl.util :as util :refer [normalize-to-unix-path]])
   (:import
    (java.io File FileReader PushbackReader StringReader)))
+
+;; Require our `fs` customizations before `fs` is loaded:
+(require '[refactor-nrepl.fs])
+(require '[me.raynes.fs :as fs])
 
 (defn version []
   (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
