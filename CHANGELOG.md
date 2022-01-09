@@ -6,8 +6,8 @@
 
 ### Changes
 
-* Upgrade Orchard.
-* Upgrade `tools.analyzer.jvm`.
+* Address minor warnings that could be seen under the Clojure 1.11 series.
+  * Accomplished by upgrading Orchard, and `tools.analyzer.jvm`.
 * [#355](https://github.com/clojure-emacs/refactor-nrepl/issues/355): Disable the side-effects (as protocol extensions) performed by the `fs` library.
 
 ## 3.1.0 (2021-11-09)
