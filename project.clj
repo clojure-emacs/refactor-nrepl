@@ -1,4 +1,4 @@
-(defproject refactor-nrepl "3.1.0"
+(defproject refactor-nrepl "3.2.0"
   :description "nREPL middleware to support editor-agnostic refactoring"
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
@@ -7,10 +7,10 @@
                  ^:inline-dep [compliment "0.3.12"]
                  ^:inline-dep [http-kit "2.5.3"]
                  ^:inline-dep [org.clojure/data.json "2.3.1"]
-                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.1.0"]
+                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.2.2"]
                  ^:inline-dep [org.clojure/tools.namespace "1.1.0" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.6"]
-                 ^:inline-dep [cider/orchard "0.7.3"]
+                 ^:inline-dep [cider/orchard "0.8.0"]
                  ^:inline-dep [cljfmt "0.8.0" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.310"]
                  ^:inline-dep [rewrite-clj "1.0.699-alpha"]
@@ -38,7 +38,7 @@
                                        [com.google.errorprone/error_prone_annotations "2.1.3"]]}
              :1.8 {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9 {:dependencies [[org.clojure/clojure "1.9.0"]]}
-             :1.10 {:dependencies [[org.clojure/clojure "1.10.2"]]}
+             :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
 
              :master {:repositories [["snapshots"
                                       "https://oss.sonatype.org/content/repositories/snapshots"]]
@@ -66,7 +66,7 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]
-             :eastwood {:plugins         [[jonase/eastwood "1.0.0"]]
+             :eastwood {:plugins         [[jonase/eastwood "1.1.0"]]
                         :eastwood {;; :implicit-dependencies would fail spuriously when the CI matrix runs for Clojure < 1.10,
                                    ;; because :implicit-dependencies can only work for a certain corner case starting from 1.10.
                                    :exclude-linters [:implicit-dependencies]
@@ -74,7 +74,7 @@
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2021.12.01"]]}]}
+                         {:dependencies [[clj-kondo "2021.12.19"]]}]}
 
   :jvm-opts ~(cond-> []
                (System/getenv "CI")

@@ -43,12 +43,26 @@ release:
 # specified in project.clj to provide a login and password to the
 # artifact repository.
 
-# CLOJARS_USERNAME=$USER CLOJARS_PASSWORD=$(pbpaste) make deploy
-deploy: .inline-deps
+# GIT_TAG=v3.2.0 CLOJARS_USERNAME=$USER CLOJARS_PASSWORD=$(pbpaste) make deploy
+deploy: check-env .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config deploy clojars
+	git tag -a "$$GIT_TAG" -m "$$GIT_TAG"
+	git push
+	git push --tags
 
 jar: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config jar
 
 install: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config install
+
+check-env:
+ifndef CLOJARS_USERNAME
+	$(error CLOJARS_USERNAME is undefined)
+endif
+ifndef CLOJARS_PASSWORD
+	$(error CLOJARS_PASSWORD is undefined)
+endif
+ifndef GIT_TAG
+	$(error GIT_TAG is undefined)
+endif
