@@ -39,16 +39,10 @@ BUMP ?= patch
 release:
 	lein with-profile -user,+$(VERSION) release $(BUMP)
 
-# Deploying requires the caller to set environment variables as
-# specified in project.clj to provide a login and password to the
-# artifact repository.
-
-# GIT_TAG=v3.2.0 CLOJARS_USERNAME=$USER CLOJARS_PASSWORD=$(pbpaste) make deploy
+# Deployment is performed via CI by creating a git tag prefixed with "v".
+# Please do not deploy locally as it skips various measures (particularly around mranderson).
 deploy: check-env .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config deploy clojars
-	git tag -a "$$GIT_TAG" -m "$$GIT_TAG"
-	git push
-	git push --tags
 
 jar: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config jar
@@ -63,6 +57,6 @@ endif
 ifndef CLOJARS_PASSWORD
 	$(error CLOJARS_PASSWORD is undefined)
 endif
-ifndef GIT_TAG
-	$(error GIT_TAG is undefined)
+ifndef CIRCLE_TAG
+	$(error CIRCLE_TAG is undefined)
 endif

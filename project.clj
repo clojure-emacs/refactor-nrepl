@@ -1,4 +1,7 @@
-(defproject refactor-nrepl "3.2.0"
+(defproject refactor-nrepl (if (System/getenv "CIRCLE_TAG")
+                             (doto (System/getenv "PROJECT_VERSION") assert)
+                             (or (not-empty (System/getenv "PROJECT_VERSION"))
+                                 "0.0.0"))
   :description "nREPL middleware to support editor-agnostic refactoring"
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
@@ -25,7 +28,7 @@
                                     :username :env/clojars_username
                                     :password :env/clojars_password
                                     :sign-releases false}]]
-  :plugins [[thomasa/mranderson "0.5.3"]]
+  :plugins [[thomasa/mranderson "0.5.4-SNAPSHOT"]]
   :mranderson {:project-prefix  "refactor-nrepl.inlined-deps"
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}
@@ -74,7 +77,9 @@
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2021.12.19"]]}]}
+                         {:dependencies [[clj-kondo "2021.12.19"]]}]
+
+             :deploy              {:source-paths [".circleci"]}}
 
   :jvm-opts ~(cond-> []
                (System/getenv "CI")

@@ -21,6 +21,18 @@ executors:
       LEIN_ROOT: "true"   # we intended to run lein as root
       JVM_OPTS: -Xmx3200m # limit the maximum heap size to prevent out of memory errors
     <<: *defaults
+
+  # JDK 8 is preferred for deployments (https://github.com/benedekfazekas/mranderson/issues/57)
+  # Parallelism is disabled, at least for now (https://github.com/benedekfazekas/mranderson/issues/56)
+  openjdk8_deploy:
+    docker:
+      - image: circleci/clojure:openjdk-8-lein-2.9.1-node
+    environment:
+      LEIN_ROOT: "true"   # we intended to run lein as root
+      LEIN_JVM_OPTS: -Dmranderson.internal.no-parallelism=true
+      JVM_OPTS: -Xmx3200m # limit the maximum heap size to prevent out of memory errors
+    <<: *defaults
+
   openjdk11:
     docker:
       - image: circleci/clojure:openjdk-11-lein-2.9.3-buster-node
@@ -28,6 +40,7 @@ executors:
       LEIN_ROOT: "true"   # we intended to run lein as root
       JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
     <<: *defaults
+
   openjdk16:
     docker:
       - image: circleci/clojure:openjdk-16-lein-2.9.5-buster-node
@@ -35,6 +48,7 @@ executors:
       LEIN_ROOT: "true"   # we intended to run lein as root
       JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
     <<: *defaults
+
   openjdk17:
     docker:
       - image: circleci/clojure:openjdk-17-lein-2.9.5-buster-node
@@ -112,6 +126,24 @@ jobs:
           cache_version: "1.10"
           steps: << parameters.steps >>
 
+  deploy:
+    executor: openjdk8_deploy
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v2-dependencies-{{ checksum "project.clj" }}
+            # fallback to using the latest cache if no exact match is found
+            - v2-dependencies-
+      - run: lein with-profile -user,+test deps
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: v2-dependencies-{{ checksum "project.clj" }}
+      - run:
+         name: Deploy
+         command: |
+           lein with-profile -user,+deploy run -m maybe-deploy make deploy
 
   test_code:
     description: |
@@ -180,3 +212,12 @@ workflows:
                 name: Running Eastwood
                 command: |
                   make eastwood
+      - deploy:
+          requires:
+            - test_code
+            - "Code Linting"
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v\d+\.\d+\.\d+(-alpha\d+)?$/

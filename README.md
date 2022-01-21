@@ -374,7 +374,10 @@ When you want to release locally to the following:
 
 And here's how to deploy to Clojars:
 
-    lein with-profile plugin.mranderson/config deploy clojars
+```bash
+git tag -a v3.2.1 -m "3.2.1"
+git push --tags
+```
 
 Alternatively you can leverage the bundled `Makefile`:
 

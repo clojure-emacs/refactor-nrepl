@@ -30,7 +30,7 @@
               "jdk."
               ;; Odd stuff brought in by the `fs` dependency:
               "Implementing class"
-              "class org.apache.commons.compress.harmony.pack200.Segment can not implement org.objectweb.asm.ClassVisitor"])
+              "org.apache.commons.compress.harmony.pack200.Segment can not implement"])
        (do
          (.printStackTrace e)
          false))
