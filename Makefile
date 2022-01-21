@@ -47,7 +47,9 @@ deploy: check-env .inline-deps
 jar: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config jar
 
-install: .inline-deps
+# Usage: PROJECT_VERSION=3.2.1 make install
+# PROJECT_VERSION is needed because it's not computed dynamically
+install: check-install-env .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config install
 
 check-env:
@@ -59,4 +61,9 @@ ifndef CLOJARS_PASSWORD
 endif
 ifndef CIRCLE_TAG
 	$(error CIRCLE_TAG is undefined)
+endif
+
+check-install-env:
+ifndef PROJECT_VERSION
+	$(error Please set PROJECT_VERSION as an env var beforehand.)
 endif
