@@ -1,4 +1,4 @@
-.PHONY: inline-deps test release deploy clean
+.PHONY: inline-deps test deploy clean
 
 VERSION ?= 1.10
 
@@ -30,14 +30,6 @@ eastwood:
 kondo:
 	lein with-profile -dev,+$(VERSION),+clj-kondo run -m clj-kondo.main --lint src test
 
-# When releasing, the BUMP variable controls which field in the
-# version string will be incremented in the *next* snapshot
-# version. Typically this is either "major", "minor", or "patch".
-
-BUMP ?= patch
-
-release:
-	lein with-profile -user,+$(VERSION) release $(BUMP)
 
 # Deployment is performed via CI by creating a git tag prefixed with "v".
 # Please do not deploy locally as it skips various measures (particularly around mranderson).
