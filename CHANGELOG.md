@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.2.1 (2022-01-21)
+
+* Upgrade Orchard.
+
 ## 3.2.0 (2022-01-09)
 
 ### Changes

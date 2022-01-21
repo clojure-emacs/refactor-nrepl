@@ -6,14 +6,14 @@
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "https://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "0.9.0-beta3"]
+  :dependencies [[nrepl "0.9.0"]
                  ^:inline-dep [compliment "0.3.12"]
                  ^:inline-dep [http-kit "2.5.3"]
                  ^:inline-dep [org.clojure/data.json "2.3.1"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.2.2"]
                  ^:inline-dep [org.clojure/tools.namespace "1.1.0" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.6"]
-                 ^:inline-dep [cider/orchard "0.8.0"]
+                 ^:inline-dep [cider/orchard "0.9.1"]
                  ^:inline-dep [cljfmt "0.8.0" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.310"]
                  ^:inline-dep [rewrite-clj "1.0.699-alpha"]
@@ -69,7 +69,7 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]
-             :eastwood {:plugins         [[jonase/eastwood "1.1.0"]]
+             :eastwood {:plugins         [[jonase/eastwood "1.1.1"]]
                         :eastwood {;; :implicit-dependencies would fail spuriously when the CI matrix runs for Clojure < 1.10,
                                    ;; because :implicit-dependencies can only work for a certain corner case starting from 1.10.
                                    :exclude-linters [:implicit-dependencies]
