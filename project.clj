@@ -1,7 +1,5 @@
-(defproject refactor-nrepl (if (System/getenv "CIRCLE_TAG")
-                             (doto (System/getenv "PROJECT_VERSION") assert)
-                             (or (not-empty (System/getenv "PROJECT_VERSION"))
-                                 "0.0.0"))
+(defproject refactor-nrepl (or (not-empty (System/getenv "PROJECT_VERSION"))
+                               "0.0.0")
   :description "nREPL middleware to support editor-agnostic refactoring"
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
