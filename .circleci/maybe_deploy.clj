@@ -23,7 +23,8 @@
           (spit (io/file "resources" "refactor_nrepl" "version.edn")
                 (pr-str version))
           (apply println "Executing" *command-line-args*)
-          (->> [:env (into {"PROJECT_VERSION" version} (System/getenv))]
+          (->> [:env (assoc (into {} (System/getenv))
+                            "PROJECT_VERSION" (make-version tag))]
                (into (vec *command-line-args*))
                (apply sh)
                log-result
