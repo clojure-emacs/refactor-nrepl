@@ -28,8 +28,10 @@
           (assert (.exists version-file))
           (spit version-file (pr-str version))
           (apply println "Executing" *command-line-args*)
-          (->> [:env (assoc (into {} (System/getenv))
-                            "PROJECT_VERSION" (make-version tag))]
+          (->> [:env (-> {}
+                         (into (System/getenv))
+                         (assoc "PROJECT_VERSION" (make-version tag))
+                         (dissoc "CLASSPATH"))]
                (into (vec *command-line-args*))
                (apply sh)
                log-result
