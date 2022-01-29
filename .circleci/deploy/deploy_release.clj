@@ -19,9 +19,10 @@
       (System/exit 1)
       (if-not (re-find (re-pattern release-marker) tag)
         (System/exit 1)
-        (let [version (make-version tag)]
-          (spit (io/file "resources" "refactor_nrepl" "version.edn")
-                (pr-str version))
+        (let [version (make-version tag)
+              version-file (io/file "resources" "refactor_nrepl" "version.edn")]
+          (assert (.exists version-file))
+          (spit version-file (pr-str version))
           (apply println "Executing" *command-line-args*)
           (->> [:env (assoc (into {} (System/getenv))
                             "PROJECT_VERSION" (make-version tag))]
