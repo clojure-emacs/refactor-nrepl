@@ -77,7 +77,7 @@
              :clj-kondo [:test
                          {:dependencies [[clj-kondo "2021.12.19"]]}]
 
-             :deploy              {:source-paths [".circleci"]}}
+             :deploy {:source-paths [".circleci/deploy"]}}
 
   :jvm-opts ~(cond-> []
                (System/getenv "CI")

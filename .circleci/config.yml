@@ -143,7 +143,7 @@ jobs:
       - run:
          name: Deploy
          command: |
-           lein with-profile -user,+deploy run -m maybe-deploy make deploy
+           lein with-profile -user,+deploy run -m deploy-relase make deploy
 
   test_code:
     description: |

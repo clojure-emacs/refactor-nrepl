@@ -1,4 +1,4 @@
-(ns maybe-deploy
+(ns deploy-release
   (:require
    [clojure.java.io :as io]
    [clojure.java.shell :refer [sh]]
