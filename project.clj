@@ -1,3 +1,5 @@
+;; PROJECT_VERSION is set by .circleci/deploy/deploy_release.clj,
+;; whenever we perform a deployment.
 (defproject refactor-nrepl (or (not-empty (System/getenv "PROJECT_VERSION"))
                                "0.0.0")
   :description "nREPL middleware to support editor-agnostic refactoring"
