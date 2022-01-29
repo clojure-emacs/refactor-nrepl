@@ -15,7 +15,9 @@
                         (throw e)))))]
     (->> exclude
          (mapv (fn [entry]
-                 (re-pattern (str "^" (Pattern/quote (str entry)) "$"))))
+                 (if (symbol? entry)
+                   (str "^" (Pattern/quote (str entry)) "$")
+                   entry)))
          (into (:libspec-whitelist config/*config*)))))
 
 (def ^:private ^:dynamic *libspec-whitelist* nil)

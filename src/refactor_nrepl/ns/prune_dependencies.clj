@@ -108,11 +108,13 @@
 ;; Some namespaces, e.g. those containing only protocol extensions,
 ;; are side-effecting at load but might look unused and otherwise be
 ;; pruned.
-(defn- libspec-should-never-be-pruned? [libspec]
+(defn libspec-should-never-be-pruned?
+  "Should `libspec` never be pruned away by the `clean-ns` op?"
+  [libspec]
   (let [ns-name (str (:ns libspec))]
-    (some (fn [^String pattern]
-            (re-find (re-pattern pattern) ns-name))
-          (libspec-whitelist/libspec-whitelist))))
+    (boolean (some (fn [^String pattern]
+                     (-> pattern re-pattern (re-find ns-name)))
+                   (libspec-whitelist/libspec-whitelist)))))
 
 (defn- prune-libspec [symbols-in-file current-ns libspec]
   (if (libspec-should-never-be-pruned? libspec)
