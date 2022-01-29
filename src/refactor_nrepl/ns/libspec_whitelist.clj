@@ -9,7 +9,7 @@
   (let [kondo-file (io/file ".clj-kondo" "config.edn")
         exclude (when (.exists kondo-file)
                   (try
-                    (-> kondo-file slurp read-string :linters :unresolved-namespace :exclude)
+                    (-> kondo-file slurp read-string :linters :unused-namespace :exclude)
                     (catch Exception e
                       (when (System/getenv "CI")
                         (throw e)))))]
