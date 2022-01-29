@@ -25,7 +25,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "3.2.0"]
+:plugins [[refactor-nrepl "3.2.1"]
           [cider/cider-nrepl "0.25.9"]]
 ```
 
@@ -37,7 +37,7 @@ Add the following in `~/.boot/profile.boot`:
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies* conj
-       '[refactor-nrepl "3.2.0"]
+       '[refactor-nrepl "3.2.1"]
        '[cider/cider-nrepl "0.25.9"])
 
 (swap! boot.repl/*default-middleware* conj
@@ -370,21 +370,14 @@ If you want to use `mranderson` while developing locally with the REPL, the sour
 
 When you want to release locally to the following:
 
-    lein with-profile plugin.mranderson/config install
+    PROJECT_VERSION=3.2.1 make install
 
 And here's how to deploy to Clojars:
 
-    lein with-profile plugin.mranderson/config deploy clojars
-
-Alternatively you can leverage the bundled `Makefile`:
-
-    make install
-    make deploy
-
-You might also want to do a `make test` prior to deploying anything to Clojars.
-
-**Note:** You'll need to run `make clean test` if you changed any of the project's dependencies,
-as those will need to be inlined first.
+```bash
+git tag -a v3.2.1 -m "3.2.1"
+git push --tags
+```
 
 ## Changelog
 

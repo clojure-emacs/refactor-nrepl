@@ -17,11 +17,10 @@
 (require '[me.raynes.fs :as fs])
 
 (defn version []
-  (let [v (-> (or (io/resource "refactor-nrepl/refactor-nrepl/project.clj")
-                  "project.clj")
+  (let [v (-> "refactor_nrepl/version.edn"
+              io/resource
               slurp
-              read-string
-              (nth 2))]
+              read-string)]
     (assert (string? v)
             (str "Something went wrong, version is not a string: "
                  v))

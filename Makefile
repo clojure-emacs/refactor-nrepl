@@ -1,4 +1,4 @@
-.PHONY: inline-deps test release deploy clean
+.PHONY: inline-deps test deploy clean
 
 VERSION ?= 1.10
 
@@ -30,30 +30,18 @@ eastwood:
 kondo:
 	lein with-profile -dev,+$(VERSION),+clj-kondo run -m clj-kondo.main --lint src test
 
-# When releasing, the BUMP variable controls which field in the
-# version string will be incremented in the *next* snapshot
-# version. Typically this is either "major", "minor", or "patch".
 
-BUMP ?= patch
-
-release:
-	lein with-profile -user,+$(VERSION) release $(BUMP)
-
-# Deploying requires the caller to set environment variables as
-# specified in project.clj to provide a login and password to the
-# artifact repository.
-
-# GIT_TAG=v3.2.0 CLOJARS_USERNAME=$USER CLOJARS_PASSWORD=$(pbpaste) make deploy
+# Deployment is performed via CI by creating a git tag prefixed with "v".
+# Please do not deploy locally as it skips various measures (particularly around mranderson).
 deploy: check-env .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config deploy clojars
-	git tag -a "$$GIT_TAG" -m "$$GIT_TAG"
-	git push
-	git push --tags
 
 jar: .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config jar
 
-install: .inline-deps
+# Usage: PROJECT_VERSION=3.2.1 make install
+# PROJECT_VERSION is needed because it's not computed dynamically
+install: check-install-env .inline-deps
 	lein with-profile -user,+$(VERSION),+plugin.mranderson/config install
 
 check-env:
@@ -63,6 +51,11 @@ endif
 ifndef CLOJARS_PASSWORD
 	$(error CLOJARS_PASSWORD is undefined)
 endif
-ifndef GIT_TAG
-	$(error GIT_TAG is undefined)
+ifndef CIRCLE_TAG
+	$(error CIRCLE_TAG is undefined)
+endif
+
+check-install-env:
+ifndef PROJECT_VERSION
+	$(error Please set PROJECT_VERSION as an env var beforehand.)
 endif
