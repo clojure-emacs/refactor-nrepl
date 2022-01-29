@@ -25,7 +25,7 @@ cljfmt-fix:
 	lein with-profile -user,+$(VERSION),+cljfmt cljfmt fix
 
 eastwood:
-	lein with-profile -user,+$(VERSION),+eastwood eastwood
+	lein with-profile -user,+$(VERSION),+deploy,+eastwood eastwood
 
 kondo:
 	lein with-profile -dev,+$(VERSION),+clj-kondo run -m clj-kondo.main --lint src test
