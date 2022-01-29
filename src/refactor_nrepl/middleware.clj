@@ -5,6 +5,7 @@
    [clojure.walk :as walk]
    [refactor-nrepl.config :as config]
    [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.libspec-whitelist :as libspec-whitelist]
    [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
    [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
 
@@ -59,10 +60,11 @@
         ~transport (response-for ~msg (err-info e# :refactor-nrepl-error))))))
 
 (defmacro ^:private reply [transport msg & kvs]
-  `(with-errors-being-passed-on ~transport ~msg
-     (config/with-config ~msg
-       (transport/send ~transport
-                       (response-for ~msg ~(apply hash-map kvs))))))
+  `(libspec-whitelist/with-memoized-libspec-whitelist
+     (with-errors-being-passed-on ~transport ~msg
+       (config/with-config ~msg
+         (transport/send ~transport
+                         (response-for ~msg ~(apply hash-map kvs)))))))
 
 (defn- bencode-friendly-data [data]
   ;; Bencode only supports byte strings, integers, lists and maps.

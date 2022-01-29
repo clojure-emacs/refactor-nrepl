@@ -1,9 +1,9 @@
 (ns refactor-nrepl.ns.prune-dependencies
   (:require
    [cider.nrepl.middleware.info :as info]
-   [refactor-nrepl.config :as config]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
+   [refactor-nrepl.ns.libspec-whitelist :as libspec-whitelist]
    [refactor-nrepl.util :as util]))
 
 (defn- lookup-symbol-ns
@@ -112,7 +112,7 @@
   (let [ns-name (str (:ns libspec))]
     (some (fn [^String pattern]
             (re-find (re-pattern pattern) ns-name))
-          (:libspec-whitelist config/*config*))))
+          (libspec-whitelist/libspec-whitelist))))
 
 (defn- prune-libspec [symbols-in-file current-ns libspec]
   (if (libspec-should-never-be-pruned? libspec)
