@@ -121,6 +121,7 @@ Configuration settings are passed along with each msg, currently the recognized 
  ;; even if they're otherwise unused.
  ;; This seq of strings will be used as regexp patterns to match
  ;; against the libspec name.
+ ;; This value is automatically augmented with configured clj-kondo's :unused-namespace config.
  :libspec-whitelist ["^cljsjs"]
 
  ;; Regexes matching paths that are to be ignored
