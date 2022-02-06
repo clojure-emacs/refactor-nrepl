@@ -16,15 +16,22 @@
 (defn -main [& _]
   (let [tag (System/getenv "CIRCLE_TAG")]
     (if-not tag
-      (System/exit 1)
+      (do
+        (println "No CIRCLE_TAG found.")
+        (System/exit 1))
       (if-not (re-find (re-pattern release-marker) tag)
-        (System/exit 1)
-        (let [version (make-version tag)]
-          (spit (io/file "resources" "refactor_nrepl" "version.edn")
-                (pr-str version))
+        (do
+          (println (format "The `%s` marker was not found in %s." release-marker tag))
+          (System/exit 1))
+        (let [version (make-version tag)
+              version-file (io/file "resources" "refactor_nrepl" "version.edn")]
+          (assert (.exists version-file))
+          (spit version-file (pr-str version))
           (apply println "Executing" *command-line-args*)
-          (->> [:env (assoc (into {} (System/getenv))
-                            "PROJECT_VERSION" (make-version tag))]
+          (->> [:env (-> {}
+                         (into (System/getenv))
+                         (assoc "PROJECT_VERSION" (make-version tag))
+                         (dissoc "CLASSPATH"))]
                (into (vec *command-line-args*))
                (apply sh)
                log-result
