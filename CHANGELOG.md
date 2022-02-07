@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.3.0
+
 * [#361](https://github.com/clojure-emacs/refactor-nrepl/pull/361) Honor clj-kondo `:unused-namespace` config, if present
   * This piece of config can inform/complement refactor-nrepl's own config.
 
