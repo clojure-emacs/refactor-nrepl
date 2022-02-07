@@ -25,7 +25,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "3.2.1"]
+:plugins [[refactor-nrepl "3.3.0"]
           [cider/cider-nrepl "0.25.9"]]
 ```
 
@@ -37,7 +37,7 @@ Add the following in `~/.boot/profile.boot`:
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies* conj
-       '[refactor-nrepl "3.2.1"]
+       '[refactor-nrepl "3.3.0"]
        '[cider/cider-nrepl "0.25.9"])
 
 (swap! boot.repl/*default-middleware* conj
@@ -121,6 +121,7 @@ Configuration settings are passed along with each msg, currently the recognized 
  ;; even if they're otherwise unused.
  ;; This seq of strings will be used as regexp patterns to match
  ;; against the libspec name.
+ ;; This value is automatically augmented with configured clj-kondo's :unused-namespace config.
  :libspec-whitelist ["^cljsjs"]
 
  ;; Regexes matching paths that are to be ignored
@@ -370,12 +371,12 @@ If you want to use `mranderson` while developing locally with the REPL, the sour
 
 When you want to release locally to the following:
 
-    PROJECT_VERSION=3.2.1 make install
+    PROJECT_VERSION=3.3.0 make install
 
 And here's how to deploy to Clojars:
 
 ```bash
-git tag -a v3.2.1 -m "3.2.1"
+git tag -a v3.3.0 -m "3.3.0"
 git push --tags
 ```
 
