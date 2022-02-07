@@ -1,11 +1,11 @@
-(ns refactor-nrepl.ns.libspec-whitelist
+(ns refactor-nrepl.ns.libspec-allowlist
   (:require
    [clojure.java.io :as io]
    [refactor-nrepl.config :as config])
   (:import
    (java.util.regex Pattern)))
 
-(defn- libspec-whitelist* []
+(defn- libspec-allowlist* []
   (let [kondo-file (io/file ".clj-kondo" "config.edn")
         exclude (when (.exists kondo-file)
                   (try
@@ -20,23 +20,23 @@
                    entry)))
          (into (:libspec-whitelist config/*config*)))))
 
-(def ^:private ^:dynamic *libspec-whitelist* nil)
+(def ^:private ^:dynamic *libspec-allowlist* nil)
 
-(defn with-memoized-libspec-whitelist* [f]
-  (binding [*libspec-whitelist* (memoize libspec-whitelist*)]
+(defn with-memoized-libspec-allowlist* [f]
+  (binding [*libspec-allowlist* (memoize libspec-allowlist*)]
     (f)))
 
-(defn libspec-whitelist
-  "Obtains a libspec whitelist, which is the result of merging clj-refactor's own `:libspec-whitelist`
-  with clj-kondo's `:unresolved-namespace` config.
+(defn libspec-allowlist
+  "Obtains a libspec allowlist, which is the result of merging clj-refactor's own `:libspec-whitelist`
+  with clj-kondo's `:unused-namespace` config.
 
   Uses a memoized version if available."
   []
-  (or *libspec-whitelist*
-      (libspec-whitelist*)))
+  (or *libspec-allowlist*
+      (libspec-allowlist*)))
 
-(defmacro with-memoized-libspec-whitelist
-  "Memoizes the libspec-whitelist internals while `body` is executing.
+(defmacro with-memoized-libspec-allowlist
+  "Memoizes the libspec-allowlist internals while `body` is executing.
 
   _Temporary_ memoization is important because:
 
@@ -44,6 +44,6 @@
   * one doesn't want that to imply a performance hit in terms of repeatedly reading clj-kondo config files."
   {:style/indent 0}
   [& body]
-  `(with-memoized-libspec-whitelist*
+  `(with-memoized-libspec-allowlist*
      (fn []
        ~@body)))

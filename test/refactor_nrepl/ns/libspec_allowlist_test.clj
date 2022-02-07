@@ -1,10 +1,10 @@
-(ns refactor-nrepl.ns.libspec-whitelist-test
+(ns refactor-nrepl.ns.libspec-allowlist-test
   (:require
    [clojure.test :refer [are deftest is testing]]
-   [refactor-nrepl.ns.libspec-whitelist :as sut]
+   [refactor-nrepl.ns.libspec-allowlist :as sut]
    [refactor-nrepl.ns.prune-dependencies :as prune-dependencies]))
 
-(deftest libspec-whitelist
+(deftest libspec-allowlist
   (testing "Takes into account refactor-nrepls own config, and .clj-kondo/config files alike,
 merging their results"
     (is (= [;; From refactor-nrepl's default config:
@@ -14,9 +14,9 @@ merging their results"
             ;; from our .clj-kondo file - strings have 'regex' semantics so are kept as-is:
             "more.unused.namespaces*"]
 
-           (sut/libspec-whitelist)))
+           (sut/libspec-allowlist)))
 
-    (is (every? string? (sut/libspec-whitelist))
+    (is (every? string? (sut/libspec-allowlist))
         "Items coming from different sources all have the same class,
 ensuring they will be treated homogeneously by refactor-nrepl")
 

@@ -3,7 +3,7 @@
    [cider.nrepl.middleware.info :as info]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
-   [refactor-nrepl.ns.libspec-whitelist :as libspec-whitelist]
+   [refactor-nrepl.ns.libspec-allowlist :as libspec-allowlist]
    [refactor-nrepl.util :as util]))
 
 (defn- lookup-symbol-ns
@@ -114,7 +114,7 @@
   (let [ns-name (str (:ns libspec))]
     (boolean (some (fn [^String pattern]
                      (-> pattern re-pattern (re-find ns-name)))
-                   (libspec-whitelist/libspec-whitelist)))))
+                   (libspec-allowlist/libspec-allowlist)))))
 
 (defn- prune-libspec [symbols-in-file current-ns libspec]
   (if (libspec-should-never-be-pruned? libspec)
