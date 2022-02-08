@@ -1,6 +1,8 @@
 (ns refactor-nrepl.ns.prune-dependencies
   (:require
    [cider.nrepl.middleware.info :as info]
+   [clojure.set :as set]
+   [clojure.string :as string]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
    [refactor-nrepl.ns.libspec-allowlist :as libspec-allowlist]
@@ -116,18 +118,69 @@
                      (-> pattern re-pattern (re-find ns-name)))
                    (libspec-allowlist/libspec-allowlist)))))
 
-(defn- prune-libspec [symbols-in-file current-ns libspec]
-  (if (libspec-should-never-be-pruned? libspec)
+(defn imports->namespaces [imports]
+  (into #{}
+        (map (fn [import]
+               (-> (if (sequential? import)
+                     (first import)
+                     (->> (-> import str (string/split #"\."))
+                          (butlast)
+                          (string/join ".")))
+                   str
+                   (string/replace "_" "-")
+                   symbol)))
+        imports))
+
+(defn libspec->namespaces [libspec]
+  (cond
+    (symbol? libspec)
+    [libspec]
+
+    ;; Check if it doesn't denote prefix notation:
+    (and (sequential? libspec)
+         (or (-> libspec count #{1})
+             (some keyword? libspec)))
+    [(first libspec)]
+
+    :else
+    (let [suffixes (->> libspec
+                        rest
+                        (map (fn [suffix]
+                               (cond-> suffix
+                                 (sequential? suffix) first))))]
+      (map (fn [prefix suffix]
+             (symbol (str prefix "." suffix)))
+           (repeat (first libspec))
+           suffixes))))
+
+(defn imports-contain-libspec?
+  "Do `import-namespaces` contain at least one namespace that is denoted by `libspec`?
+
+  This is useful for keeping requires that emit classes (i.e. those defining deftypes/defrecords),
+  which are imported via `:import`."
+  [imports-namespaces libspec]
+  {:pre [(set? imports-namespaces)]}
+  (let [require-namespaces (set (libspec->namespaces libspec))]
+    (some? (seq (set/intersection imports-namespaces require-namespaces)))))
+
+(defn- prune-libspec [symbols-in-file current-ns imports-namespaces libspec]
+  (cond
+    (libspec-should-never-be-pruned? libspec)
     libspec
+
+    (imports-contain-libspec? imports-namespaces (:ns libspec))
+    libspec
+
+    :else
     (some->> libspec
              (remove-unused-renamed-symbols symbols-in-file)
              (remove-unused-requires symbols-in-file current-ns))))
 
 (defn- prune-libspecs
-  [libspecs symbols-in-file current-ns]
-  (->> libspecs
-       (map (partial prune-libspec symbols-in-file current-ns))
-       (filter (complement nil?))))
+  [libspecs symbols-in-file current-ns imports]
+  (let [imports-namespaces (imports->namespaces imports)]
+    (keep (partial prune-libspec symbols-in-file current-ns imports-namespaces)
+          libspecs)))
 
 (defn- prune-imports
   [imports symbols-in-file]
@@ -141,15 +194,17 @@
         symbols-in-file (->> (symbols-in-file/symbols-in-file path parsed-ns
                                                               dialect)
                              (map str)
-                             set)]
-    {dialect (merge {:require
-                     (prune-libspecs required-libspecs symbols-in-file current-ns)
-                     :import (prune-imports (some-> parsed-ns dialect :import)
-                                            symbols-in-file)}
+                             set)
+        ;; `imports` are calculated before `requires`, because
+        ;; the former's needs affect whether the latter can be pruned:
+        imports (prune-imports (some-> parsed-ns dialect :import)
+                               symbols-in-file)
+        requires (prune-libspecs required-libspecs symbols-in-file current-ns imports)]
+    {dialect (merge {:require requires
+                     :import imports}
                     (when (= dialect :cljs)
                       {:require-macros
-                       (prune-libspecs required-macro-libspecs symbols-in-file
-                                       current-ns)}))}))
+                       (prune-libspecs required-macro-libspecs symbols-in-file current-ns #{})}))}))
 
 (defn- prune-cljc-dependencies [parsed-ns path]
   (merge
