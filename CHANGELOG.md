@@ -6,10 +6,11 @@
 
 * [#363](https://github.com/clojure-emacs/refactor-nrepl/issues/363): Fix a memoization bug in `clean-namespace`.
 
-## 3.3.1
+## 3.3.0
 
 * [#361](https://github.com/clojure-emacs/refactor-nrepl/pull/361) Honor clj-kondo `:unused-namespace` config, if present
   * This piece of config can inform/complement refactor-nrepl's own config.
+  * If you are using refactor-nrepl programatically (as opposed to as nREPL middleware), you can improve performance by using `refactor-nrepl.ns.libspec-allowlist/with-memoized-libspec-allowlist` prior to invoking `clean-ns`.
 
 ## 3.2.2 (2022-01-29)
 
