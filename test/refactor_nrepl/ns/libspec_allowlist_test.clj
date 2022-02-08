@@ -4,7 +4,7 @@
    [refactor-nrepl.ns.libspec-allowlist :as sut]
    [refactor-nrepl.ns.prune-dependencies :as prune-dependencies]))
 
-(deftest libspec-allowlist
+(deftest libspec-allowlist-test
   (testing "Takes into account refactor-nrepls own config, and .clj-kondo/config files alike,
 merging their results"
     (is (= [;; From refactor-nrepl's default config:
@@ -29,4 +29,9 @@ effecively parsing its config into well-formed regexes"
         'sample.unused.namespaceB  false
         'more.unused.namespaces    true
         'more.unused.namespacessss true
-        'more.unused.namespac      false))))
+        'more.unused.namespac      false))
+
+    (testing "Always returns a sequence, memoized or not"
+      (is (seq (sut/with-memoized-libspec-allowlist
+                 (sut/libspec-allowlist))))
+      (is (seq (sut/libspec-allowlist))))))

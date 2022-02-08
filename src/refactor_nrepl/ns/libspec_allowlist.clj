@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [refactor-nrepl.config :as config])
   (:import
+   (clojure.lang IFn)
    (java.util.regex Pattern)))
 
 (defn- libspec-allowlist* []
@@ -20,7 +21,7 @@
                    entry)))
          (into (:libspec-whitelist config/*config*)))))
 
-(def ^:private ^:dynamic *libspec-allowlist* nil)
+(def ^:private ^:dynamic ^IFn *libspec-allowlist* nil)
 
 (defn with-memoized-libspec-allowlist* [f]
   (binding [*libspec-allowlist* (memoize libspec-allowlist*)]
@@ -32,7 +33,7 @@
 
   Uses a memoized version if available."
   []
-  (or *libspec-allowlist*
+  (or (some-> *libspec-allowlist* .invoke)
       (libspec-allowlist*)))
 
 (defmacro with-memoized-libspec-allowlist
