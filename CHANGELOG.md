@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#173](https://github.com/clojure-emacs/refactor-nrepl/issues/173): `rename-file-or-dir`: rename more kinds of constructs in dependent namespaces.
+
 ## 3.3.1
 
 * [#363](https://github.com/clojure-emacs/refactor-nrepl/issues/363): Fix a memoization bug in `clean-namespace`.

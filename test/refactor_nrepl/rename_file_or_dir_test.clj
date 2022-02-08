@@ -1,6 +1,7 @@
 (ns refactor-nrepl.rename-file-or-dir-test
   (:require
-   [clojure.test :refer [deftest is]]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing]]
    [refactor-nrepl.core :refer [get-ns-component ns-form-from-string]]
    [refactor-nrepl.rename-file-or-dir :as sut]
    [refactor-nrepl.unreadable-files :refer [ignore-errors?]])
@@ -48,7 +49,12 @@
                     imported-ns (-> import-form second first)]]
         (is (= 'com.move.moved-ns required-ns))
         (when imported-ns
-          (is (= 'com.move.moved_ns imported-ns)))))))
+          (is (= 'com.move.moved_ns imported-ns)))
+        (testing content
+          (is (not (string/includes? content "ns-to-be-moved"))
+              "Renames various types of constructs (metadata, ns-qualified maps, etc)")
+          (is (not (string/includes? content "ns_to_be_moved"))
+              "Renames emitted class references"))))))
 
 (deftest replaces-fully-qualified-vars-in-dependents
   (let [dependents (atom [])]
