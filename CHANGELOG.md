@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-## 3.3.0
+## 3.3.1
+
+* [#363](https://github.com/clojure-emacs/refactor-nrepl/issues/363): Fix a memoization bug in `clean-namespace`.
+
+## 3.3.1
 
 * [#361](https://github.com/clojure-emacs/refactor-nrepl/pull/361) Honor clj-kondo `:unused-namespace` config, if present
   * This piece of config can inform/complement refactor-nrepl's own config.
