@@ -30,10 +30,13 @@
 
 (deftest test-read-ns-form
   (are [input expected] (testing input
-                          (assert (-> input File. .exists))
+                          (case input
+                            "alkjafas/does_not_exist.clj" (assert (not (-> input File. .exists)))
+                            (assert (-> input File. .exists)))
                           (is (= expected
                                  (sut/read-ns-form input)))
                           true)
+    "alkjafas/does_not_exist.clj"                        nil
     "test-resources/readable_file_incorrect_aliases.clj" nil
     "testproject/src/com/example/one.clj"                '(ns com.example.one
                                                             (:require [com.example.two :as two :refer [foo]]

@@ -155,25 +155,29 @@
    (let [^String path-string (when (string? path)
                                path)
          ^File path-file (when-not path-string
-                           path)]
-     (with-open [file-reader (or (some-> path-string FileReader.)
-                                 (some-> path-file FileReader.))]
-       (try
-         (parse/read-ns-decl (readers/indexing-push-back-reader
-                              (PushbackReader. file-reader)))
-         (catch Exception _ nil)))))
+                           path)
+         ^File file (or path-file (File. path-string))]
+     ;; Check for file existence, because clj-refactor.el or other clients might have bugs:
+     (when (some-> file .exists)
+       (with-open [file-reader (FileReader. file)]
+         (try
+           (parse/read-ns-decl (readers/indexing-push-back-reader
+                                (PushbackReader. file-reader)))
+           (catch Exception _ nil))))))
   ([dialect path]
    (let [^String path-string (when (string? path)
                                path)
          ^File path-file (when-not path-string
-                           path)]
-     (with-open [file-reader (or (some-> path-string FileReader.)
-                                 (some-> path-file FileReader.))]
-       (try
-         (parse/read-ns-decl (readers/indexing-push-back-reader
-                              (PushbackReader. file-reader))
-                             {:read-cond :allow :features #{dialect}})
-         (catch Exception _ nil))))))
+                           path)
+         ^File file (or path-file (File. path-string))]
+     ;; Check for file existence, because clj-refactor.el or other clients might have bugs:
+     (when (some-> file .exists)
+       (with-open [file-reader (FileReader. file)]
+         (try
+           (parse/read-ns-decl (readers/indexing-push-back-reader
+                                (PushbackReader. file-reader))
+                               {:read-cond :allow :features #{dialect}})
+           (catch Exception _ nil)))))))
 
 (defn cljc-extension? [^String path]
   (.endsWith path ".cljc"))
