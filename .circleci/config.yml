@@ -19,6 +19,7 @@ executors:
       - image: circleci/clojure:openjdk-8-lein-2.9.1-node
     environment:
       LEIN_ROOT: "true"   # we intended to run lein as root
+      LEIN_JVM_OPTS: -Dmranderson.internal.no-parallelism=true
       JVM_OPTS: -Xmx3200m # limit the maximum heap size to prevent out of memory errors
     <<: *defaults
 
