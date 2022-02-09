@@ -10,7 +10,7 @@
    [refactor-nrepl.s-expressions :as sexp]
    [refactor-nrepl.util :as util :refer [normalize-to-unix-path]])
   (:import
-   (java.io File FileReader PushbackReader StringReader)))
+   (java.io File FileNotFoundException FileReader PushbackReader StringReader)))
 
 ;; Require our `fs` customizations before `fs` is loaded:
 (require '[refactor-nrepl.fs])
@@ -152,28 +152,29 @@
 
 (defn read-ns-form
   ([path]
-   (let [^String path-string (when (string? path)
-                               path)
-         ^File path-file (when-not path-string
-                           path)]
-     (with-open [file-reader (or (some-> path-string FileReader.)
-                                 (some-> path-file FileReader.))]
-       (try
-         (parse/read-ns-decl (readers/indexing-push-back-reader
-                              (PushbackReader. file-reader)))
-         (catch Exception _ nil)))))
+   (read-ns-form nil path))
   ([dialect path]
    (let [^String path-string (when (string? path)
                                path)
          ^File path-file (when-not path-string
-                           path)]
-     (with-open [file-reader (or (some-> path-string FileReader.)
-                                 (some-> path-file FileReader.))]
-       (try
-         (parse/read-ns-decl (readers/indexing-push-back-reader
-                              (PushbackReader. file-reader))
-                             {:read-cond :allow :features #{dialect}})
-         (catch Exception _ nil))))))
+                           path)
+         ^File file (or path-file (File. path-string))]
+     (try
+       (with-open [file-reader (FileReader. file)]
+         (try
+           (parse/read-ns-decl (readers/indexing-push-back-reader
+                                (PushbackReader. file-reader))
+                               (if dialect
+                                 {:read-cond :allow :features #{dialect}}
+                                 nil))
+           (catch Exception _ nil)))
+       (catch FileNotFoundException e
+         (throw (ex-info (format "No such file: %s. This typically indicates an invalid request client-side."
+                                 (pr-str path))
+                         {:path path
+                          :dialect dialect
+                          :file (str file)}
+                         e)))))))
 
 (defn cljc-extension? [^String path]
   (.endsWith path ".cljc"))
