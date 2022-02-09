@@ -89,7 +89,7 @@
   (let [dialect (:source-dialect parsed-ns)
         libspecs (-> parsed-ns dialect :require)
         require-macros (-> parsed-ns :cljs :require-macros)
-        classes (->  parsed-ns dialect :import)]
+        classes (-> parsed-ns dialect :import)]
     (merge parsed-ns
            {dialect
             (merge {:require (update-libspecs libspecs old-ns new-ns)
@@ -108,16 +108,18 @@
 (defn- update-file-content-sans-ns
   "Any fully qualified references to old-ns has to be replaced with new-ns."
   [file old-ns new-ns]
-  (let [old-prefix (str (str/replace old-ns "-" "_") "/")
-        new-prefix (str (str/replace new-ns "-" "_") "/")
-        old-ns-ref (str old-ns "/")
-        new-ns-ref (str new-ns "/")]
-    (-> file
-        slurp
-        core/file-content-sans-ns
-        str/triml
-        (str/replace old-prefix new-prefix)
-        (str/replace old-ns-ref new-ns-ref))))
+  (let [replacements {(str/replace old-ns "-" "_") (str/replace new-ns "-" "_")
+                      (str old-ns "/")             (str new-ns "/")
+                      (str "#:" old-ns "{")        (str "#:" new-ns "{")
+                      (str "#:" old-ns " {")       (str "#:" new-ns " {")}
+        content (-> file
+                    slurp
+                    core/file-content-sans-ns
+                    str/triml)]
+    (reduce (fn [s [old new]]
+              (str/replace s old new))
+            content
+            replacements)))
 
 (defn- update-dependent
   "New content for a dependent file."
