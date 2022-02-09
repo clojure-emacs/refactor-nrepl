@@ -15,8 +15,10 @@
              [test :refer :all]
              [walk :refer [postwalk prewalk]]
              xml]
-            clojure.test.junit)
+            clojure.test.junit
+            [defines-deftype])
   (:import
+   [defines_deftype SomeDefType]
    [java.io Closeable FilenameFilter PushbackReader]
    [java.util Calendar Date Random]
    [refactor.nrepl

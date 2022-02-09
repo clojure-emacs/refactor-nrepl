@@ -17,8 +17,10 @@
    [clojure.test :refer :all]
    [clojure.test.junit]
    [clojure.walk :refer [postwalk prewalk]]
-   [clojure.xml])
+   [clojure.xml]
+   [defines-deftype])
   (:import
+   (defines_deftype SomeDefType)
    (java.io Closeable FilenameFilter PushbackReader)
    (java.util Calendar Date Random)
    (refactor.nrepl SomeClass$InnerClass$InnerInnerClassOne SomeClass$InnerClass$InnerInnerClassTwo)))
