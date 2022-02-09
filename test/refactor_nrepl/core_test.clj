@@ -28,16 +28,19 @@
         (assert-ignored-paths not-ignored false?)
         (assert-ignored-paths (concat always-ignored sometimes-ignored) true?)))))
 
-(deftest test-read-ns-form
-  (are [input expected] (testing input
-                          (assert (-> input File. .exists))
-                          (is (= expected
-                                 (sut/read-ns-form input)))
-                          true)
-    "test-resources/readable_file_incorrect_aliases.clj" nil
-    "testproject/src/com/example/one.clj"                '(ns com.example.one
-                                                            (:require [com.example.two :as two :refer [foo]]
-                                                                      [com.example.four :as four]))))
+(deftest read-ns-form-test
+  (let [valid-filename "testproject/src/com/example/one.clj"]
+    (is (= (sut/read-ns-form valid-filename)
+           (sut/read-ns-form :clj valid-filename)))
+    (are [input expected] (testing input
+                            (assert (-> input File. .exists))
+                            (is (= expected
+                                   (sut/read-ns-form input)))
+                            true)
+      "test-resources/readable_file_incorrect_aliases.clj" nil
+      valid-filename                                       '(ns com.example.one
+                                                              (:require [com.example.two :as two :refer [foo]]
+                                                                        [com.example.four :as four])))))
 
 (deftest source-files-with-clj-like-extension-test
   (let [result (sut/source-files-with-clj-like-extension true)]

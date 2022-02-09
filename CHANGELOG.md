@@ -4,6 +4,7 @@
 
 * [#173](https://github.com/clojure-emacs/refactor-nrepl/issues/173): `rename-file-or-dir`: rename more kinds of constructs in dependent namespaces: namespace-qualified maps, fully-qualified functions, metadata.
 * [#194](https://github.com/clojure-emacs/refactor-nrepl/issues/194): Don't prune `require` forms if they are needed for a given `import` to work.
+* [#142](https://github.com/clojure-emacs/refactor-nrepl/issues/142): `read-ns-form`: report more informatively when a non-existing file is being processed.
 
 ## 3.3.1
 
