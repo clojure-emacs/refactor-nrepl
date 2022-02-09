@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* [#173](https://github.com/clojure-emacs/refactor-nrepl/issues/173): `rename-file-or-dir`: rename more kinds of constructs in dependent namespaces.
+* [#173](https://github.com/clojure-emacs/refactor-nrepl/issues/173): `rename-file-or-dir`: rename more kinds of constructs in dependent namespaces: namespace-qualified maps, fully-qualified functions, metadata.
 
 ## 3.3.1
 
