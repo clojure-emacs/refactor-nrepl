@@ -41,7 +41,7 @@
   (are [imports libspec expected] (= expected
                                      (sut/imports-contain-libspec? (sut/imports->namespaces imports)
                                                                    libspec))
-    #_imports             #_libpsec               #_expected
+    #_imports             #_libspec               #_expected
     '[]                   'foo.bar                false
     '[foo.bar.SomeType]   'foo.bar                true
     '[foo_bar.SomeType]   'foo-bar                true

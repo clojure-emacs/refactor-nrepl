@@ -118,7 +118,12 @@
                      (-> pattern re-pattern (re-find ns-name)))
                    (libspec-allowlist/libspec-allowlist)))))
 
-(defn imports->namespaces [imports]
+(defn imports->namespaces
+  "Given a collection of `:import` clauses, returns the set of namespaces denoted by them, as symbols.
+
+  Some of those namespace symbols may not refer to actual namespaces.
+  e.g. a `java.io.File` import would return `java.io`, which isn't a Clojure namespace."
+  [imports]
   (into #{}
         (map (fn [import]
                (-> (if (sequential? import)
@@ -131,7 +136,10 @@
                    symbol)))
         imports))
 
-(defn libspec->namespaces [libspec]
+(defn libspec->namespaces
+  "Given a libspec, returns the namespaces denoted by it (typically one, but possibly multiple,
+  if prefix notation was used), as symbols."
+  [libspec]
   (cond
     (symbol? libspec)
     [libspec]
