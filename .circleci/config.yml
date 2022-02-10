@@ -39,6 +39,7 @@ executors:
       - image: circleci/clojure:openjdk-11-lein-2.9.3-buster-node
     environment:
       LEIN_ROOT: "true"   # we intended to run lein as root
+      LEIN_JVM_OPTS: -Dmranderson.internal.no-parallelism=true
       JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
     <<: *defaults
 
@@ -47,6 +48,7 @@ executors:
       - image: circleci/clojure:openjdk-16-lein-2.9.5-buster-node
     environment:
       LEIN_ROOT: "true"   # we intended to run lein as root
+      LEIN_JVM_OPTS: -Dmranderson.internal.no-parallelism=true
       JVM_OPTS: -Xmx3200m --illegal-access=deny # forbid reflective access (this flag doesn't exist for JDK8 or JDK17+)
     <<: *defaults
 
@@ -55,6 +57,7 @@ executors:
       - image: circleci/clojure:openjdk-17-lein-2.9.5-buster-node
     environment:
       LEIN_ROOT: "true"   # we intended to run lein as root
+      LEIN_JVM_OPTS: -Dmranderson.internal.no-parallelism=true
       JVM_OPTS: -Xmx3200m
     <<: *defaults
 
