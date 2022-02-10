@@ -30,21 +30,6 @@ Add the following, either in your project's `project.clj`,  or in the `:user` pr
           [cider/cider-nrepl "0.25.9"]]
 ```
 
-### Adding the middleware via Boot
-
-Add the following in `~/.boot/profile.boot`:
-
-```clojure
-(require 'boot.repl)
-
-(swap! boot.repl/*default-dependencies* conj
-       '[refactor-nrepl "3.3.1"]
-       '[cider/cider-nrepl "0.25.9"])
-
-(swap! boot.repl/*default-middleware* conj
-       'refactor-nrepl.middleware/wrap-refactor)
-```
-
 ### Embedded nREPL
 
 You may want launch your own nREPL server with CIDER and refactor-nrepl in it. You'll be able to [`cider-connect`](https://github.com/clojure-emacs/cider/blob/6a17686799b7ef97bc15fa041016421e5c875bfb/cider.el#L1150) to said server.
@@ -387,7 +372,7 @@ An extensive changelog is available [here](CHANGELOG.md).
 
 ## License
 
-Copyright © 2013-2021 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen, Bozhidar Batsov
+Copyright © 2013-2022 Benedek Fazekas, Magnar Sveen, Alex Baranosky, Lars Andersen, Bozhidar Batsov
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
