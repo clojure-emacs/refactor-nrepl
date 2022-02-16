@@ -119,6 +119,10 @@
    :ns (second (core/read-ns-form-with-meta path-or-file))
    :source-dialect (core/file->dialect path-or-file)))
 
+(def ^:dynamic *read-ns-form-with-meta* core/read-ns-form-with-meta)
+
+(alter-meta! #'*read-ns-form-with-meta* merge (-> core/read-ns-form-with-meta var meta (select-keys [:doc :arglists])))
+
 (defn get-libspecs-from-file
   "Return all the libspecs in a file.
 
@@ -134,7 +138,7 @@
   ([dialect ^File f]
    (some->> f
             .getAbsolutePath
-            (core/read-ns-form-with-meta dialect)
+            (*read-ns-form-with-meta* dialect)
             ((juxt get-libspecs get-required-macros))
             (mapcat identity))))
 

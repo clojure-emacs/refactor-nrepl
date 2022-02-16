@@ -33,11 +33,11 @@
 
 (deftest libspecs-are-cached
   (sut/namespace-aliases ignore-errors?)
-  (with-redefs [refactor-nrepl.ns.libspecs/put-cached-libspec
+  (with-redefs [refactor-nrepl.ns.libspecs/put-cached-ns-info!
                 (fn [& _] (throw (ex-info "Cache miss!" {})))]
     (is (sut/namespace-aliases ignore-errors?)))
   (reset! @#'sut/cache {})
-  (with-redefs [refactor-nrepl.ns.libspecs/put-cached-libspec
+  (with-redefs [refactor-nrepl.ns.libspecs/put-cached-ns-info!
                 (fn [& _] (throw (Exception. "Expected!")))]
     (is (thrown-with-msg? Exception #"Expected!"
                           (sut/namespace-aliases false)))))

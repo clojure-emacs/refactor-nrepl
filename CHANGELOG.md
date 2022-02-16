@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* [#369](https://github.com/clojure-emacs/refactor-nrepl/issues/369): Implement "suggest" option for the `namespace-aliases` op.
+  * This allows end-users to type [Stuart Sierra style](https://stuartsierra.com/2015/05/10/clojure-namespace-aliases) aliases and have them completed, even if this alias wasn't in use anywhere in a given codebase.
+
 ## 3.3.2
 
 * [#173](https://github.com/clojure-emacs/refactor-nrepl/issues/173): `rename-file-or-dir`: rename more kinds of constructs in dependent namespaces: namespace-qualified maps, fully-qualified functions, metadata.
