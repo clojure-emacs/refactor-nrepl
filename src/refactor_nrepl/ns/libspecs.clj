@@ -12,7 +12,7 @@
 
 (defn- aliases [libspecs]
   (->> libspecs
-       (map #(vector (:as %) (:ns %)))
+       (map (juxt :as :ns))
        (remove #(nil? (first %)))
        distinct))
 
