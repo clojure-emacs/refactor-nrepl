@@ -6,7 +6,6 @@
    [refactor-nrepl.config :as config]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.libspec-allowlist :as libspec-allowlist]
-   [refactor-nrepl.ns.libspecs :refer [namespace-aliases]]
    [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
 
 ;; Compatibility with the legacy tools.nrepl.
@@ -182,10 +181,15 @@
   (reply transport msg :touched (@rename-file-or-dir old-path new-path (= ignore-errors "true"))
          :status :done))
 
+(def namespace-aliases
+  (delay
+   (require-and-resolve 'refactor-nrepl.ns.libspecs/namespace-aliases-response)))
+
 (defn- namespace-aliases-reply [{:keys [transport] :as msg}]
-  (reply transport msg
-         :namespace-aliases (serialize-response msg (namespace-aliases))
-         :status :done))
+  (let [aliases (@namespace-aliases msg)]
+    (reply transport msg
+           :namespace-aliases (serialize-response msg aliases)
+           :status :done)))
 
 (def ^:private find-used-publics
   (delay (require-and-resolve 'refactor-nrepl.find.find-used-publics/find-used-publics)))

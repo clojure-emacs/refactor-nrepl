@@ -316,6 +316,9 @@ project. The reply looks like this:
 ```
 The list of suggestions is sorted by frequency in decreasing order, so the first element is always the best suggestion.
 
+This op accepts a `:suggest` option, default falsey. If truthy, it will also include suggested aliases, following [Sierra's convention](https://stuartsierra.com/2015/05/10/clojure-namespace-aliases),
+for existing files that haven't been aliased yet. 
+
 ### find-used-publics
 
 In case namespace B depends on namespace A this operation finds occurrences of symbols in namespace B defined in namespace A.
