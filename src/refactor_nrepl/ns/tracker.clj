@@ -99,6 +99,5 @@
                                   ignore-errors?))
          nses (dep/topo-sort (:clojure.tools.namespace.track/deps tracker))
          filemap (:clojure.tools.namespace.file/filemap tracker)
-         ns2file (zipmap (vals filemap) (keys filemap))]
-     (->> (map ns2file nses)
-          (remove nil?)))))
+         ns->file (zipmap (vals filemap) (keys filemap))]
+     (keep ns->file nses))))
