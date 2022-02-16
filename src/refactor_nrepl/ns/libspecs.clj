@@ -17,16 +17,19 @@
        distinct))
 
 (defn- aliases-by-frequencies [libspecs]
-  (->> libspecs
-       (mapcat aliases) ; => [[str clojure.string] ...]
-       (sort-by (comp str second))
-       (group-by first) ; => {str [[str clojure.string] [str clojure.string]] ...}
-       (map (comp seq frequencies second)) ; => (([[set clojure.set] 4] [set set] 1) ...)
-       (map (partial sort-by second >)) ; by decreasing frequency
-       (map (partial map first)) ; drop frequencies
-       (map (fn [aliases] (list (ffirst aliases) (map second aliases))))
-       (mapcat identity)
-       (apply hash-map)))
+  (let [grouped (->> libspecs
+                     (mapcat aliases)  ; => [[str clojure.string] ...]
+                     (sort-by (comp str second))
+                     (group-by first) ; => {str [[str clojure.string] [str clojure.string]] ...}
+                     )]
+    (into {}
+          (comp (map (comp seq frequencies second)) ; => (([[set clojure.set] 4] [set set] 1) ...)
+                (map (partial sort-by second >)) ; by decreasing frequency
+                (map (partial map first))        ; drop frequencies
+                (map (fn [aliases]
+                       [(ffirst aliases),
+                        (mapv second aliases)])))
+          grouped)))
 
 (defn- get-cached-libspec [^File f lang]
   (when-let [[ts v] (get-in @cache [(.getAbsolutePath f) lang])]
