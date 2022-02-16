@@ -8,7 +8,7 @@
 
 ;; The structure here is {path {lang [timestamp value]}}
 ;; where lang is either :clj or :cljs
-(defonce ^:private cache (atom {}))
+(def ^:private cache (atom {}))
 
 (defn- aliases [libspecs]
   (->> libspecs

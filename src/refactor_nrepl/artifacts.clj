@@ -19,11 +19,11 @@
     (if (zero? lm) nil lm)))
 
 ;;  structure here is {"prismatic/schem" ["0.1.1" "0.2.0" ...]}
-(defonce artifacts (atom (if (.exists (io/file artifacts-file))
-                           (->> artifacts-file slurp edn/read-string (into {}))
-                           {})
-                         :meta {:last-modified
-                                (get-last-modified-from-file artifacts-file)}))
+(def artifacts (atom (if (.exists (io/file artifacts-file))
+                       (->> artifacts-file slurp edn/read-string (into {}))
+                       {})
+                     :meta {:last-modified
+                            (get-last-modified-from-file artifacts-file)}))
 
 (def millis-per-day (* 24 60 60 1000))
 
