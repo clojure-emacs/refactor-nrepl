@@ -116,7 +116,13 @@
          [clj-aliases cljs-aliases] (pmap (fn [[dialect pred] corpus]
                                             (->> corpus
                                                  (filter pred)
-                                                 (map (partial get-libspec-from-file-with-caching dialect))
+                                                 (keep (comp (fn [v]
+                                                               (or v
+                                                                   ;; nullify `false` values for `keep`:
+                                                                   nil))
+                                                             (util/with-suppressed-errors
+                                                               (partial get-libspec-from-file-with-caching dialect)
+                                                               ignore-errors?)))
                                                  aliases-by-frequencies))
                                           [[:clj (util/with-suppressed-errors
                                                    (some-fn core/clj-file? core/cljc-file?)
