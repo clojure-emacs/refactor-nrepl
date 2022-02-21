@@ -2,7 +2,9 @@
   (:require
    [clojure.java.io :as io]
    [clojure.test :refer [are deftest is testing]]
-   [refactor-nrepl.ns.libspecs :as sut]))
+   [refactor-nrepl.ns.libspecs :as sut])
+  (:import
+   (java.io File)))
 
 (def example-file
   (-> "foo/ns/libspecs.clj" io/resource io/as-file))
@@ -53,3 +55,9 @@ the original one is kept and no other semantic is suggested
                                                                                            bar.ns.libspecs],
                                                                               ns.libspecs [foo.ns.libspecs
                                                                                            bar.ns.libspecs]}))
+
+(deftest namespace-aliases-test
+  (testing "Runs without errors"
+    (let [{:keys [clj cljs]} (sut/namespace-aliases true [(File. "test-resources")])]
+      (is (seq clj))
+      (is (seq cljs)))))
