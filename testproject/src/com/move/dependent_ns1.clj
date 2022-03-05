@@ -19,6 +19,9 @@
   (let [^com.move.ns_to_be_moved.TypeToBeMoved x (fn-to-be-moved :_)]
     x)
 
+  ;; https://github.com/clojure-emacs/refactor-nrepl/issues/172
+  (partial instance? com.move.ns_to_be_moved.TypeToBeMoved)
+
   (com.move.ns_to_be_moved.TypeToBeMoved. :ok)
 
   (macro-to-be-moved
