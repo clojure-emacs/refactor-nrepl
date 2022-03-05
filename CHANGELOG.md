@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.4.0
+
 * [#369](https://github.com/clojure-emacs/refactor-nrepl/issues/369): Implement "suggest" option for the `namespace-aliases` op.
   * This allows end-users to type [Stuart Sierra style](https://stuartsierra.com/2015/05/10/clojure-namespace-aliases) aliases and have them completed, even if this alias wasn't in use anywhere in a given codebase.
 
