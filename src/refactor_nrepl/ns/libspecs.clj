@@ -95,6 +95,33 @@
          (apply dissoc possible-aliases)
          (merge-with into project-aliases))))
 
+;; `namespace-aliases-for` was split out from `namespace-aliases`, for a 3rd-party need.
+;; `namespace-aliases-for` is a little more fine-grained, since it accepts files rather than dirs.
+(defn namespace-aliases-for [files ignore-errors?]
+  ;; pmap parallelizes a couple things:
+  ;;   - `pred`, which is IO-intensive
+  ;;   - `aliases-by-frequencies`, which is moderately CPU-intensive
+  (let [[clj-aliases cljs-aliases] (pmap (fn [[dialect pred] corpus]
+                                           (->> corpus
+                                                (filter pred)
+                                                (keep (comp (fn [v]
+                                                              (or v
+                                                                  ;; nullify `false` values for `keep`:
+                                                                  nil))
+                                                            (util/with-suppressed-errors
+                                                              (partial get-libspec-from-file-with-caching dialect)
+                                                              ignore-errors?)))
+                                                aliases-by-frequencies))
+                                         [[:clj (util/with-suppressed-errors
+                                                  (some-fn core/clj-file? core/cljc-file?)
+                                                  ignore-errors?)]
+                                          [:cljs (util/with-suppressed-errors
+                                                   (some-fn core/cljs-file? core/cljc-file?)
+                                                   ignore-errors?)]]
+                                         (repeat files))]
+    {:clj  clj-aliases
+     :cljs cljs-aliases}))
+
 (defn namespace-aliases
   "Returns a map of file type to a map of aliases to namespaces
 
@@ -110,29 +137,7 @@
   ([ignore-errors? dirs include-tentative-aliases?]
    (let [;; fetch the file list just once (as opposed to traversing the project once for each dialect)
          files (core/source-files-with-clj-like-extension ignore-errors? dirs)
-         ;; pmap parallelizes a couple things:
-         ;;   - `pred`, which is IO-intensive
-         ;;   - `aliases-by-frequencies`, which is moderately CPU-intensive
-         [clj-aliases cljs-aliases] (pmap (fn [[dialect pred] corpus]
-                                            (->> corpus
-                                                 (filter pred)
-                                                 (keep (comp (fn [v]
-                                                               (or v
-                                                                   ;; nullify `false` values for `keep`:
-                                                                   nil))
-                                                             (util/with-suppressed-errors
-                                                               (partial get-libspec-from-file-with-caching dialect)
-                                                               ignore-errors?)))
-                                                 aliases-by-frequencies))
-                                          [[:clj (util/with-suppressed-errors
-                                                   (some-fn core/clj-file? core/cljc-file?)
-                                                   ignore-errors?)]
-                                           [:cljs (util/with-suppressed-errors
-                                                    (some-fn core/cljs-file? core/cljc-file?)
-                                                    ignore-errors?)]]
-                                          (repeat files))
-         project-aliases {:clj  clj-aliases
-                          :cljs cljs-aliases}]
+         project-aliases (namespace-aliases-for files ignore-errors?)]
      (cond-> project-aliases
        include-tentative-aliases? (update :clj  add-tentative-aliases :clj  files ignore-errors?)
        include-tentative-aliases? (update :cljs add-tentative-aliases :cljs files ignore-errors?)))))
