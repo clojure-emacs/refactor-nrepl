@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 3.4.1
+
+* Offer `refactor-nrepl.ns.libspecs/namespace-aliases-for` function.
+  * It's basically like `namespace-aliases`, but accepts files rather than dirs as an argument, which can be more flexible for programmatic use.
+
 ## 3.4.0
 
 * [#369](https://github.com/clojure-emacs/refactor-nrepl/issues/369): Implement "suggest" option for the `namespace-aliases` op.
