@@ -26,7 +26,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "3.4.0"]
+:plugins [[refactor-nrepl "3.4.1"]
           [cider/cider-nrepl "0.28.3"]]
 ```
 
@@ -360,12 +360,12 @@ If you want to use `mranderson` while developing locally with the REPL, the sour
 
 When you want to release locally to the following:
 
-    PROJECT_VERSION=3.4.0 make install
+    PROJECT_VERSION=3.4.1 make install
 
 And here's how to deploy to Clojars:
 
 ```bash
-git tag -a v3.4.0 -m "3.4.0"
+git tag -a v3.4.1 -m "3.4.1"
 git push --tags
 ```
 
