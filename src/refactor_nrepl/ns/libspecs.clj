@@ -143,7 +143,7 @@
        include-tentative-aliases? (update :cljs add-tentative-aliases :cljs files ignore-errors?)))))
 
 (defn namespace-aliases-response [{:keys [suggest]}]
-  (namespace-aliases false
+  (namespace-aliases true
                      (core/source-dirs-on-classpath)
                      suggest))
 
