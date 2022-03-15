@@ -176,12 +176,11 @@
      (:import java.util.Date)))
 
 (deftest test-pprint-artifact-ns
-  (are [setting filename]
-       (let [actual (config/with-config {:insert-newline-after-require setting}
-                      (pprint-ns (with-meta artifact-ns nil)))
-             expected (-> filename File. .getAbsolutePath slurp)]
-         (is (= expected actual))
-         true)
+  (are [setting filename] (let [actual (config/with-config {:insert-newline-after-require setting}
+                                         (pprint-ns (with-meta artifact-ns nil)))
+                                expected (-> filename File. .getAbsolutePath slurp)]
+                            (is (= expected actual))
+                            true)
     true  "test-resources/artifacts_pprinted"
     false "test-resources/artifacts_pprinted_traditional_newline"))
 
@@ -269,3 +268,8 @@
 (deftest npm-string-sorting
   (is (= (pprint-ns (clean-ns ns-with-npm-strs))
          (pprint-ns (read-string (slurp (:path ns-with-npm-strs-clean)))))))
+
+(core/with-clojure-version->= {:major 1 :minor 11}
+  (deftest as-alias
+    (is (= '(ns as-alias (:require [foo :as-alias f]))
+           (clean-ns (clean-msg "test-resources/clean_ns/as_alias.cljc"))))))

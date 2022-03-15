@@ -148,8 +148,8 @@
   e.g {str clojure.string}"
   [libspecs]
   (->> libspecs
-       (map (fn alias [{:keys [ns as]}]
-              (when as
-                {as ns})))
-       (remove nil?)
+       (keep (fn alias [{:keys [ns as as-alias]}]
+               (cond-> {}
+                 as (assoc as ns)
+                 as-alias (assoc as-alias ns))))
        (apply merge)))

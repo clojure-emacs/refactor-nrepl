@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.5.2
+
+* [#378](https://github.com/clojure-emacs/refactor-nrepl/issues/378): Fix `:as-alias` handling for .cljc files.
+
 ## 3.5.1
 
 * Refine `:as-alias` detection.
