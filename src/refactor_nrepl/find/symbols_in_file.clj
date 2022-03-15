@@ -68,7 +68,7 @@
                  reader/*data-readers* (merge (when (= dialect :cljs)
                                                 {'js identity})
                                               *data-readers*)
-                 clojure.tools.reader/*alias-map* ns-aliases]
+                 reader/*alias-map* ns-aliases]
          (let [rdr (-> path slurp core/file-content-sans-ns
                        readers/indexing-push-back-reader)
                rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}
@@ -98,7 +98,6 @@
                (when (not= form :eof)
                  (walk/prewalk collect-symbols form)
                  (recur (reader/read rdr-opts rdr))))
-             (->> @syms
-                  (map
-                   (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)))
-                  set))))))))
+             (into #{}
+                   (map (partial fix-ns-of-backquoted-symbols (dialect parsed-ns)))
+                   @syms))))))))
