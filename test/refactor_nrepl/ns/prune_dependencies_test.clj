@@ -1,7 +1,11 @@
 (ns refactor-nrepl.ns.prune-dependencies-test
   (:require
-   [clojure.test :refer [are deftest]]
+   [clojure.test :refer [are is deftest]]
    [refactor-nrepl.ns.prune-dependencies :as sut]))
+
+(deftest libspec-in-use-without-refer-all?
+  (is      (@#'sut/libspec-in-use-without-refer-all? '{:as-alias foo}  "foo/bar"))
+  (is (not (@#'sut/libspec-in-use-without-refer-all? '{:as-alias quux} "foo/bar"))))
 
 (deftest imports->namespaces
   (are [input expected] (= expected
