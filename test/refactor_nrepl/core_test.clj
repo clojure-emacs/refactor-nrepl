@@ -72,3 +72,8 @@
     "a/.gitlibs"        true
     "a/.gitlibs/"       true
     "a/.gitlibs/b"      true))
+
+(deftest read-ns-form-with-meta
+  (testing "`:as-alias` directives are kept"
+    (is (= '(ns as-alias (:require [foo :as-alias f]))
+           (sut/read-ns-form-with-meta "test-resources/as_alias.clj")))))
