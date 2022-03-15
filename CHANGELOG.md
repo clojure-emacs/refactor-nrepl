@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.5.1
+
+* Refine `:as-alias` detection.
+
 ## 3.5.0
 
 * [#374](https://github.com/clojure-emacs/refactor-nrepl/issues/374): support Clojure 1.11's new `:as-alias` namespace directive. 

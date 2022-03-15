@@ -21,7 +21,7 @@
   (= (lookup-symbol-ns current-ns symbol-in-file) ns))
 
 (defn- libspec-in-use-without-refer-all?
-  [{:keys [as ns refer refer-macros require-macros]} symbol-in-file]
+  [{:keys [as as-alias ns refer refer-macros require-macros]} symbol-in-file]
   (or
    ;; Used through refer clause
    (and (not= refer :all)
@@ -35,7 +35,8 @@
    ;; Used as a fully qualified symbol
    (.startsWith ^String symbol-in-file (str ns "/"))
    ;; Aliased symbol in use
-   (and as (.startsWith ^String symbol-in-file (str as "/")))))
+   (and as (.startsWith ^String symbol-in-file (str as "/")))
+   (and as-alias (.startsWith ^String symbol-in-file (str as-alias "/")))))
 
 (defn- libspec-in-use-with-rename?
   [{:keys [rename]} symbols-in-file]
