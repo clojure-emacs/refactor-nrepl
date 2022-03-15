@@ -41,3 +41,8 @@
          (get-required-macros '(ns test
                                  (:use-macros [cljs.test :only [deftest is]])
                                  (:require-macros [cljs.test :refer [testing run-tests]]))))))
+
+(deftest as-alias
+  (is (= (list '{:ns compojure.core :as-alias c})
+         (get-libspecs '(ns refactor-nrepl.test
+                          (:require [compojure.core :as-alias c]))))))

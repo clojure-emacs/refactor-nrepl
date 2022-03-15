@@ -16,11 +16,10 @@
              " and " libspec-alias)))))
   alias)
 
-(defn- get-libspec-alias [libspecs]
+(defn- get-libspec-alias [k libspecs]
   (->> libspecs
-       (map :as)
-       (filter (complement nil?))
-       first
+       (keep k)
+       (first)
        (assert-single-alias libspecs)))
 
 (defn- merge-referred-symbols [libspecs key]
@@ -32,17 +31,18 @@
       (when (seq referred)
         (-> referred concat flatten distinct)))))
 
-(defn- remove-redundant-flags
-  [{:keys [reload reload-all] :as libspec}]
-  (if (and reload reload-all)
-    (dissoc libspec :reload)
-    libspec))
+(defn- remove-redundant-flags [{:keys [reload reload-all]
+                                :as libspec}]
+  (cond-> libspec
+    (and reload reload-all)
+    (dissoc :reload)))
 
 (defn- merge-libspecs
   [libspecs]
   (->
    (apply merge libspecs)
-   (merge {:as (get-libspec-alias libspecs)
+   (merge {:as (get-libspec-alias :as libspecs)
+           :as-alias (get-libspec-alias :as-alias libspecs)
            :refer (merge-referred-symbols libspecs :refer)
            :refer-macros (merge-referred-symbols libspecs :refer-macros)
            :rename (apply merge (map :rename libspecs))})
@@ -123,17 +123,22 @@
     @libspecs-by-prefix))
 
 (defn- create-libspec
-  [{:keys [ns as refer rename refer-macros] :as libspec} vectorize?]
+  [{:keys [ns as as-alias refer rename refer-macros] :as libspec} vectorize?]
   (let [all-flags #{:reload :reload-all :verbose :include-macros}
         flags (util/filter-map #(all-flags (first %)) libspec)
-        keep-as-is? (and (not as) (not refer)
-                         (empty? flags) (empty? rename) (empty? refer-macros))]
+        keep-as-is? (and (not as)
+                         (not as-alias)
+                         (not refer)
+                         (empty? flags)
+                         (empty? rename)
+                         (empty? refer-macros))]
     (cond-> ns
       (or vectorize? (not keep-as-is?))
       vector
 
       (not keep-as-is?)
       (into (concat (when as [:as as])
+                    (when as-alias [:as-alias as-alias])
                     (when refer
                       [:refer (if (sequential? refer)
                                 (vec (sort-referred-symbols refer))

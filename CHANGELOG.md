@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.5.0
+
+* [#374](https://github.com/clojure-emacs/refactor-nrepl/issues/374): support Clojure 1.11's new `:as-alias` namespace directive. 
+
 ## 3.4.2
 
 * [#373](https://github.com/clojure-emacs/refactor-nrepl/issues/373): revert accidentally-changed `namespace-aliases` error handling default.
