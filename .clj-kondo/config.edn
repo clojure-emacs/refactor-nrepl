@@ -41,6 +41,7 @@
            :unresolved-symbol    {:exclude [(refactor-nrepl.ns.ns-parser/with-libspecs-from [libspecs])
                                             (refactor-nrepl.middleware/set-descriptor! [set-descriptor!])]}
            :unresolved-namespace {:exclude [clojure.main]}
+           :unresolved-var {:exclude [org.httpkit.client/get]}
            ;; for integration tests:
            :unused-namespace {:exclude [sample.unused.namespace
                                         "more.unused.namespaces*"]}}}

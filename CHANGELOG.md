@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.5.3
+
+* [#382](https://github.com/clojure-emacs/refactor-nrepl/issues/382): `refactor-nrepl.artifacts`: increase resiliency.
+
 ## 3.5.2
 
 * [#378](https://github.com/clojure-emacs/refactor-nrepl/issues/378): Fix `:as-alias` handling for .cljc files.
