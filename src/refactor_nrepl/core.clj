@@ -435,8 +435,9 @@
        (catch Exception _e
          (throw (IllegalArgumentException. "Malformed ns form!")))))))
 
-(defn ^String fully-qualify
+(defn fully-qualify
   "Create a fully qualified name from name and ns."
+  ^String
   [ns name]
   (let [prefix (str ns)
         suffix (suffix name)]

@@ -72,42 +72,50 @@
   (let [search-prefix "https://search.maven.org/solrsearch/select?q=g:%22"
         search-suffix "%22+AND+p:%22jar%22&rows=2000&wt=json"
         search-url (str search-prefix group-id search-suffix)
-        {:keys [_ _ body _]} @(http/get search-url (assoc (get-proxy-opts) :as :text))
-        search-result (json/read-str body :key-fn keyword)]
-    (->> search-result
-         :response
-         :docs
-         (keep :a))))
+        p (http/get search-url (assoc (get-proxy-opts) :as :text))
+        {:keys [_ _ body _]} (deref p 7000 {})]
+    (if (empty? body)
+      []
+      (->> (json/read-str body :key-fn keyword)
+           :response
+           :docs
+           (keep :a)))))
 
 (defn- get-mvn-versions!
   "Fetches all the versions of particular artifact from maven repository."
   [artifact]
   (let [[group-id artifact] (str/split artifact #"/")
         search-prefix "https://search.maven.org/solrsearch/select?q=g:%22"
-        {:keys [_ _ body _]} @(http/get (str search-prefix
-                                             group-id
-                                             "%22+AND+a:%22"
-                                             artifact
-                                             "%22&core=gav&rows=100&wt=json")
-                                        (assoc (get-proxy-opts) :as :text))]
-    (->> (json/read-str body :key-fn keyword)
-         :response
-         :docs
-         (keep :v))))
+        p (http/get (str search-prefix
+                         group-id
+                         "%22+AND+a:%22"
+                         artifact
+                         "%22&core=gav&rows=100&wt=json")
+                    (assoc (get-proxy-opts) :as :text))
+        {:keys [_ _ body _]} (deref p 7000 {})]
+    (if (empty? body)
+      []
+      (->> (json/read-str body :key-fn keyword)
+           :response
+           :docs
+           (keep :v)))))
 
-(defn- get-artifacts-from-mvn-central!
-  []
-  (let [group-ids #{"com.cognitect" "org.clojure"}]
-    (mapcat (fn [group-id]
-              (->> (get-mvn-artifacts! group-id)
-                   (map #(vector (str group-id "/" %) nil))))
-            group-ids)))
+(defn- get-artifacts-from-mvn-central! []
+  (->> ["org.clojure" "com.cognitect"]
+       (pmap (fn [group-id]
+               (->> group-id
+                    get-mvn-artifacts!
+                    (mapv (fn [artifact]
+                            [(str group-id "/" artifact),
+                             nil])))))
+       (reduce into [])))
 
 (defn get-clojars-versions!
   "Fetches all the versions of particular artifact from Clojars."
   [artifact]
-  (let [{:keys [body status]} @(http/get (str "https://clojars.org/api/artifacts/"
-                                              artifact))]
+  (let [p (http/get (str "https://clojars.org/api/artifacts/"
+                         artifact))
+        {:keys [body status]} (deref p 7000 {})]
     (when (= 200 status)
       (->> (json/read-str body :key-fn keyword)
            :recent_versions
