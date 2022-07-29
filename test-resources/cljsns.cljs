@@ -6,7 +6,11 @@
             [cljs.pprint :as pprint]
             [js-literal-ns :as js-literal]
             [keyword-ns :as kw]
-            [clojure.set :as set])
+            [clojure.set :as set]
+            ["react" :as react]
+            ["underscore$default" :as underscore]
+            ["react-UNUSED" :as react-unused]
+            ["underscore-UNUSEd$default" :as underscore-unused])
   (:require-macros [cljs.test :refer [testing]]
                    [cljs.analyzer.macros :as am]
                    cljs.analyzer.api)
@@ -17,6 +21,13 @@
   (pprint/pprint {:foo :bar})
   (set/intersection #{1 2} #{1})
   (split-lines "ok"))
+
+(defn use-string-requires
+  "Uses string requires as found in the ns declaration.
+
+  Does not use the stuff marked as UNUSED, which therefore should be removed."
+  []
+  (react/foo underscore/bar))
 
 (deftest tt
   (testing "whatever"

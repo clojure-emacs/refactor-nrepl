@@ -1,5 +1,7 @@
 (ns cljsns
-  (:require [cljs.pprint :as pprint]
+  (:require ["react" :as react]
+            ["underscore$default" :as underscore]
+            [cljs.pprint :as pprint]
             [cljs.test :refer-macros [deftest is]]
             [cljsjs.js-yaml]
             [clojure.set :as set]
