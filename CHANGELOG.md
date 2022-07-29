@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.5.4
+
+* [#383](https://github.com/clojure-emacs/refactor-nrepl/issues/383): `prune-dependencies`: increase accuracy for `:cljs`.
+
 ## 3.5.3
 
 * [#382](https://github.com/clojure-emacs/refactor-nrepl/issues/382): `refactor-nrepl.artifacts`: increase resiliency.
