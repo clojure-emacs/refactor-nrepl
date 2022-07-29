@@ -10,7 +10,8 @@
             ["react" :as react]
             ["underscore$default" :as underscore]
             ["react-UNUSED" :as react-unused]
-            ["underscore-UNUSEd$default" :as underscore-unused])
+            ["underscore-UNUSED$default" :as underscore-unused]
+            ["@react-native-async-storage/async-storage" :as AsyncStorage])
   (:require-macros [cljs.test :refer [testing]]
                    [cljs.analyzer.macros :as am]
                    cljs.analyzer.api)
@@ -28,6 +29,12 @@
   Does not use the stuff marked as UNUSED, which therefore should be removed."
   []
   (react/foo underscore/bar))
+
+;; https://github.com/clojure-emacs/clj-refactor.el/issues/529
+(defn use-as
+  "Uses an `:as` name as an object in itself"
+  []
+  (.getItem AsyncStorage "foo"))
 
 (deftest tt
   (testing "whatever"

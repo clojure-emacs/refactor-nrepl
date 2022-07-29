@@ -43,14 +43,25 @@
   (some (set symbols-in-file) (map str (vals rename))))
 
 (defn- libspec-in-use?
-  [{:keys [refer] :as libspec} symbols-in-file current-ns]
-  (when (or (if (= refer :all)
-              (some (partial libspec-in-use-with-refer-all? libspec current-ns)
-                    symbols-in-file)
-              (some (partial libspec-in-use-without-refer-all? libspec)
-                    symbols-in-file))
-            (libspec-in-use-with-rename? libspec symbols-in-file))
-    libspec))
+  [{libspec-refer :refer
+    libspec-ns :ns
+    libspec-as :as
+    :as libspec} symbols-in-file current-ns]
+  (let [refer-all? (= libspec-refer :all)
+        libspec-as-str (str libspec-as)
+        symbols-in-file (cond-> symbols-in-file
+                          (and (string? libspec-ns)
+                               (not refer-all?)
+                               libspec-as
+                               (contains? (set symbols-in-file) libspec-as-str))
+                          (conj (str (symbol libspec-ns libspec-as-str))))]
+    (when (or (if refer-all?
+                (some (partial libspec-in-use-with-refer-all? libspec current-ns)
+                      symbols-in-file)
+                (some (partial libspec-in-use-without-refer-all? libspec)
+                      symbols-in-file))
+              (libspec-in-use-with-rename? libspec symbols-in-file))
+      libspec)))
 
 (defn- referred-symbol-in-use?
   [symbol-ns used-syms sym]

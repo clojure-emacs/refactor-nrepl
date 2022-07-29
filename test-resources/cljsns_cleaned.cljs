@@ -1,5 +1,6 @@
 (ns cljsns
-  (:require ["react" :as react]
+  (:require ["@react-native-async-storage/async-storage" :as AsyncStorage]
+            ["react" :as react]
             ["underscore$default" :as underscore]
             [cljs.pprint :as pprint]
             [cljs.test :refer-macros [deftest is]]
