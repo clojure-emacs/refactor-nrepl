@@ -21,6 +21,25 @@
     'unit.foo   true
     'foo.unit   true))
 
+(deftest readable-as-symbol?
+  (testing "is readable as symbol"
+    (are [input] (sut/readable-as-symbol? input)
+      "test"
+      "a.test"
+      "a-test"
+      "b.a-test"
+      "ok.5<-here"
+      "this:too!#$%&*"))
+
+  (testing "not readable as symbol"
+    (are [input] (not (sut/readable-as-symbol? input))
+      ":kw"
+      "15"
+      "5-bad"
+      "6:nope"
+      ";what"
+      "#yeah")))
+
 (deftest suggested-aliases
   (are [desc input expected] (testing input
                                (is (= expected
@@ -46,4 +65,7 @@
     "Removes redundant bits such as `clj-` and `.core`"
     'clj-a.b.c.core '{c     [clj-a.b.c.core]
                       b.c   [clj-a.b.c.core]
-                      a.b.c [clj-a.b.c.core]}))
+                      a.b.c [clj-a.b.c.core]}
+
+    "Removes fragments that start with a number (in this case: `9d`, `8b.c.9d`), since they aren't valid symbols"
+    'a.8b.c.9d '{c.9d [a.8b.c.9d]}))
