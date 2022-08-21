@@ -26,7 +26,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "3.5.4"]
+:plugins [[refactor-nrepl "3.5.5"]
           [cider/cider-nrepl "0.28.3"]]
 ```
 
@@ -365,7 +365,7 @@ When you want to release locally to the following:
 And here's how to deploy to Clojars:
 
 ```bash
-git tag -a v3.5.4 -m "3.5.4"
+git tag -a v3.5.5 -m "3.5.5"
 git push --tags
 ```
 

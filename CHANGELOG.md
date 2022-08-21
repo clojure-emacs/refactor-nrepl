@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.5.5
+
 * [#385](https://github.com/clojure-emacs/refactor-nrepl/pull/385): only `suggest-aliases` that are valid symbols. 
   * Fixes an edge case for cljr-refactor.el's `cljr-slash`.
 
