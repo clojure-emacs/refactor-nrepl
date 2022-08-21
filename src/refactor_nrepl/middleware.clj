@@ -191,6 +191,16 @@
            :namespace-aliases (serialize-response msg aliases)
            :status :done)))
 
+(def suggest-libspecs
+  (delay
+   (require-and-resolve 'refactor-nrepl.ns.suggest-libspecs/suggest-libspecs-response)))
+
+(defn- suggest-libspecs-reply [{:keys [transport] :as msg}]
+  (reply transport
+         msg
+         :suggestions (serialize-response msg (@suggest-libspecs msg))
+         :status :done))
+
 (def ^:private find-used-publics
   (delay (require-and-resolve 'refactor-nrepl.find.find-used-publics/find-used-publics)))
 
@@ -199,20 +209,21 @@
          :used-publics (serialize-response msg (@find-used-publics msg)) :status :done))
 
 (def refactor-nrepl-ops
-  {"artifact-list" artifact-list-reply
-   "artifact-versions" artifact-versions-reply
-   "clean-ns" clean-ns-reply
-   "extract-definition" extract-definition-reply
-   "find-symbol" find-symbol-reply
-   "find-used-locals" find-used-locals-reply
-   "hotload-dependency" hotload-dependency-reply
-   "namespace-aliases" namespace-aliases-reply
-   "rename-file-or-dir" rename-file-or-dir-reply
-   "resolve-missing" resolve-missing-reply
-   "stubs-for-interface" stubs-for-interface-reply
-   "find-used-publics" find-used-publics-reply
-   "version" version-reply
-   "warm-ast-cache" warm-ast-cache-reply
+  {"artifact-list"                artifact-list-reply
+   "artifact-versions"            artifact-versions-reply
+   "clean-ns"                     clean-ns-reply
+   "cljr-suggest-libspecs"        suggest-libspecs-reply
+   "extract-definition"           extract-definition-reply
+   "find-symbol"                  find-symbol-reply
+   "find-used-locals"             find-used-locals-reply
+   "hotload-dependency"           hotload-dependency-reply
+   "namespace-aliases"            namespace-aliases-reply
+   "rename-file-or-dir"           rename-file-or-dir-reply
+   "resolve-missing"              resolve-missing-reply
+   "stubs-for-interface"          stubs-for-interface-reply
+   "find-used-publics"            find-used-publics-reply
+   "version"                      version-reply
+   "warm-ast-cache"               warm-ast-cache-reply
    "warm-macro-occurrences-cache" warm-macro-occurrences-cache-reply})
 
 (defn wrap-refactor

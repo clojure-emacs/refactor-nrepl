@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-* [#385](https://github.com/clojure-emacs/refactor-nrepl/pull/385): Fix cljr-refactor.el's `cljr-slash` when namespace fragments start with a number.
+* [#385](https://github.com/clojure-emacs/refactor-nrepl/pull/385): only `suggest-aliases` that are valid symbols. 
+  * Fixes an edge case for cljr-refactor.el's `cljr-slash`.
 
 ## 3.5.4
 
