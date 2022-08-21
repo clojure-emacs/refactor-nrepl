@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#385](https://github.com/clojure-emacs/refactor-nrepl/pull/385): Fix cljr-refactor.el's `cljr-slash` when namespace fragments start with a number.
+
 ## 3.5.4
 
 * [#383](https://github.com/clojure-emacs/refactor-nrepl/issues/383): `prune-dependencies`: increase accuracy for `:cljs`.
