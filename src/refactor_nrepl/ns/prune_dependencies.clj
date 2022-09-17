@@ -6,7 +6,8 @@
    [refactor-nrepl.core :as core]
    [refactor-nrepl.find.symbols-in-file :as symbols-in-file]
    [refactor-nrepl.ns.libspec-allowlist :as libspec-allowlist]
-   [refactor-nrepl.util :as util]))
+   [refactor-nrepl.util :as util]
+   [refactor-nrepl.config :as config]))
 
 (defn- lookup-symbol-ns
   ([ns symbol]
@@ -60,7 +61,9 @@
                       symbols-in-file)
                 (some (partial libspec-in-use-without-refer-all? libspec)
                       symbols-in-file))
-              (libspec-in-use-with-rename? libspec symbols-in-file))
+              (libspec-in-use-with-rename? libspec symbols-in-file)
+              (and (not libspec-as)
+                   (:keep-unused-unaliased-requires config/*config*)))
       libspec)))
 
 (defn- referred-symbol-in-use?

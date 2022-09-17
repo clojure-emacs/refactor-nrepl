@@ -21,6 +21,9 @@
    ;; sort etc
    :prune-ns-form true
 
+   ;; When true `clean-ns` will not remove unused requires without aliases
+   :keep-unused-unaliased-requires false
+
    ;; Should `clean-ns` favor prefix forms in the ns macro?
    :prefix-rewriting false
 
