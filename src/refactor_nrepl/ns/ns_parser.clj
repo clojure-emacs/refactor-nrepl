@@ -119,7 +119,7 @@
        (parse-clj-or-cljs-ns path-or-file))
      :ns ns
      ;; Second element can also be a docstring or reference.
-     :meta (->> args (take 2) (some #(if (map? %) % nil)))
+     :meta (->> args (take 2) (some (fn [e] (when (map? e) e))))
      :source-dialect (core/file->dialect path-or-file))))
 
 (def ^:dynamic *read-ns-form-with-meta* core/read-ns-form-with-meta)

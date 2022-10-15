@@ -7,10 +7,11 @@
    (java.util.regex Pattern)))
 
 (defn- kondo-excludes [{:keys [ns meta]}]
-  (let [local-config (:clj-kondo/config meta)
+  (let [linter-path [:linters :unused-namespace :exclude]
+        local-config (:clj-kondo/config meta)
         local-config (if (and (seq? local-config) (= 'quote (first local-config)))
-                          (second local-config)
-                          local-config)
+                       (second local-config)
+                       local-config)
         kondo-file (io/file ".clj-kondo" "config.edn")
         config (when (.exists kondo-file)
                  (try
@@ -18,9 +19,9 @@
                    (catch Exception e
                      (when (System/getenv "CI")
                        (throw e)))))]
-    (concat (get-in config [:linters :unused-namespace :exclude])
-            (get-in config [:config-in-ns ns :linters :unused-namespace :exclude])
-            (get-in local-config [:linters :unused-namespace :exclude]))))
+    (reduce into [(get-in config linter-path)
+                  (get-in config (into [:config-in-ns ns] linter-path))
+                  (get-in local-config linter-path)])))
 
 (defn- libspec-allowlist* [current-ns]
   (->> (kondo-excludes current-ns)
