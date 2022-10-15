@@ -365,8 +365,12 @@
                     (StringReader.)
                     (PushbackReader.)
                     parse/read-ns-decl)
-        ns-meta (meta (second ns-form))]
-    {:top-level-meta ns-meta
+        ns-meta (meta (second ns-form))
+        attr-map (->> ns-form
+                      (drop 2)
+                      (take 2)
+                      (some (fn [e] (when (map? e) e))))]
+    {:top-level-meta (merge ns-meta attr-map)
      :gc-methods-meta (extract-gen-class-methods-meta ns-form)}))
 
 (defn read-ns-form-with-meta
