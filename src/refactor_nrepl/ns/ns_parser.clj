@@ -112,12 +112,15 @@
          (parse-clj-or-cljs-ns path :cljs)))
 
 (defn parse-ns [path-or-file]
-  (assoc
-   (if (core/cljc-file? (io/file path-or-file))
-     (parse-cljc-ns path-or-file)
-     (parse-clj-or-cljs-ns path-or-file))
-   :ns (second (core/read-ns-form-with-meta path-or-file))
-   :source-dialect (core/file->dialect path-or-file)))
+  (let [[_ ns & args] (core/read-ns-form-with-meta path-or-file)]
+    (assoc
+     (if (core/cljc-file? (io/file path-or-file))
+       (parse-cljc-ns path-or-file)
+       (parse-clj-or-cljs-ns path-or-file))
+     :ns ns
+     ;; Second element can also be a docstring or reference.
+     :meta (->> args (take 2) (some #(if (map? %) % nil)))
+     :source-dialect (core/file->dialect path-or-file))))
 
 (def ^:dynamic *read-ns-form-with-meta* core/read-ns-form-with-meta)
 
