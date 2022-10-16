@@ -77,3 +77,13 @@
   (testing "`:as-alias` directives are kept"
     (is (= '(ns as-alias (:require [foo :as-alias f]))
            (sut/read-ns-form-with-meta "test-resources/as_alias.clj")))))
+
+(deftest extract-ns-meta
+  (testing "namespace metadata and attr-map are extracted and merged together"
+    (is (= {:a   1
+            :b   2
+            :bar true
+            :foo true
+            :c   3
+            :d   4}
+           (:top-level-meta (sut/extract-ns-meta (slurp "test-resources/ns_with_meta_and_attr_map.clj")))))))
