@@ -20,7 +20,7 @@ merging their results"
             "more.unused.namespaces*"
             ;; from our .clj-konfo file, namespace local configuration
             "^\\Qreally.important\\E$"
-            "^\\Qanother.important*\\E$"
+            "^another.important*"
             ;; from attr-map of this ns
             "^\\Qsomething.important\\E$"
             "something.more.important*"]
