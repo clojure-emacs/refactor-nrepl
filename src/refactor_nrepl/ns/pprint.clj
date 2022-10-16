@@ -153,7 +153,7 @@
         forms (cond (and docstring? attrs?) (nthrest more 2)
                     (not (or docstring? attrs?)) more
                     :else (rest more))
-        ns-meta (:top-level-meta (meta ns-form))]
+        ns-meta (apply dissoc (:top-level-meta (meta ns-form)) (keys attrs?))]
     (-> (with-out-str
           (printf "(ns ")
           (when (seq ns-meta) (pprint-meta ns-meta :newlines true))
