@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#387](https://github.com/clojure-emacs/refactor-nrepl/issues/387): extend clj-kondo `:unused-namespace` integration. Now namespace local configuration is also taken into account.
+
 ## 3.5.5
 
 * [#385](https://github.com/clojure-emacs/refactor-nrepl/pull/385): only `suggest-aliases` that are valid symbols. 
