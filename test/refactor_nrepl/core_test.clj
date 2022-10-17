@@ -80,10 +80,10 @@
 
 (deftest extract-ns-meta
   (testing "namespace metadata and attr-map are extracted and merged together"
-    (is (= {:a   1
-            :b   2
-            :bar true
-            :foo true
-            :c   3
-            :d   4}
-           (:top-level-meta (sut/extract-ns-meta (slurp "test-resources/ns_with_meta_and_attr_map.clj")))))))
+    (let [ns-meta (sut/extract-ns-meta (slurp "test-resources/ns_with_meta_and_attr_map.clj"))]
+      (is (= {:a   1
+              :b   2
+              :bar true
+              :foo true}
+             (:top-level-meta ns-meta)))
+      (is (= {:c 3, :d 4} (:attr-map ns-meta))))))

@@ -370,8 +370,9 @@
                       (drop 2)
                       (take 2)
                       (some (fn [e] (when (map? e) e))))]
-    {:top-level-meta (merge ns-meta attr-map)
-     :gc-methods-meta (extract-gen-class-methods-meta ns-form)}))
+    {:top-level-meta ns-meta
+     :gc-methods-meta (extract-gen-class-methods-meta ns-form)
+     :attr-map attr-map}))
 
 (defn read-ns-form-with-meta
   "Read the ns form found at PATH.
