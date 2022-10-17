@@ -6,12 +6,15 @@
    (clojure.lang IFn)
    (java.util.regex Pattern)))
 
-(defn- kondo-excludes [{:keys [ns meta]}]
+(defn maybe-unwrap-quote [obj]
+  (if (and (seq? obj) (= 'quote (first obj)))
+    (second obj)
+    obj))
+
+(defn- kondo-excludes [{namespace-name :ns
+                        ns-meta        :meta}]
   (let [linter-path [:linters :unused-namespace :exclude]
-        local-config (:clj-kondo/config meta)
-        local-config (if (and (seq? local-config) (= 'quote (first local-config)))
-                       (second local-config)
-                       local-config)
+        local-config (-> ns-meta :clj-kondo/config maybe-unwrap-quote)
         kondo-file (io/file ".clj-kondo" "config.edn")
         config (when (.exists kondo-file)
                  (try
@@ -20,7 +23,7 @@
                      (when (System/getenv "CI")
                        (throw e)))))]
     (reduce into [(get-in config linter-path)
-                  (get-in config (into [:config-in-ns ns] linter-path))
+                  (get-in config (into [:config-in-ns namespace-name] linter-path))
                   (get-in local-config linter-path)])))
 
 (defn- libspec-allowlist* [current-ns]

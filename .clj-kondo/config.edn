@@ -48,5 +48,5 @@
 
  :config-in-ns {;; for integration tests:
                 refactor-nrepl.ns.libspec-allowlist-test
-                {:linters {:unused-namespace {:exclude [really.important
-                                                        "^another.important*"]}}}}}
+                {:linters {:unused-namespace {:exclude [from-config-in-ns
+                                                        "^from-config-in-ns.re*"]}}}}}
