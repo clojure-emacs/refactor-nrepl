@@ -124,11 +124,11 @@
 ;; pruned.
 (defn libspec-should-never-be-pruned?
   "Should `libspec` never be pruned away by the `clean-ns` op?"
-  [libspec]
+  [current-ns libspec]
   (let [ns-name (str (:ns libspec))]
     (boolean (some (fn [^String pattern]
                      (-> pattern re-pattern (re-find ns-name)))
-                   (libspec-allowlist/libspec-allowlist)))))
+                   (libspec-allowlist/libspec-allowlist current-ns)))))
 
 (defn imports->namespaces
   "Given a collection of `:import` clauses, returns the set of namespaces denoted by them, as symbols.
@@ -185,7 +185,7 @@
 
 (defn- prune-libspec [symbols-in-file current-ns imports-namespaces libspec]
   (cond
-    (libspec-should-never-be-pruned? libspec)
+    (libspec-should-never-be-pruned? current-ns libspec)
     libspec
 
     (imports-contain-libspec? imports-namespaces (:ns libspec))

@@ -44,4 +44,9 @@
            :unresolved-var {:exclude [org.httpkit.client/get]}
            ;; for integration tests:
            :unused-namespace {:exclude [sample.unused.namespace
-                                        "more.unused.namespaces*"]}}}
+                                        "more.unused.namespaces*"]}}
+
+ :config-in-ns {;; for integration tests:
+                refactor-nrepl.ns.libspec-allowlist-test
+                {:linters {:unused-namespace {:exclude [from-config-in-ns
+                                                        "^from-config-in-ns.re*"]}}}}}
