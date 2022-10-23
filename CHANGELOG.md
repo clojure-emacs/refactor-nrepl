@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.6.0
+
 * [#387](https://github.com/clojure-emacs/refactor-nrepl/issues/387): extend clj-kondo `:unused-namespace` integration. Now namespace local configuration is also taken into account.
   `:libspec-whitelist` can be augmented for particular namespace by:
   * Adding `:unused-namespace` linter configuration under `:config-in-ns` key in clj-kondo's config file. Like so: `:config-in-ns {example.target.ns {:linters {:unused-namespace {:exclude [ns.to.exclude]}}}}`
