@@ -2,17 +2,18 @@
   (:require
    [clojure.test :refer [are deftest is testing]]
    [clojure.walk :as walk]
+   [refactor-nrepl.ns.libspecs]
    [refactor-nrepl.ns.ns-parser :as ns-parser]
    [refactor-nrepl.ns.suggest-libspecs :as sut]))
 
 (defn add-file-meta [libspecs]
-  (let [{:keys [clj cljs] :as libspecs} (->> libspecs
-                                             (walk/postwalk (fn [x]
-                                                              (cond->> x
-                                                                (vector? x) (mapv (fn [s]
-                                                                                    (let [files (ns-parser/ns-sym->ns-filenames s)]
-                                                                                      (cond-> s
-                                                                                        files (vary-meta assoc :files files)))))))))
+  (let [libspecs (->> libspecs
+                      (walk/postwalk (fn [x]
+                                       (cond->> x
+                                         (vector? x) (mapv (fn [s]
+                                                             (let [files (ns-parser/ns-sym->ns-filenames s)]
+                                                               (cond-> s
+                                                                 files (vary-meta assoc :files files)))))))))
         c-paths (keys (:clj libspecs))
         s-paths (keys (:cljs libspecs))
         libspecs (reduce (fn [libspecs k]
