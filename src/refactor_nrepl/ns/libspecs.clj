@@ -15,7 +15,7 @@
   (->> libspecs
        (map (juxt :as :ns))
        (remove #(nil? (first %)))
-       distinct))
+       distinct)) ;; XXX distinct
 
 (defn- aliases-by-frequencies [libspecs]
   (let [grouped (->> libspecs
@@ -37,13 +37,27 @@
     (when (= ts (.lastModified f))
       v)))
 
+;; XXX I use `distinct` in misc places for libspecs. Meta should be merged, instead of dropping one branch
+(defn add-used-from-meta [libspecs ^File f]
+  (let [extension (case (re-find #"\.clj[cs]?$" (-> f .getAbsolutePath))
+                    ".clj" :clj
+                    ".cljs" :cljs
+                    ".cljc" :cljc
+                    nil)]
+    (if-not extension
+      libspecs
+      (into []
+            (map (fn [libspec]
+                   (update libspec :ns vary-meta assoc :used-from extension)))
+            libspecs))))
+
 (defn- put-cached-ns-info! [^File f lang]
   (binding [;; briefly memoize this function to avoid repeating its IO cost while `f` is being cached:
             ns-parser/*read-ns-form-with-meta* (memoize core/read-ns-form-with-meta)]
     (let [libspecs (ns-parser/get-libspecs-from-file lang f)
           [_ namespace-name] (ns-parser/*read-ns-form-with-meta* lang f)
           suggested-aliases (suggest-aliases/suggested-aliases namespace-name)
-          v {:libspecs libspecs
+          v {:libspecs (add-used-from-meta libspecs f)
              :namespace-name namespace-name
              :suggested-aliases suggested-aliases
              :test-like-ns-name? (suggest-aliases/test-like-ns-name? namespace-name)}]

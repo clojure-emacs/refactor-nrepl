@@ -14,6 +14,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.set :as set]
+   [clojure.string :as string]
    [refactor-nrepl.core :as core])
   (:import
    (java.io File)))
@@ -24,6 +25,39 @@
     (let [[ns & specs] libspec]
       (into {:ns ns} (->> specs (partition 2) (map vec))))
     {:ns (symbol libspec)}))
+
+(defn ns-decl->resource-path [ns-decl extension]
+  (-> ns-decl
+      second
+      str
+      munge
+      (string/replace "." "/")
+      (str extension)))
+
+(defn resource-path->filenames [resource-path]
+  (->> (-> (Thread/currentThread)
+           (.getContextClassLoader)
+           (.getResources resource-path))
+       (enumeration-seq)
+       (distinct)
+       (mapv str)))
+
+(defn ns-sym->ns-filenames [ns-sym]
+  (let [base (-> ns-sym
+                 str
+                 (string/replace "-" "_")
+                 (string/replace "." "/"))]
+    (not-empty (into []
+                     (comp (keep (fn [extension]
+                                   (-> base (str extension) resource-path->filenames not-empty)))
+                           cat)
+                     [".clj" ".cljs" ".cljc"]))))
+
+(defn add-file-meta [{ns-sym :ns :as m}]
+  {:pre [ns-sym]}
+  (let [files (ns-sym->ns-filenames ns-sym)]
+    (cond-> m
+      files (update :ns vary-meta assoc :files files))))
 
 (defn- expand-prefix-specs
   "Eliminate prefix lists."
@@ -57,17 +91,20 @@
      ~@body))
 
 (defn- extract-libspecs [ns-form]
-  (mapcat identity
+  (reduce into
+          []
           [(with-libspecs-from ns-form :require
-             (->> libspecs
-                  expand-prefix-specs
-                  (map libspec-vector->map)))
+             (into []
+                   (comp (map libspec-vector->map)
+                         (map add-file-meta))
+                   (expand-prefix-specs libspecs)))
 
            (with-libspecs-from ns-form :use
-             (->> libspecs
-                  expand-prefix-specs
-                  (map use-to-refer-all)
-                  (map libspec-vector->map)))]))
+             (into []
+                   (comp (map use-to-refer-all)
+                         (map libspec-vector->map)
+                         (map add-file-meta))
+                   (expand-prefix-specs libspecs)))]))
 
 (defn get-libspecs [ns-form]
   (some->> ns-form
@@ -139,12 +176,13 @@
   Dialect is either :clj or :cljs, the default is :clj."
   ([^File f]
    (get-libspecs-from-file :clj f))
+
   ([dialect ^File f]
    (some->> f
             .getAbsolutePath
             (*read-ns-form-with-meta* dialect)
             ((juxt get-libspecs get-required-macros))
-            (mapcat identity))))
+            (reduce into []))))
 
 (defn aliases
   "Return a map of namespace aliases given a seq of libspecs.
