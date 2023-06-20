@@ -84,7 +84,7 @@
 (defn valid-cljc-files?
   "Does the set of `filenames` denote a namespace that can be required from both Clojure and ClojureScript?"
   [filenames]
-  {:post [(boolean? %)]}
+  {:post [(instance? Boolean %)]}
   (= :cljc (files->platform filenames)))
 
 (defn build-reader-conditionals-from [ns-syms as-alias]
