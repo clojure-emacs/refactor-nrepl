@@ -4,4 +4,4 @@
    #?(:clj [clojure.test :as test] :cljs [cljs.test :as test])))
 
 (test/deftest foo
-  (test/is (pos? (inc (rand-int 1)))))
+  (test/is (pos? (inc (int (rand-int 1))))))
