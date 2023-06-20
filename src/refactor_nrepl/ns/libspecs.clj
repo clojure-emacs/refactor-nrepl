@@ -48,7 +48,9 @@
       libspecs
       (into []
             (map (fn [libspec]
-                   (update libspec :ns vary-meta assoc :used-from extension)))
+                   (cond-> libspec
+                     (not (-> libspec :ns string?))
+                     (update :ns vary-meta assoc :used-from extension))))
             libspecs))))
 
 (defn- put-cached-ns-info! [^File f lang]
