@@ -14,7 +14,8 @@
 (def parse-preferred-aliases
   (memoize (fn parse-preferred-aliases* [preferred-aliases]
              (let [m (volatile! {})]
-               (doseq [[prefix ns-name _only-keyword only] (mapv (partial mapv symbol)
+               (doseq [[prefix ns-name _only-keyword only] (mapv (partial mapv (comp symbol
+                                                                                     name)) ;; `name` for Clojure <= 1.9 compat
                                                                  preferred-aliases)
                        :let [files (ns-parser/ns-sym->ns-filenames ns-name)
                              ns-name (cond-> ns-name
