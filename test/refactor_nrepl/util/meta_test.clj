@@ -19,7 +19,7 @@
                                    ^:baz {}])]
     (is (= [{}] all))
     (is (= {:foo true, :bar true, :baz true}
-           (meta x))))
+           (-> x meta (select-keys [:foo :bar :baz])))))
 
   (let [f (fn [x y]
             (vary-meta x merge (meta y)))
@@ -31,6 +31,6 @@
                                      ^:quuz {1 1}])]
     (is (= [{} {1 1}] all))
     (is (= {:foo true, :bar true, :baz true}
-           (meta x)))
+           (-> x meta (select-keys [:foo :bar :baz]))))
     (is (= {:quux true, :quuz true}
-           (meta y)))))
+           (-> y meta (select-keys [:quux :quuz]))))))

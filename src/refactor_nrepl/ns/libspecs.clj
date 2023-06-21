@@ -24,11 +24,6 @@
       (seq used-from) (vary-meta update :used-from vec-distinct-into used-from)
       (seq files)     (vary-meta update :files vec-distinct-into files))))
 
-(comment
-  (binding [*print-meta* true]
-    (clojure.pprint/pprint (merge-libspecs-meta ^{:files [1] :used-from [1]} {}
-                                                ^{:files [2] :used-from [2]} {}))))
-
 (defn- aliases [libspecs]
   (meta/distinct merge-libspecs-meta
                  (into []

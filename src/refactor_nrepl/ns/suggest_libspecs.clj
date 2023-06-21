@@ -161,7 +161,46 @@
        (reduce into [])
        (meta/distinct libspecs/merge-libspecs-meta)))
 
-;; XXX split into nicer fns
+(defn maybe-add-reader-conditionals-from-preferences
+  [b-cljc? aliases as-alias parsed-preferred-aliases existing from-preferred]
+  ;; IF b-cljc? AND `existing` only exists in one branch (:clj, :cljs), AND from-preferred applies to the other branch,
+  ;; include both.
+  (let [reader-conditionals
+        (when b-cljc?
+          (let [branches-left (->> [:clj :cljs]
+                                   (filter (fn [k]
+                                             (some (set (get-in aliases [k as-alias]))
+                                                   existing))))
+                branches-right (->> [:clj :cljs]
+                                    (filter (fn [k]
+                                              (some (set (get-in parsed-preferred-aliases [k as-alias]))
+                                                    from-preferred))))
+                other-branch? (and (-> branches-left count #{1})
+                                   (seq branches-right)
+                                   (some (complement (set branches-left))
+                                         branches-right))
+                left-branch (first branches-left)
+                other-branch (when other-branch?
+                               (case left-branch
+                                 :clj :cljs
+                                 :cljs :clj))]
+            (when other-branch
+              (into []
+                    (comp (filter (fn [libspec]
+                                    ((set (get-in parsed-preferred-aliases [other-branch as-alias]))
+                                     libspec)))
+                          (map (fn [right-libspec]
+                                 (keep (fn [left-libspec]
+                                         (when-not (= left-libspec right-libspec)
+                                           (build-reader-conditional left-branch left-libspec
+                                                                     other-branch right-libspec
+                                                                     as-alias)))
+                                       existing)))
+                          cat)
+                    from-preferred))))]
+    (cond-> existing ;; The baseline approach is to disregard `from-preferred` (i.e. any data from `map-from-preferred`) on conflict.
+      reader-conditionals (into reader-conditionals))))
+
 (defn suggest-libspecs-response
   "Implements https://github.com/clojure-emacs/refactor-nrepl/issues/384."
   [{:keys [lib-prefix ;; "set", representing that the user typed `set/`
@@ -220,43 +259,7 @@
                                 (apply merge-with vec-distinct-into))
         merged (apply merge-with vec-distinct-into maps)
         final (merge-with (fn [existing from-preferred]
-                            ;; IF b-cljc? AND `existing` only exists in one branch (:clj, :cljs), AND from-preferred applies to the other branch,
-                            ;; include both.
-                            (let [reader-conditionals
-                                  (when b-cljc?
-                                    (let [branches-left (->> [:clj :cljs]
-                                                             (filter (fn [k]
-                                                                       (some (set (get-in aliases [k as-alias]))
-                                                                             existing))))
-                                          branches-right (->> [:clj :cljs]
-                                                              (filter (fn [k]
-                                                                        (some (set (get-in parsed-preferred-aliases [k as-alias]))
-                                                                              from-preferred))))
-                                          other-branch? (and (-> branches-left count #{1})
-                                                             (seq branches-right)
-                                                             (some (complement (set branches-left))
-                                                                   branches-right))
-                                          left-branch (first branches-left)
-                                          other-branch (when other-branch?
-                                                         (case left-branch
-                                                           :clj :cljs
-                                                           :cljs :clj))]
-                                      (when other-branch
-                                        (into []
-                                              (comp (filter (fn [libspec]
-                                                              ((set (get-in parsed-preferred-aliases [other-branch as-alias]))
-                                                               libspec)))
-                                                    (map (fn [right-libspec]
-                                                           (keep (fn [left-libspec]
-                                                                   (when-not (= left-libspec right-libspec)
-                                                                     (build-reader-conditional left-branch left-libspec
-                                                                                               other-branch right-libspec
-                                                                                               as-alias)))
-                                                                 existing)))
-                                                    cat)
-                                              from-preferred))))]
-                              (cond-> existing ;; The baseline approach is to disregard `from-preferred` (i.e. any data from `map-from-preferred`) on conflict.
-                                reader-conditionals (into reader-conditionals))))
+                            (maybe-add-reader-conditionals-from-preferences b-cljc? aliases as-alias parsed-preferred-aliases existing from-preferred))
                           merged
                           map-from-preferred)
         candidates (get final as-alias)
@@ -273,8 +276,7 @@
                                                          (contains? #{:clj :cljs}
                                                                     (some-> x meta :files files->platform)))))
                                           candidates))
-                         candidates))
-        _candidates-count (count candidates)]
+                         candidates))]
     (into []
           (keep (fn [candidate]
                   (cond
@@ -283,7 +285,6 @@
 
                     (and b-cljc?
                          (false? (some-> candidate meta :files valid-cljc-files?)))
-                    #_(when (= 1 _candidates-count)) ;; only suggest partial reader conditionals if there's nothing better to do (NOTE: discarded condition. No tests fail without it)
                     (build-partial-reader-conditional candidate as-alias i-cljc?)
 
                     :else ;; it's data, format it:
