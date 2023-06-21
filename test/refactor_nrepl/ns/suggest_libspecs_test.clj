@@ -19,14 +19,14 @@
         libspecs (reduce (fn [libspecs k]
                            (update-in libspecs [:clj k] (fn [candidates]
                                                           (mapv (fn [candidate]
-                                                                  (vary-meta candidate assoc :used-from :clj))
+                                                                  (vary-meta candidate assoc :used-from [:clj]))
                                                                 candidates))))
                          libspecs
                          c-paths)]
     (reduce (fn [libspecs k]
               (update-in libspecs [:cljs k] (fn [candidates]
                                               (mapv (fn [candidate]
-                                                      (vary-meta candidate assoc :used-from :cljs))
+                                                      (vary-meta candidate assoc :used-from [:cljs]))
                                                     candidates))))
             libspecs
             s-paths)))

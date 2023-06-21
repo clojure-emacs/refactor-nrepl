@@ -4,7 +4,8 @@
   (:require
    [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.libspecs :as libspecs]
-   [refactor-nrepl.ns.ns-parser :as ns-parser]))
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
+   [refactor-nrepl.util.meta :as meta]))
 
 (defn vconj [coll x]
   (if coll
@@ -18,14 +19,19 @@
                                                                                      name)) ;; `name` for Clojure <= 1.9 compat
                                                                  preferred-aliases)
                        :let [files (ns-parser/ns-sym->ns-filenames ns-name)
-                             ns-name (cond-> ns-name
-                                       files (vary-meta assoc :files files))
                              only (or only [:clj :cljs])
                              only (if (coll? only)
                                     (vec only)
                                     (vector only))
-                             clj? (some #{"clj" :clj 'clj} only)
-                             cljs? (some #{"cljs" :cljs 'cljs} only)]]
+                             clj?  (some #{"clj" :clj 'clj} only)
+                             cljs? (some #{"cljs" :cljs 'cljs} only)
+                             used-from (cond
+                                         (and clj? cljs?) [:clj :cljs]
+                                         clj?             [:clj]
+                                         cljs?            [:cljs])
+                             ns-name (cond-> ns-name
+                                       files     (vary-meta assoc :files files)
+                                       used-from (vary-meta assoc :used-from used-from))]]
                  (when clj?
                    (vswap! m update-in [:clj prefix] vconj ns-name))
                  (when cljs?
@@ -113,7 +119,7 @@
            (for [i cljc
                  j cljc
                  :when (not= i j)
-                 :let [[left right] (if (-> i meta :used-from #{:clj})
+                 :let [[left right] (if (->> i meta :used-from (some #{:clj}))
                                       [i j]
                                       [j i])]]
              (build-reader-conditional :clj left
@@ -137,21 +143,25 @@
               ns-sym
               as-alias))))
 
-(defn vec-distinct-into [x y]
-  (vec (distinct (into x y))))
-
 (defn add-cljc-key [{:keys [clj cljs] :as m} as-alias]
   (let [left (get clj as-alias)
         right (get cljs as-alias)
-        v (not-empty (into []
-                           (comp cat
-                                 (filter (fn [candidate]
-                                           (some-> candidate meta :files valid-cljc-files?)))
-                                 (distinct))
-                           [left right]))]
+        v (some->> [left right]
+                   (into []
+                         (comp cat
+                               (filter (fn [candidate]
+                                         (some-> candidate meta :files valid-cljc-files?)))))
+                   (not-empty)
+                   (meta/distinct libspecs/merge-libspecs-meta))]
     (cond-> m
       v (assoc-in [:cljc as-alias] v))))
 
+(defn vec-distinct-into [x y]
+  (->> [x y]
+       (reduce into [])
+       (meta/distinct libspecs/merge-libspecs-meta)))
+
+;; XXX split into nicer fns
 (defn suggest-libspecs-response
   "Implements https://github.com/clojure-emacs/refactor-nrepl/issues/384."
   [{:keys [lib-prefix ;; "set", representing that the user typed `set/`
@@ -186,7 +196,7 @@
                                       (core/source-dirs-on-classpath)
                                       suggest)
         aliases (cond-> aliases
-                  b-cljc? (add-cljc-key as-alias)) ;; use get-in [:clj as-alias], filter cljc. same for cljs, use vec-distinct-into
+                  b-cljc? (add-cljc-key as-alias))
         ks (into []
                  (comp (filter identity)
                        (distinct))
