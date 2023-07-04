@@ -137,14 +137,10 @@
         other-platform (if (= :clj platform)
                          :cljs
                          :clj)]
-    (if i-cljc?
-      (build-reader-conditional platform ns-sym
-                                other-platform ""
-                                as-alias)
-      (format "#?(%s [%s :as %s])"
-              platform
-              ns-sym
-              as-alias))))
+    (format "#?(%s [%s :as %s])"
+            platform
+            ns-sym
+            as-alias)))
 
 (defn add-cljc-key [{:keys [clj cljs] :as m} as-alias]
   (let [left (get clj as-alias)

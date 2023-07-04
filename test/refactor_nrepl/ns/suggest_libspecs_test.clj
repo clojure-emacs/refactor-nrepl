@@ -96,8 +96,10 @@
     "io"         "cljc"      "clj"     [["io" "clojure.java.io" :only :clj]] '{:clj  {io [test-clj-ns]}}      ["#?(:clj [test-clj-ns :as io])"]
     ;; The difference here is that test-cljs-ns is backed by a .cljs extension and therefore is not a valid .cljc or :clj suggestion
     "io"         "cljc"      "cljc"    [["io" "clojure.java.io" :only :clj]] '{:cljs {io [test-cljs-ns]}}     ["#?(:clj [clojure.java.io :as io]\n      :cljs [test-cljs-ns :as io])"]
-    ;; Returns an empty form for the :clj branch when there's no valid suggestion for it:
-    "io"         "cljc"      "cljc"    []                                    '{:cljs {io [test-cljs-ns]}}     ["#?(:clj [ :as io]\n      :cljs [test-cljs-ns :as io])"]
+    ;; Returns no form for the :clj branch when there's no valid suggestion for it.
+    ;; (Note: that can emit invalid code, but there are no other good alternatives. Particularly considering that cljs workflows often recompile on save,
+    ;;  i.e. we cannot emit `:clj [ :as io]` and let the user complete the form)
+    "io"         "cljc"      "cljc"    []                                    '{:cljs {io [test-cljs-ns]}}     ["#?(:cljs [test-cljs-ns :as io])"]
     "io"         "cljc"      "cljc"    []                                    '{:cljs {io [test-cljc-ns]}}     ["[test-cljc-ns :as io]"]
     ;; https://github.com/clojure-emacs/refactor-nrepl/issues/384#issuecomment-1221622306 extra cases
     ;; discards user preference, and offers both cljc choices individually and as a reader conditional (only one reader conditional! switching its branches makes less sense)
@@ -108,8 +110,8 @@
     "io"         "cljc"      "cljc"    []                                    '{:clj  {io [test-clj-ns]}
                                                                                :cljs {io [test-cljs-ns]}}     ["#?(:clj [test-clj-ns :as io]\n      :cljs [test-cljs-ns :as io])"]
     "io"         "cljc"      "cljc"    []                                    '{:cljs {io [test-cljs-ns
-                                                                                          test-cljs-ns-2]}}   ["#?(:clj [ :as io]\n      :cljs [test-cljs-ns :as io])"
-                                                                                                               "#?(:clj [ :as io]\n      :cljs [test-cljs-ns-2 :as io])"]
+                                                                                          test-cljs-ns-2]}}   ["#?(:cljs [test-cljs-ns :as io])"
+                                                                                                               "#?(:cljs [test-cljs-ns-2 :as io])"]
     "io"         "cljc"      "cljc"    []                                    '{:clj  {io [test-cljc-ns]}
                                                                                :cljs {io [test-cljs-ns]}}     ["[test-cljc-ns :as io]"
                                                                                                                "#?(:clj [test-cljc-ns :as io]\n      :cljs [test-cljs-ns :as io])"]
