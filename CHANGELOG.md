@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 3.7.0
+
+* Implement new middleware op: `suggest-libspecs`
+  * Supports a beta clj-refactor.el feature.
+
 ## 3.6.0
 
 * [#387](https://github.com/clojure-emacs/refactor-nrepl/issues/387): extend clj-kondo `:unused-namespace` integration. Now namespace local configuration is also taken into account.
