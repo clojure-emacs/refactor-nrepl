@@ -49,11 +49,23 @@
                                                                         (constantly (add-file-meta project-libspecs)))})))
          true)
     #_lib-prefix #_buffer-lc #_input-lc #_preferred-aliases                  #_project-libspecs              #_expected
+
+    ;; Some basic examples. I chose 'donkey' as a unique alias. Note that `project-libspecs` is {}, so a real project analysis is performed
+    ;; (Which is why I chose a unique ns segment)
+    "donkey"     "clj"       "clj"      []                                   {}                              ["[donkey.jvm :as donkey]"]
+    "donkey"     "cljs"      "cljs"     []                                   {}                              ["[donkeyscript :as donkey]"]
+    "donkey"     "cljc"      "clj"      []                                   {}                              ["#?(:clj [donkey.jvm :as donkey])"]
+    "donkey"     "cljc"      "cljs"     []                                   {}                              ["#?(:cljs [donkeyscript :as donkey])"]
+    "donkey"     "cljc"      "cljc"     []                                   {}                              ["#?(:clj [donkey.jvm :as donkey]\n      :cljs [donkeyscript :as donkey])"]
+
+    ;; A set of examples, similar to the previous set. However the result will always be `clojure.test`, because cljs.test is now less recommended/usual,
+    ;; so we shouldn't suggest reader conditionals when something simpler will do:
     "test"       "clj"       "clj"      []                                   {}                              ["[clojure.test :as test]"]
-    "test"       "cljs"      "cljs"     []                                   {}                              ["[cljs.test :as test]"]
-    "test"       "cljc"      "clj"      []                                   {}                              ["#?(:clj [clojure.test :as test])"]
-    "test"       "cljc"      "cljs"     []                                   {}                              ["#?(:cljs [cljs.test :as test])"]
-    "test"       "cljc"      "cljc"     []                                   {}                              ["#?(:clj [clojure.test :as test]\n      :cljs [cljs.test :as test])"]
+    "test"       "cljs"      "cljs"     []                                   {}                              ["[clojure.test :as test]"]
+    "test"       "cljc"      "clj"      []                                   {}                              ["[clojure.test :as test]"]
+    "test"       "cljc"      "cljs"     []                                   {}                              ["[clojure.test :as test]"]
+    "test"       "cljc"      "cljc"     []                                   {}                              ["[clojure.test :as test]"]
+
     ;; Example story 1:
     "set"        "cljc"      "cljc"     [["set" "clojure.set"]]              {}                              ["[clojure.set :as set]"]
     ;; Story 2 - preferred-aliases are disregarded if the libspecs found in the project differ:

@@ -2,6 +2,8 @@
   "Beta middleware, meant only for internal development. Subject to change."
   (:refer-clojure :exclude [alias])
   (:require
+   [clojure.string :as string]
+   [clojure.walk :as walk]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.libspecs :as libspecs]
    [refactor-nrepl.ns.ns-parser :as ns-parser]
@@ -38,11 +40,6 @@
                    (vswap! m update-in [:cljs prefix] vconj ns-name)))
                @m))))
 
-(comment
-  (parse-preferred-aliases [["set" "clojure.set"]
-                            ["cljs" "cljs" :only "cljs"]
-                            ["clj" "clj" :only "clj"]]))
-
 (defn build-reader-conditional [left-branch left-libspec _other-branch right-libspec as-alias]
   (let [l-clj? (= left-branch :clj)
         clj-clause (if l-clj?
@@ -69,8 +66,14 @@
   (let [extensions (filenames->extensions filenames)
         cljc? (some #{".cljc"} extensions)
         clj? (some #{".clj"} extensions)
-        cljs? (some #{".cljs"} extensions)]
+        cljs? (some #{".cljs"} extensions)
+        jvm-clojure-test? (some (fn [s]
+                                  (string/ends-with? s "clojure/test.clj"))
+                                filenames)]
     (cond
+      jvm-clojure-test? ;; 'clojure.test can always be used in any platform
+      :cljc
+
       (and cljc?
            (not cljs?)) ;; a ns backed by .cljc and .cljs files most likely is only a cljs-oriented ns in practice, since the .cljc file only intends to define macros (this is the case for clojurescript's clojure.test)
       :cljc
@@ -201,6 +204,18 @@
     (cond-> existing ;; The baseline approach is to disregard `from-preferred` (i.e. any data from `map-from-preferred`) on conflict.
       reader-conditionals (into reader-conditionals))))
 
+(defn alias-clojure-test [aliases]
+  (letfn [(sugar-cljs-test [coll]
+            (->> coll
+                 (walk/postwalk (fn [x]
+                                  (if (= x 'cljs.test)
+                                    (with-meta 'clojure.test
+                                      (meta x))
+                                    x)))))]
+    (cond-> aliases
+      (contains? aliases :cljc) (update :cljc sugar-cljs-test)
+      true                      (update :cljs sugar-cljs-test))))
+
 (defn suggest-libspecs-response
   "Implements https://github.com/clojure-emacs/refactor-nrepl/issues/384."
   [{:keys [lib-prefix ;; "set", representing that the user typed `set/`
@@ -235,7 +250,8 @@
                                       (core/source-dirs-on-classpath)
                                       suggest)
         aliases (cond-> aliases
-                  b-cljc? (add-cljc-key as-alias))
+                  b-cljc? (add-cljc-key as-alias)
+                  true    alias-clojure-test)
         ks (into []
                  (comp (filter identity)
                        (distinct))
@@ -292,19 +308,3 @@
                             candidate
                             as-alias))))
           candidates)))
-
-(comment
-  (suggest-libspecs-response {:lib-prefix "set"
-                              :buffer-language-context "clj"
-                              :input-language-context "clj"
-                              :preferred-aliases []})
-
-  (suggest-libspecs-response {:lib-prefix "test"
-                              :buffer-language-context "cljc"
-                              :input-language-context "clj"
-                              :preferred-aliases []})
-
-  (suggest-libspecs-response {:lib-prefix "test"
-                              :buffer-language-context "cljc"
-                              :input-language-context "cljs"
-                              :preferred-aliases []}))
