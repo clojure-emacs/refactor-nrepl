@@ -30,8 +30,8 @@
      (f)
      (catch Exception e
        ;; give Maven a break:
-       (Thread/sleep 12000)
-       (if (< attempts 4)
+       (Thread/sleep 18000)
+       (if (< attempts 7)
          (retry-flaky f (inc attempts))
          (throw e))))))
 

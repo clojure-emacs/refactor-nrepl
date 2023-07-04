@@ -1,0 +1,1 @@
+(ns test-cljs-ns)

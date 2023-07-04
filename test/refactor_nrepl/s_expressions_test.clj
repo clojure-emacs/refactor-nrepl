@@ -1,16 +1,19 @@
 (ns refactor-nrepl.s-expressions-test
   (:require
-   [clojure.test :as t]
+   [clojure.test :as test]
    [refactor-nrepl.s-expressions :as sut]))
 
 (def file-content (slurp "testproject/src/com/example/sexp_test.clj"))
+
 (def weird-file-content ";; some weird file
   ;; not even clojure
   ;; perhaps? no parens!")
+
 (def file-content-with-set ";; with set
   #{foo bar baz}
   ;; some other stuff
   (foobar baz)")
+
 (def file-content-with-uneval "#_ foo
 (foobar baz)")
 
@@ -21,25 +24,25 @@
 (def println-location [5 8])
 (def when-not-location [10 9])
 
-(t/deftest get-enclosing-sexp-test
-  (t/is (= "[some :bindings
+(test/deftest get-enclosing-sexp-test
+  (test/is (= "[some :bindings
         more :bindings]"
-           (apply sut/get-enclosing-sexp file-content binding-location)))
-  (t/is (=  "(println #{some}
+              (apply sut/get-enclosing-sexp file-content binding-location)))
+  (test/is (=  "(println #{some}
              ;; unhelpful comment )
              (prn {\"foo\" {:qux [#{more}]}}))"
-            (apply sut/get-enclosing-sexp file-content println-location)))
-  (t/is (=  "#{more}" (apply sut/get-enclosing-sexp file-content set-location)))
-  (t/is (=  "{:qux [#{more}]}" (apply sut/get-enclosing-sexp file-content map-location)))
-  (t/is (=  nil (apply sut/get-enclosing-sexp weird-file-content weird-location)))
-  (t/is (= "(when-not (= true true)
+               (apply sut/get-enclosing-sexp file-content println-location)))
+  (test/is (=  "#{more}" (apply sut/get-enclosing-sexp file-content set-location)))
+  (test/is (=  "{:qux [#{more}]}" (apply sut/get-enclosing-sexp file-content map-location)))
+  (test/is (=  nil (apply sut/get-enclosing-sexp weird-file-content weird-location)))
+  (test/is (= "(when-not (= true true)
     (= 5 (* 2 2)))"
-           (apply sut/get-enclosing-sexp file-content when-not-location)))
-  (t/is (= nil (sut/get-first-sexp weird-file-content)))
-  (t/is (=  "#{foo bar baz}" (sut/get-first-sexp file-content-with-set))))
+              (apply sut/get-enclosing-sexp file-content when-not-location)))
+  (test/is (= nil (sut/get-first-sexp weird-file-content)))
+  (test/is (=  "#{foo bar baz}" (sut/get-first-sexp file-content-with-set))))
 
-(t/deftest get-first-sexp
-  (t/is (= "(ns com.example.sexp-test)"
-           (sut/get-first-sexp file-content)))
-  (t/is (= "(foobar baz)"
-           (sut/get-first-sexp file-content-with-uneval))))
+(test/deftest get-first-sexp
+  (test/is (= "(ns com.example.sexp-test)"
+              (sut/get-first-sexp file-content)))
+  (test/is (= "(foobar baz)"
+              (sut/get-first-sexp file-content-with-uneval))))

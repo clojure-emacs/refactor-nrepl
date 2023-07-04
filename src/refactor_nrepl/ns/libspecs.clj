@@ -3,7 +3,8 @@
    [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.ns-parser :as ns-parser]
    [refactor-nrepl.ns.suggest-aliases :as suggest-aliases]
-   [refactor-nrepl.util :as util])
+   [refactor-nrepl.util :as util]
+   [refactor-nrepl.util.meta :as meta])
   (:import
    (java.io File)))
 
@@ -11,15 +12,29 @@
 ;; where lang is either :clj or :cljs
 (def ^:private cache (atom {}))
 
+(defn vec-distinct-into [x y]
+  (into []
+        (comp cat
+              (distinct))
+        [x y]))
+
+(defn merge-libspecs-meta [a b]
+  (let [{:keys [used-from files]} (meta b)]
+    (cond-> a
+      (seq used-from) (vary-meta update :used-from vec-distinct-into used-from)
+      (seq files)     (vary-meta update :files vec-distinct-into files))))
+
 (defn- aliases [libspecs]
-  (->> libspecs
-       (map (juxt :as :ns))
-       (remove #(nil? (first %)))
-       distinct))
+  (meta/distinct merge-libspecs-meta
+                 (into []
+                       (comp (map (juxt :as :ns))
+                             (filter first))
+                       libspecs)))
 
 (defn- aliases-by-frequencies [libspecs]
-  (let [grouped (->> libspecs
-                     (mapcat aliases)  ; => [[str clojure.string] ...]
+  (let [grouped (->> (into []
+                           (mapcat aliases) ; => [[str clojure.string] ...]
+                           libspecs)
                      (sort-by (comp str second))
                      (group-by first) ; => {str [[str clojure.string] [str clojure.string]] ...}
                      )]
@@ -37,13 +52,28 @@
     (when (= ts (.lastModified f))
       v)))
 
+(defn add-used-from-meta [libspecs ^File f]
+  (let [extension (case (re-find #"\.clj[cs]?$" (-> f .getAbsolutePath))
+                    ".clj"  [:clj] ;; these are expressed as vectors, so that `#'merge-libspecs-meta` can operate upon them
+                    ".cljs" [:cljs]
+                    ".cljc" [:cljc]
+                    nil)]
+    (if-not extension
+      libspecs
+      (into []
+            (map (fn [libspec]
+                   (cond-> libspec
+                     (not (-> libspec :ns string?))
+                     (update :ns vary-meta assoc :used-from extension))))
+            libspecs))))
+
 (defn- put-cached-ns-info! [^File f lang]
   (binding [;; briefly memoize this function to avoid repeating its IO cost while `f` is being cached:
             ns-parser/*read-ns-form-with-meta* (memoize core/read-ns-form-with-meta)]
     (let [libspecs (ns-parser/get-libspecs-from-file lang f)
           [_ namespace-name] (ns-parser/*read-ns-form-with-meta* lang f)
           suggested-aliases (suggest-aliases/suggested-aliases namespace-name)
-          v {:libspecs libspecs
+          v {:libspecs (add-used-from-meta libspecs f)
              :namespace-name namespace-name
              :suggested-aliases suggested-aliases
              :test-like-ns-name? (suggest-aliases/test-like-ns-name? namespace-name)}]
