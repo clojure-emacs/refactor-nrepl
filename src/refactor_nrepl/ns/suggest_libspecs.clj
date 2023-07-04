@@ -129,14 +129,11 @@
                                        :cljs right
                                        as-alias))])))
 
-(defn build-partial-reader-conditional [ns-sym as-alias i-cljc?]
+(defn build-partial-reader-conditional [ns-sym as-alias]
   (let [files (-> ns-sym meta :files (doto (assert "No :files found")))
         platform (if (some #{".clj"} (filenames->extensions files))
                    :clj
-                   :cljs)
-        other-platform (if (= :clj platform)
-                         :cljs
-                         :clj)]
+                   :cljs)]
     (format "#?(%s [%s :as %s])"
             platform
             ns-sym
@@ -297,7 +294,7 @@
 
                     (and b-cljc?
                          (false? (some-> candidate meta :files valid-cljc-files?)))
-                    (build-partial-reader-conditional candidate as-alias i-cljc?)
+                    (build-partial-reader-conditional candidate as-alias)
 
                     :else ;; it's data, format it:
                     (format "[%s :as %s]"
