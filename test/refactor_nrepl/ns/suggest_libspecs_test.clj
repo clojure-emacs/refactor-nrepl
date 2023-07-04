@@ -96,6 +96,9 @@
     "io"         "cljc"      "cljc"    []                                    '{:clj  {io [test-cljc-ns]}
                                                                                :cljs {io [test-cljs-ns]}}     ["[test-cljc-ns :as io]"
                                                                                                                "#?(:clj [test-cljc-ns :as io]\n      :cljs [test-cljs-ns :as io])"]
+
+    "io"         "cljc"      "cljs"    []                                    '{:cljs {io [test-cljs-ns]}}     ["#?(:cljs [test-cljs-ns :as io])"]
+
     "io"         "cljc"      "cljc"    []                                    '{:clj  {io [test-cljc-ns]}
                                                                                :cljs {io [test-cljc-ns-2]}}   ["[test-cljc-ns :as io]"
                                                                                                                "[test-cljc-ns-2 :as io]"
