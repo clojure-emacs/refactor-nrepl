@@ -41,6 +41,11 @@
                                                 :input-language-context input-lc
                                                 :preferred-aliases preferred-aliases
                                                 :namespace-aliases-fn (when (seq project-libspecs)
+                                                                       ;; if provided, replace `refactor-nrepl.ns.libspecs/namespace-aliases`
+                                                                       ;; with a mocked value, for test simplicity.
+                                                                       ;; NOTE: an alternative approach would be to always use the original fn,
+                                                                       ;; but perform a 'nested select keys' on it.
+                                                                       ;; That way, we make sure the values are realistic.
                                                                         (constantly (add-file-meta project-libspecs)))})))
          true)
     #_lib-prefix #_buffer-lc #_input-lc #_preferred-aliases                  #_project-libspecs              #_expected
