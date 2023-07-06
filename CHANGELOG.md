@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.7.1
+
+* Fix an oversight in `suggest-libspecs`.
+
 ## 3.7.0
 
 * Implement new middleware op: `suggest-libspecs`

@@ -39,22 +39,34 @@
    :err (with-out-str (print-cause-trace ex))
    :status #{status :done}})
 
+;; TODO - simplify this. I don't fully get why there are disparate keys depending on the exception class.
+;; Ideally, users would always get a stacktrace (however noisy).
 (defmacro ^:private with-errors-being-passed-on [transport msg & body]
   `(try
      ~@body
      (catch clojure.lang.ExceptionInfo e#
+       (when (System/getProperty "refactor-nrepl.internal.pst")
+         (-> e# .printStackTrace))
        (transport/send
         ~transport (response-for ~msg :error (.toString e#) :status :done)))
      (catch IllegalArgumentException e#
+       (when (System/getProperty "refactor-nrepl.internal.pst")
+         (-> e# .printStackTrace))
        (transport/send
         ~transport (response-for ~msg :error (.getMessage e#) :status :done)))
      (catch IllegalStateException e#
+       (when (System/getProperty "refactor-nrepl.internal.pst")
+         (-> e# .printStackTrace))
        (transport/send
         ~transport (response-for ~msg :error (.getMessage e#) :status :done)))
      (catch Exception e#
+       (when (System/getProperty "refactor-nrepl.internal.pst")
+         (-> e# .printStackTrace))
        (transport/send
         ~transport (response-for ~msg (err-info e# :refactor-nrepl-error))))
      (catch Error e#
+       (when (System/getProperty "refactor-nrepl.internal.pst")
+         (-> e# .printStackTrace))
        (transport/send
         ~transport (response-for ~msg (err-info e# :refactor-nrepl-error))))))
 
