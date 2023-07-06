@@ -39,7 +39,7 @@
                 (sut/suggest-libspecs-response {:lib-prefix lib-prefix
                                                 :buffer-language-context buffer-lc
                                                 :input-language-context input-lc
-                                                :preferred-aliases preferred-aliases
+                                                :preferred-aliases (some-> preferred-aliases pr-str)
                                                 :namespace-aliases-fn (when (seq project-libspecs)
                                                                        ;; if provided, replace `refactor-nrepl.ns.libspecs/namespace-aliases`
                                                                        ;; with a mocked value, for test simplicity.

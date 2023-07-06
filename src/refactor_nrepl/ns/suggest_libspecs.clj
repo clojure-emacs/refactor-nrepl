@@ -16,7 +16,13 @@
 
 (def parse-preferred-aliases
   (memoize (fn parse-preferred-aliases* [preferred-aliases]
-             (let [m (volatile! {})]
+             (let [preferred-aliases (into []
+                                           (map (fn [x]
+                                                  (into []
+                                                        (remove #{\. '. "."})
+                                                        x)))
+                                           (read-string preferred-aliases))
+                   m (volatile! {})]
                (doseq [[prefix ns-name _only-keyword only] (mapv (partial mapv (comp symbol
                                                                                      name)) ;; `name` for Clojure <= 1.9 compat
                                                                  preferred-aliases)
