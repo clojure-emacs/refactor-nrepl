@@ -7,21 +7,9 @@
    [clojure.tools.namespace.repl :as tools.namespace.repl]
    [clojure.tools.namespace.track :as tracker]
    [refactor-nrepl.core :as core]
-   [refactor-nrepl.ns.ns-parser :as ns-parser]
    [refactor-nrepl.util :as util])
   (:import
    (java.io File)))
-
-;; Exclude cljs files that use npm string requires until they fix this bug:
-;; https://clojure.atlassian.net/projects/TNS/issues/TNS-51
-(defn- safe-for-clojure-tools-namespace? [f]
-  (->> (io/file f)
-       (.getAbsolutePath)
-       ns-parser/parse-ns
-       :cljs
-       :require
-       (map :ns)
-       (not-any? string?)))
 
 ;; Adapted from CIDER: https://git.io/JOYUT
 (defn- user-refresh-dirs
@@ -38,8 +26,7 @@
       ;; corner case - use the mranderson-ized refresh-dirs (for supporting this project's test suite):
       tools.namespace.repl/refresh-dirs))
 
-(def default-file-filter-predicate (every-pred core/source-file?
-                                               safe-for-clojure-tools-namespace?))
+(def default-file-filter-predicate core/source-file?)
 
 (defn build-tracker
   "Build a tracker for the project.

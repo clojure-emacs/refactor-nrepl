@@ -1,5 +1,6 @@
 (ns refactor-nrepl.rename-file-or-dir-test
   (:require
+   [clojure.data :as data]
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing]]
    [refactor-nrepl.core :refer [get-ns-component ns-form-from-string]]
@@ -27,12 +28,24 @@
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
-    (let [res (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)]
-      (is (or (list? res)
-              (instance? clojure.lang.Cons res))
-          (pr-str [pr-str res, (class res)]))
-      (is (= 4 (count res))
-          (pr-str res)))));; currently not tracking :require-macros!!
+    (let [files->absolute-path (fn [files]
+                                 (->> files
+                                      (map #(-> % (File.) (.getAbsolutePath)))
+                                      (into #{})))
+          clj ["testproject/src/com/move/dependent_ns1.clj"
+               "testproject/src/com/move/subdir/dependent_ns_3.clj"
+               "testproject/src/com/move/dependent_ns2.clj"]
+          cljs ["testproject/src/com/move/dependent_ns1_cljs.cljs"
+                "testproject/src/com/move/subdir/dependent_ns_3_cljs.cljs"]
+          common-referencing-files (files->absolute-path (into clj cljs))
+          files-referencing-old-ns (conj common-referencing-files from-file-path)
+          res (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)
+          [old-file-name new-file-name files-in-both]
+          (data/diff files-referencing-old-ns (files->absolute-path res))]
+      (is (= old-file-name #{from-file-path}) "That the old filename is not present")
+      (is (= new-file-name #{to-file-path}) "That the new filename is present")
+      (is (= files-in-both common-referencing-files)
+          "That the files referencing the old & the new namespace are the same"))))
 
 (deftest replaces-ns-references-in-dependents
   (let [dependents (atom [])]
@@ -133,14 +146,23 @@
         (is (not (.contains content old-package-prefix-dir)))))))
 
 (deftest calls-rename-file!-on-the-right-files-when-moving-dirs
-  (let [files (atom [])]
+  (let [files (atom [])
+        original-files ["testproject/src/com/move/dependent_ns1.clj"
+                        "testproject/src/com/move/dependent_ns1_cljs.cljs"
+                        "testproject/src/com/move/dependent_ns2.clj"
+                        "testproject/src/com/move/dependent_ns2_cljs.cljs"
+                        "testproject/src/com/move/non_clj_file"
+                        "testproject/src/com/move/ns_to_be_moved.clj"
+                        "testproject/src/com/move/ns_to_be_moved_cljs.cljs"
+                        "testproject/src/com/move/subdir/dependent_ns_3.clj"
+                        "testproject/src/com/move/subdir/dependent_ns_3_cljs.cljs"]]
     (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file!
                   (fn [old new]
                     (swap! files conj [old new]))
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
       (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
-      (is (= (count @files) 9))
+      (is (= (count @files) (count original-files)))
       (doseq [[^String old ^String new] @files]
         (is (.contains old "/move/"))
         (is (.contains new "/moved/"))))))
@@ -166,9 +188,13 @@
                 refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
-    (let [res (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)]
+    (let [files [to-file-path-cljs
+                 "testproject/src/com/move/dependent_ns1_cljs.cljs"
+                 "testproject/src/com/move/dependent_ns2_cljs.cljs"
+                 "testproject/src/com/move/subdir/dependent_ns_3_cljs.cljs"]
+          res (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)]
       (is (or (list? res) (instance? clojure.lang.Cons res)))
-      (is (= 4 (count res))))))
+      (is (= (count files) (count res))))))
 
 (deftest replaces-ns-references-in-dependent-for-cljs
   (let [dependents (atom [])]
