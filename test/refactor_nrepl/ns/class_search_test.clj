@@ -30,11 +30,12 @@
               "jdk."
               ;; Odd stuff brought in by the `fs` dependency:
               "Implementing class"
-              "org.apache.commons.compress.harmony.pack200.Segment can not implement"])
+              "org.apache.commons.compress.harmony.pack200.Segment can not implement"
+              "javax/xml/bind/ModuleUtil (wrong name: META-INF/versions/9/javax/xml/bind/ModuleUtil)"])
        (do
          (.printStackTrace e)
          false))
-      (-> e (.getMessage)))
+      (-> e .getMessage pr-str))
   e)
 
 (defn resolve-class [sym]

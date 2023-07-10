@@ -22,7 +22,7 @@
   (let [^IndexingPushbackReader
         reader (zip-reader/string-reader file-content)]
     (loop [sexp (zip-parser/parse reader)]
-      (let [zloc (zip/edn sexp)]
+      (let [zloc (zip/of-node sexp)]
         (if (and zloc (not (comment-or-string-or-uneval-or-nil? zloc)))
           (zip/string zloc)
           (when (.peek-char reader)

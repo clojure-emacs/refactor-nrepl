@@ -117,17 +117,17 @@ jobs:
   util_job:
     description: |
       Running utility commands/checks (linter etc.)
-      Always uses Java LTS latest and Clojure 1.10
+      Always uses Java LTS latest and Clojure 1.11
     parameters:
       steps:
         type: steps
     executor: openjdk17
     environment:
-      VERSION: "1.10"
+      VERSION: "1.11"
     steps:
       - checkout
       - with_cache:
-          cache_version: "1.10"
+          cache_version: "1.11"
           steps: << parameters.steps >>
 
   deploy:
@@ -188,7 +188,7 @@ jobs:
 #
 # - run tests against the target matrix
 #   - All our defined JDKs
-#   - Clojure 1.8, 1.9, 1.10, master
+#   - Clojure 1.10, 1.11, master
 # - linter, eastwood and cljfmt
 # - runs code coverage report
 
@@ -199,7 +199,7 @@ workflows:
       - test_code:
           matrix:
             parameters:
-              clojure_version: ["1.8", "1.9", "1.10", "master"]
+              clojure_version: ["1.10", "1.11", "master"]
               jdk_version: [openjdk8, openjdk11, openjdk16, openjdk17]
           filters:
             branches:

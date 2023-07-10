@@ -105,14 +105,14 @@
 
 (def ^:private resolve-missing
   (delay
-   (require-and-resolve 'refactor-nrepl.ns.resolve-missing/resolve-missing)))
+    (require-and-resolve 'refactor-nrepl.ns.resolve-missing/resolve-missing)))
 
 (defn resolve-missing-reply [{:keys [transport] :as msg}]
   (reply transport msg :candidates (@resolve-missing msg) :status :done))
 
 (def ^:private find-symbol
   (delay
-   (require-and-resolve 'refactor-nrepl.find.find-symbol/find-symbol)))
+    (require-and-resolve 'refactor-nrepl.find.find-symbol/find-symbol)))
 
 (defn- find-symbol-reply [{:keys [transport] :as msg}]
   (let [occurrences (@find-symbol msg)]
@@ -140,18 +140,18 @@
 
 (def ^:private clean-ns
   (delay
-   (require-and-resolve 'refactor-nrepl.ns.clean-ns/clean-ns)))
+    (require-and-resolve 'refactor-nrepl.ns.clean-ns/clean-ns)))
 
 (def ^:private pprint-ns
   (delay
-   (require-and-resolve 'refactor-nrepl.ns.pprint/pprint-ns)))
+    (require-and-resolve 'refactor-nrepl.ns.pprint/pprint-ns)))
 
 (defn- clean-ns-reply [{:keys [transport] :as msg}]
   (reply transport msg :ns (some-> msg (@clean-ns) (@pprint-ns)) :status :done))
 
 (def ^:private find-used-locals
   (delay
-   (require-and-resolve 'refactor-nrepl.find.find-locals/find-used-locals)))
+    (require-and-resolve 'refactor-nrepl.find.find-locals/find-used-locals)))
 
 (defn- find-used-locals-reply [{:keys [transport] :as msg}]
   (reply transport msg :used-locals (@find-used-locals msg) :status :done))
@@ -161,7 +161,7 @@
 
 (def ^:private warm-ast-cache
   (delay
-   (require-and-resolve 'refactor-nrepl.analyzer/warm-ast-cache)))
+    (require-and-resolve 'refactor-nrepl.analyzer/warm-ast-cache)))
 
 (defn- warm-ast-cache-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
@@ -180,14 +180,14 @@
 
 (def ^:private extract-definition
   (delay
-   (require-and-resolve 'refactor-nrepl.extract-definition/extract-definition)))
+    (require-and-resolve 'refactor-nrepl.extract-definition/extract-definition)))
 
 (defn- extract-definition-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done :definition (pr-str (@extract-definition msg))))
 
 (def ^:private rename-file-or-dir
   (delay
-   (require-and-resolve 'refactor-nrepl.rename-file-or-dir/rename-file-or-dir)))
+    (require-and-resolve 'refactor-nrepl.rename-file-or-dir/rename-file-or-dir)))
 
 (defn- rename-file-or-dir-reply [{:keys [transport old-path new-path ignore-errors] :as msg}]
   (reply transport msg :touched (@rename-file-or-dir old-path new-path (= ignore-errors "true"))
@@ -195,7 +195,7 @@
 
 (def namespace-aliases
   (delay
-   (require-and-resolve 'refactor-nrepl.ns.libspecs/namespace-aliases-response)))
+    (require-and-resolve 'refactor-nrepl.ns.libspecs/namespace-aliases-response)))
 
 (defn- namespace-aliases-reply [{:keys [transport] :as msg}]
   (let [aliases (@namespace-aliases msg)]
@@ -205,7 +205,7 @@
 
 (def suggest-libspecs
   (delay
-   (require-and-resolve 'refactor-nrepl.ns.suggest-libspecs/suggest-libspecs-response)))
+    (require-and-resolve 'refactor-nrepl.ns.suggest-libspecs/suggest-libspecs-response)))
 
 (defn- suggest-libspecs-reply [{:keys [transport] :as msg}]
   (reply transport
