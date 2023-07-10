@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* Upgrade various dependencies.
+  * Does not impact users, since we use [mranderson](https://github.com/benedekfazekas/mranderson).
+
 ## 3.7.1
 
 * Fix an oversight in `suggest-libspecs`.

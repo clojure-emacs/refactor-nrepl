@@ -28,8 +28,11 @@
                 refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_dependents])
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
     (let [res (sut/rename-file-or-dir from-file-path to-file-path ignore-errors?)]
-      (is (or (list? res) (instance? clojure.lang.Cons res)))
-      (is (= 4 (count res))))));; currently not tracking :require-macros!!
+      (is (or (list? res)
+              (instance? clojure.lang.Cons res))
+          (pr-str [pr-str res, (class res)]))
+      (is (= 4 (count res))
+          (pr-str res)))));; currently not tracking :require-macros!!
 
 (deftest replaces-ns-references-in-dependents
   (let [dependents (atom [])]

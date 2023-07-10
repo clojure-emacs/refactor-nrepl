@@ -1,6 +1,6 @@
 .PHONY: inline-deps test deploy clean
 
-VERSION ?= 1.10
+VERSION ?= 1.11
 
 clean:
 	lein clean
