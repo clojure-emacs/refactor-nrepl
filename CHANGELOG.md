@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-* Upgrade various dependencies.
+* Upgrade various dependencies: [#393](https://github.com/clojure-emacs/refactor-nrepl/pull/393), [#395](https://github.com/clojure-emacs/refactor-nrepl/pull/395).
   * Does not impact users, since we use [mranderson](https://github.com/benedekfazekas/mranderson).
 
 ## 3.7.1
