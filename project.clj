@@ -17,7 +17,7 @@
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.310"]
                  ^:inline-dep [rewrite-clj "1.1.47"]
-                 ^:inline-dep [version-clj "1.0.0"]]
+                 ^:inline-dep [version-clj "2.0.2"]]
   :exclusions [org.clojure/clojure] ; see versions matrix below
 
   :pedantic? ~(if (System/getenv "CI")
