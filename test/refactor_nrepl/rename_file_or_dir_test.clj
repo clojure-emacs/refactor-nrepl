@@ -1,6 +1,7 @@
 (ns refactor-nrepl.rename-file-or-dir-test
   (:require
    [clojure.data :as data]
+   [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer [deftest is testing]]
    [refactor-nrepl.core :refer [get-ns-component ns-form-from-string]]
@@ -30,7 +31,7 @@
                 refactor-nrepl.rename-file-or-dir/file-or-symlink-exists? (constantly true)]
     (let [files->absolute-path (fn [files]
                                  (->> files
-                                      (map #(-> % (File.) (.getAbsolutePath)))
+                                      (map #(-> % io/file .getAbsolutePath))
                                       (into #{})))
           clj ["testproject/src/com/move/dependent_ns1.clj"
                "testproject/src/com/move/subdir/dependent_ns_3.clj"
