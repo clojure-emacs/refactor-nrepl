@@ -4,6 +4,9 @@
 
 * Upgrade various dependencies: [#393](https://github.com/clojure-emacs/refactor-nrepl/pull/393), [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394) & [#395](https://github.com/clojure-emacs/refactor-nrepl/pull/395).
   * Does not impact users, since we use [mranderson](https://github.com/benedekfazekas/mranderson).
+* The `rename-file-or-dir` is now also able to rename .cljs files that depended on .clj files via :require-macros [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394).
+* `ns-tracker` no longer ignores cljs files with string requires [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394).
+  * note that `ns-tracker` is normally used for clj files only.
 
 ## 3.7.1
 
