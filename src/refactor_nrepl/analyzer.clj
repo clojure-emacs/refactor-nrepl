@@ -130,13 +130,20 @@
       ast-or-err)))
 
 (defn- ast-stats []
-  (let [asts @ast-cache]
-    (interleave (keys asts)
-                (->> (vals asts)
-                     (mapcat vals)
-                     (map #(if (instance? Throwable %)
-                             (list "error" (.getMessage ^Throwable %))
-                             "OK"))))))
+  (let [asts @ast-cache
+        map-entries (seq asts)]
+    (reduce (fn [acc [k v]]
+              (conj acc
+                    (->> v
+                         vals
+                         (reduce (fn [init x]
+                                   (if (instance? Throwable x)
+                                     (reduced (list "error" (.getMessage ^Throwable x)))
+                                     init))
+                                 "OK"))
+                    k))
+            ()
+            map-entries)))
 
 (defn warm-ast-cache []
   (doseq [f (tracker/project-files-in-topo-order true)]
