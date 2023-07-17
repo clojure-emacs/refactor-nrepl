@@ -1,5 +1,6 @@
 (ns com.move.dependent-ns2-cljs
-  (:require [com.move.ns-to-be-moved-cljs :refer [fn-to-be-moved]]))
+  (:require [com.move.ns-to-be-moved-cljs :refer [fn-to-be-moved]]
+            ["string-require-some-javascript-library" :as foo]))
 
 (defn- use-some-private-stuff []
   (#'com.move.ns-to-be-moved/private-fn-to-be-moved

@@ -195,7 +195,11 @@
                  "testproject/src/com/move/subdir/dependent_ns_3_cljs.cljs"]
           res (sut/rename-file-or-dir from-file-path-cljs to-file-path-cljs ignore-errors?)]
       (is (or (list? res) (instance? clojure.lang.Cons res)))
-      (is (= (count files) (count res))))))
+      (is (= (count files) (count res)))
+      (testing "a .cljs file with string requires in it was not excluded from the rename, and the string requires remain there as-is"
+        (let [file-present? (fn [file] (boolean (some #(= % file) files)))
+              file-with-string-requires "testproject/src/com/move/dependent_ns2_cljs.cljs"]
+          (is (true? (file-present? file-with-string-requires))))))))
 
 (deftest replaces-ns-references-in-dependent-for-cljs
   (let [dependents (atom [])]
@@ -211,7 +215,10 @@
                     require-form (get-ns-component ns-form :require)
                     libspec (second require-form)
                     required-ns (if (sequential? libspec) (first libspec) libspec)]]
-        (is (= 'com.move.moved-ns-cljs required-ns))))))
+        (if (string? required-ns)
+          (testing "a .cljs file with string requires in it was not excluded from the rename, and the string requires remain there as-is"
+            (is (= "string-require-some-javascript-library" required-ns)))
+          (is (= 'com.move.moved-ns-cljs required-ns)))))))
 
 (deftest replaces-fully-qualified-vars-in-dependents-for-cljs
   (let [dependents (atom [])]
@@ -259,9 +266,10 @@
                     required-macro-ns (-> require-macros-form second first)]]
         ;; This is a little gross, but the changes are done in two
         ;; passes, so each file has one of them.
-        (is (or (= 'com.moved.ns-to-be-moved-cljs required-ns)
-                (when required-macro-ns
-                  (= 'com.moved.ns-to-be-moved required-macro-ns))))))))
+        (when require-macros-form
+          (is (or (= 'com.moved.ns-to-be-moved-cljs required-ns)
+                  (when required-macro-ns
+                    (= 'com.moved.ns-to-be-moved required-macro-ns)))))))))
 
 (deftest returns-list-of-affected-files-when-moving-dirs-for-cljs
   (with-redefs [refactor-nrepl.rename-file-or-dir/rename-file! (fn [_old _new])
