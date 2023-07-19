@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.namespace.parse :as parse]
+   [clojure.tools.reader :as reader]
    [clojure.tools.reader.reader-types :as readers]
    [orchard.java.classpath :as cp]
    [orchard.misc :as misc]
@@ -10,6 +11,7 @@
    [refactor-nrepl.s-expressions :as sexp]
    [refactor-nrepl.util :as util :refer [normalize-to-unix-path]])
   (:import
+   (clojure.lang LineNumberingPushbackReader)
    (java.io File FileNotFoundException FileReader PushbackReader StringReader)))
 
 ;; Require our `fs` customizations before `fs` is loaded:
@@ -182,8 +184,8 @@
 (defn cljc-file?
   [path-or-file]
   (let [path (.getPath (io/file path-or-file))]
-    (and (cljc-extension? path)
-         (read-ns-form path))))
+    (boolean (and (cljc-extension? path)
+                  (read-ns-form path)))))
 
 (defn cljs-extension? [^String path]
   (.endsWith path ".cljs"))
@@ -191,8 +193,8 @@
 (defn cljs-file?
   [path-or-file]
   (let [path (.getPath (io/file path-or-file))]
-    (and (cljs-extension? path)
-         (read-ns-form path))))
+    (boolean (and (cljs-extension? path)
+                  (read-ns-form path)))))
 
 (defn clj-extension? [^String path]
   (.endsWith path ".clj"))
@@ -200,9 +202,14 @@
 (defn clj-file?
   [path-or-file]
   (let [path (.getPath (io/file path-or-file))]
-    (and (not (util/data-file? path-or-file))
-         (clj-extension? path)
-         (read-ns-form path))))
+    (boolean (and (not (util/data-file? path-or-file))
+                  (clj-extension? path)
+                  (read-ns-form path)))))
+
+(defn clj-or-cljc-file?
+  [path-or-file]
+  (or (clj-file? path-or-file)
+      (cljc-file? path-or-file)))
 
 (defn source-file?
   "True for clj, cljs or cljc files.
@@ -409,6 +416,28 @@
   ([no-error path] (when-not (cljs-file? path)
                      (some-> path read-ns-form-with-meta parse/name-from-ns-decl (safe-find-ns no-error)))))
 
+(defn file-forms
+  "For a given `file`, get all the forms from it.
+
+  If `file` is .cljc, `features` (a set) will be used.
+
+  Please prefer this helper over `#'slurp`,
+  so that reader conditionals are properly handled."
+  [file features]
+  (let [reader (LineNumberingPushbackReader. (StringReader. (slurp file)))
+        reader-opts {:read-cond :allow
+                     :eof ::eof
+                     :features (case (file->dialect file)
+                                 :clj #{:clj}
+                                 :cljc features
+                                 :cljs #{:cljs})}]
+    (loop [forms []
+           form (reader/read reader-opts reader)]
+      (if (not= form ::eof)
+        (recur (conj forms form)
+               (reader/read reader-opts reader))
+        (str/join " " forms)))))
+
 (defn file-content-sans-ns
   "Read the content of file after the ns.
 
@@ -420,10 +449,10 @@
   ([file-content dialect]
    ;; NOTE: It's tempting to trim this result but
    ;; find-macros relies on this not being trimmed
-   (let [rdr-opts {:read-cond :allow :features #{dialect}}
-         rdr (PushbackReader. (StringReader. file-content))]
-     (read rdr-opts rdr)
-     (slurp rdr))))
+   (let [reader-opts {:read-cond :allow :features #{dialect}}
+         reader (PushbackReader. (StringReader. file-content))]
+     (read reader-opts reader)
+     (slurp reader))))
 
 (defn ns-form-from-string
   ([file-content]
@@ -433,9 +462,9 @@
      (catch Exception _e
        (throw (IllegalArgumentException. "Malformed ns form!")))))
   ([dialect file-content]
-   (let [rdr-opts {:read-cond :allow :features #{dialect}}]
+   (let [reader-opts {:read-cond :allow :features #{dialect}}]
      (try
-       (with-meta (parse/read-ns-decl (PushbackReader. (StringReader. file-content)) rdr-opts)
+       (with-meta (parse/read-ns-decl (PushbackReader. (StringReader. file-content)) reader-opts)
          (extract-ns-meta file-content))
        (catch Exception _e
          (throw (IllegalArgumentException. "Malformed ns form!")))))))

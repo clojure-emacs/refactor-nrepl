@@ -148,7 +148,7 @@
 (defn warm-ast-cache []
   (doseq [f (tracker/project-files-in-topo-order true)]
     (try
-      (ns-ast (slurp f))
+      (ns-ast (core/file-forms f #{:clj}))
       (catch Throwable th
         (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
           (-> th .printStackTrace))
