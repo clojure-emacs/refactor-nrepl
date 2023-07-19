@@ -204,6 +204,11 @@
          (clj-extension? path)
          (read-ns-form path))))
 
+(defn clj-or-cljc-file?
+  [path-or-file]
+  (or (clj-file? path-or-file)
+      (cljc-file? path-or-file)))
+
 (defn source-file?
   "True for clj, cljs or cljc files.
 

@@ -87,3 +87,8 @@
               :foo true}
              (:top-level-meta ns-meta)))
       (is (= {:c 3, :d 4} (:attr-map ns-meta))))))
+
+(deftest clj-or-cljc-file-check
+  (is (= '(ns com.move.cljc-test-file
+            (:require [clj-namespace-from.cljc-file :as foo]))
+         (sut/clj-or-cljc-file? "testproject/src/com/move/cljc_test_file.cljc"))))

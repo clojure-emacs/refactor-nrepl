@@ -1,7 +1,9 @@
 (ns refactor-nrepl.ns.tracker-test
   (:require
-   [clojure.test :refer [are deftest is]]
-   [refactor-nrepl.ns.tracker :as sut]))
+   [clojure.test :refer [are deftest is testing]]
+   [refactor-nrepl.core :as core]
+   [refactor-nrepl.ns.tracker :as sut]
+   [refactor-nrepl.util :as util]))
 
 (deftest in-refresh-dirs?
   (are [refresh-dirs file-ns expected] (= expected
@@ -23,3 +25,20 @@
   (is (seq (sut/project-files-in-topo-order false))
       "Does not throw exceptions even when specifying to not ignore errors,
 i.e. it doesn't have bugs"))
+
+(deftest build-tracker-test
+  (let [refresh-dirs (#'sut/user-refresh-dirs)
+        ignore-errors? true
+        tracker (sut/build-tracker
+                 (util/with-suppressed-errors
+                   (every-pred (partial sut/in-refresh-dirs? refresh-dirs (#'sut/absolutize-dirs refresh-dirs))
+                               core/clj-or-cljc-file?)
+                   ignore-errors?))
+        target-cljc-namespace 'com.move.cljc-test-file
+        found-namespace (-> tracker
+                            :clojure.tools.namespace.track/deps
+                            :dependencies
+                            (get target-cljc-namespace)
+                            first)]
+    (testing "that tracker is picking up .cljc file"
+      (is (= 'clj-namespace-from.cljc-file found-namespace)))))

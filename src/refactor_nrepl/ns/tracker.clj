@@ -82,7 +82,7 @@
    (let [refresh-dirs (user-refresh-dirs)
          tracker (build-tracker (util/with-suppressed-errors
                                   (every-pred (partial in-refresh-dirs? refresh-dirs (absolutize-dirs refresh-dirs))
-                                              core/clj-file?)
+                                              core/clj-or-cljc-file?)
                                   ignore-errors?))
          nses (dep/topo-sort (:clojure.tools.namespace.track/deps tracker))
          filemap (:clojure.tools.namespace.file/filemap tracker)
