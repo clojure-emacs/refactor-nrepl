@@ -27,13 +27,7 @@
 i.e. it doesn't have bugs"))
 
 (deftest build-tracker-test
-  (let [refresh-dirs (#'sut/user-refresh-dirs)
-        ignore-errors? true
-        tracker (sut/build-tracker
-                 (util/with-suppressed-errors
-                   (every-pred (partial sut/in-refresh-dirs? refresh-dirs (#'sut/absolutize-dirs refresh-dirs))
-                               core/clj-or-cljc-file?)
-                   ignore-errors?))
+  (let [tracker (sut/build-tracker (util/with-suppressed-errors core/clj-or-cljc-file? true))
         target-cljc-namespace 'com.move.cljc-test-file
         found-namespace (-> tracker
                             :clojure.tools.namespace.track/deps
