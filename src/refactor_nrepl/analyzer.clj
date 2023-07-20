@@ -148,12 +148,7 @@
 (defn warm-ast-cache []
   (doseq [f (tracker/project-files-in-topo-order true)]
     (try
-      (let [{:keys [rdr rdr-opts]} (core/reader-helper f)]
-        (loop [forms []
-               form (reader/read rdr-opts rdr)]
-          (if (not= form :eof)
-            (recur (conj forms form) (reader/read rdr-opts rdr))
-            (ns-ast (apply str forms)))))
+      (ns-ast (core/file-forms f))
       (catch Throwable th
         (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
           (-> th .printStackTrace))

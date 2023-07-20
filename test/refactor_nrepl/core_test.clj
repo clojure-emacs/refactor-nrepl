@@ -92,3 +92,14 @@
   (is (= '(ns com.move.cljc-test-file
             (:require [clj-namespace-from.cljc-file :as foo]))
          (sut/clj-or-cljc-file? "testproject/src/com/move/cljc_test_file.cljc"))))
+
+(deftest file-forms-test
+  (testing "cljs file parsing"
+    (is (= "(ns com.move.subdir.dependent-ns-3-cljs (:require com.move.ns-to-be-moved-cljs) (:require-macros [com.move.ns-to-be-moved :refer [macro-to-be-moved]]))"
+           (sut/file-forms "testproject/src/com/move/subdir/dependent_ns_3_cljs.cljs"))))
+  (testing "clj file parsing"
+    (is (= "(ns com.move.subdir.dependent-ns-3 (:require [com.move.ns-to-be-moved :refer [fn-to-be-moved]]))"
+           (sut/file-forms "testproject/src/com/move/subdir/dependent_ns_3.clj"))))
+  (testing "cljc file parsing"
+    (is (= "(ns com.move.cljc-test-file (:require [clj-namespace-from.cljc-file :as foo]))(declare something-or-other)"
+           (sut/file-forms "testproject/src/com/move/cljc_test_file.cljc")))))

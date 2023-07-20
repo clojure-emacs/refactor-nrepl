@@ -3,6 +3,7 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [clojure.tools.namespace.parse :as parse]
+   [clojure.tools.reader :as reader]
    [clojure.tools.reader.reader-types :as readers]
    [orchard.java.classpath :as cp]
    [orchard.misc :as misc]
@@ -420,8 +421,22 @@
   properly handled."
   [file]
   (let [rdr (LineNumberingPushbackReader. (StringReader. (slurp file)))
-        rdr-opts {:read-cond :allow :features (file->dialect file) :eof :eof}]
+        dialect (as-> (file->dialect file) $
+                  (if (or (= :clj $) (= :cljc $))
+                    :clj
+                    $))
+        rdr-opts {:read-cond :allow :features #{dialect} :eof :eof}]
     {:rdr rdr :rdr-opts rdr-opts}))
+
+(defn file-forms
+  "For a given `file`, get all the forms from it."
+  [file]
+  (let [{:keys [rdr rdr-opts]} (reader-helper file)]
+    (loop [forms []
+           form (reader/read rdr-opts rdr)]
+      (if (not= form :eof)
+        (recur (conj forms form) (reader/read rdr-opts rdr))
+        (apply str forms)))))
 
 (defn file-content-sans-ns
   "Read the content of file after the ns.
