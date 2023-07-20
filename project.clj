@@ -46,18 +46,16 @@
                                       "https://oss.sonatype.org/content/repositories/snapshots"]]
                       :dependencies [[org.clojure/clojure "1.12.0-master-SNAPSHOT"]
                                      [org.clojure/clojure "1.12.0-master-SNAPSHOT" :classifier "sources"]]}
-
-             :test {:dependencies [[print-foo "1.0.2"]]}
-             :dev {:dependencies [[org.clojure/clojurescript "1.11.60"]
-                                  [org.clojure/core.async "1.6.673" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
-                                  [cider/piggieback "0.5.3"]
-                                  [commons-io/commons-io "2.13.0"]]
-                   :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
-                   :jvm-opts ["-Dorchard.use-dynapath=false"]
-                   :java-source-paths ["java-test"]
-                   :resource-paths ["test-resources"
-                                    "testproject/src"]
-                   :repositories [["snapshots" "https://oss.sonatype.org/content/repositories/snapshots"]]}
+             :dev {}
+             :test {:dependencies [[cider/piggieback "0.5.3"]
+                                   [org.clojure/clojurescript "1.11.60"]
+                                   [org.clojure/core.async "1.6.673" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
+                                   [commons-io/commons-io "2.13.0"]]
+                    :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
+                    :jvm-opts ["-Dorchard.use-dynapath=false"]
+                    :resource-paths ["test-resources"
+                                     "testproject/src"]
+                    :java-source-paths ["java-test"]}
              :cljfmt [:test
                       {:plugins [[lein-cljfmt "0.9.2" :exclusions [org.clojure/clojure
                                                                    org.clojure/clojurescript]]]
@@ -76,7 +74,8 @@
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2022.06.22"]]}]
+                         {:dependencies [[clj-kondo "2022.06.22"]
+                                         [com.fasterxml.jackson.core/jackson-core "2.13.3"]]}]
 
              :deploy {:source-paths [".circleci/deploy"]}}
 
