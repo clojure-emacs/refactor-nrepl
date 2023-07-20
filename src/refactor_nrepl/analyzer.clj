@@ -148,8 +148,7 @@
 (defn warm-ast-cache []
   (doseq [f (tracker/project-files-in-topo-order true)]
     (try
-      (let [rdr (PushbackReader. (StringReader. (slurp f)))
-            rdr-opts {:read-cond :allow :features (core/file->dialect f) :eof :eof}]
+      (let [{:keys [rdr rdr-opts]} (core/reader-helper f)]
         (loop [forms []
                form (reader/read rdr-opts rdr)]
           (if (not= form :eof)

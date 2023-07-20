@@ -10,6 +10,7 @@
    [refactor-nrepl.s-expressions :as sexp]
    [refactor-nrepl.util :as util :refer [normalize-to-unix-path]])
   (:import
+   (clojure.lang LineNumberingPushbackReader)
    (java.io File FileNotFoundException FileReader PushbackReader StringReader)))
 
 ;; Require our `fs` customizations before `fs` is loaded:
@@ -413,6 +414,14 @@
   ([path] (path->namespace nil path))
   ([no-error path] (when-not (cljs-file? path)
                      (some-> path read-ns-form-with-meta parse/name-from-ns-decl (safe-find-ns no-error)))))
+
+(defn reader-helper
+  "Please prefer this helper over slurp, so that reader conditionals are
+  properly handled."
+  [file]
+  (let [rdr (LineNumberingPushbackReader. (StringReader. (slurp file)))
+        rdr-opts {:read-cond :allow :features (file->dialect file) :eof :eof}]
+    {:rdr rdr :rdr-opts rdr-opts}))
 
 (defn file-content-sans-ns
   "Read the content of file after the ns.
