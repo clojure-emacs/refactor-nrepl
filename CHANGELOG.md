@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Handle the parsing of Clojure code from cljc files [#398](https://github.com/clojure-emacs/refactor-nrepl/pull/398)
+
 * Upgrade various dependencies: [#393](https://github.com/clojure-emacs/refactor-nrepl/pull/393), [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394) & [#395](https://github.com/clojure-emacs/refactor-nrepl/pull/395).
   * Does not impact users, since we use [mranderson](https://github.com/benedekfazekas/mranderson).
 * The `rename-file-or-dir` is now also able to rename .cljs files that depended on .clj files via :require-macros [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394).
