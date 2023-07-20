@@ -30,7 +30,8 @@ i.e. it doesn't have bugs"))
   (let [tracker (sut/build-tracker (util/with-suppressed-errors core/clj-or-cljc-file? true))
         target-cljc-namespace 'com.move.cljc-test-file
         found-namespace (-> tracker
-                            :clojure.tools.namespace.track/deps
+                            vals
+                            first
                             :dependencies
                             (get target-cljc-namespace)
                             first)]
