@@ -148,7 +148,8 @@
 
 (deftest calls-rename-file!-on-the-right-files-when-moving-dirs
   (let [files (atom [])
-        original-files ["testproject/src/com/move/dependent_ns1.clj"
+        original-files ["testproject/src/com/move/cljc_test_file.cljc"
+                        "testproject/src/com/move/dependent_ns1.clj"
                         "testproject/src/com/move/dependent_ns1_cljs.cljs"
                         "testproject/src/com/move/dependent_ns2.clj"
                         "testproject/src/com/move/dependent_ns2_cljs.cljs"
@@ -315,7 +316,7 @@ and the string requires remain there as-is"
                   refactor-nrepl.rename-file-or-dir/update-ns! (fn [_path _old-ns])
                   refactor-nrepl.rename-file-or-dir/update-dependents! (fn [_deps])]
       (sut/rename-file-or-dir from-dir-path to-dir-path ignore-errors?)
-      (is (= (count @files) 9))
+      (is (= (count @files) 10))
       (doseq [[^String old ^String new] @files]
         (is (.contains old "/move/"))
         (is (.contains new "/moved/"))))))

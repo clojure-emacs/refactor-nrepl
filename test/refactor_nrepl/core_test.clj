@@ -87,3 +87,65 @@
               :foo true}
              (:top-level-meta ns-meta)))
       (is (= {:c 3, :d 4} (:attr-map ns-meta))))))
+
+(deftest clj-or-cljc-file-test
+  (let [clj "testproject/src/com/move/dependent_ns1.clj"
+        cljs "testproject/src/com/move/dependent_ns1_cljs.cljs"
+        cljc "testproject/src/com/move/cljc_test_file.cljc"]
+    (is (= true
+           (sut/clj-or-cljc-file? cljc)))
+    (is (= true
+           (sut/clj-or-cljc-file? clj)))
+    (is (= false
+           (sut/clj-or-cljc-file? cljs)))
+
+    (is (= false
+           (sut/clj-file? cljc)))
+    (is (= true
+           (sut/clj-file? clj)))
+    (is (= false
+           (sut/clj-file? cljs)))
+
+    (is (= true
+           (sut/cljc-file? cljc)))
+    (is (= false
+           (sut/cljc-file? clj)))
+    (is (= false
+           (sut/cljc-file? cljs)))
+
+    (is (= false
+           (sut/cljs-file? cljc)))
+    (is (= false
+           (sut/cljs-file? clj)))
+    (is (= true
+           (sut/cljs-file? cljs)))))
+
+(deftest file-forms-test
+  (is (= "(ns com.move.subdir.dependent-ns-3-cljs (:require com.move.ns-to-be-moved-cljs) (:require-macros [com.move.ns-to-be-moved :refer [macro-to-be-moved]]))"
+         (sut/file-forms "testproject/src/com/move/subdir/dependent_ns_3_cljs.cljs"
+                         #{:clj}))
+      "cljs file parsing")
+
+  (is (= "(ns com.move.subdir.dependent-ns-3 (:require [com.move.ns-to-be-moved :refer [fn-to-be-moved]]))"
+         (sut/file-forms "testproject/src/com/move/subdir/dependent_ns_3.clj"
+                         #{:clj}))
+      "clj file parsing")
+
+  (let [clj-content
+        "(ns com.move.cljc-test-file (:require [clj-namespace-from.cljc-file :as foo])) (declare something-or-other)"
+
+        cljs-content
+        "(ns com.move.cljc-test-file (:require [cljs-namespace-from.cljc-file :as bar :include-macros true])) (declare something-or-other)"]
+
+    (is (not= clj-content cljs-content)
+        "Sanity check")
+
+    (is (= clj-content
+           (sut/file-forms "testproject/src/com/move/cljc_test_file.cljc"
+                           #{:clj}))
+        "cljc file parsing, `:clj` choice")
+
+    (is (= cljs-content
+           (sut/file-forms "testproject/src/com/move/cljc_test_file.cljc"
+                           #{:cljs}))
+        "cljc file parsing, `:cljs` choice")))
