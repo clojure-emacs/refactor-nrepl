@@ -41,7 +41,7 @@ deploy: check-env .inline-deps
 jar: .inline-deps
 	lein with-profile -user,-dev,+$(VERSION),+plugin.mranderson/config jar
 
-# Usage: PROJECT_VERSION=3.7.1 make install
+# Usage: PROJECT_VERSION=3.8.0 make install
 # PROJECT_VERSION is needed because it's not computed dynamically
 install: check-install-env .inline-deps
 	 LEIN_JVM_OPTS="-Dmranderson.internal.no-parallelism=true" lein with-profile -user,-dev,+$(VERSION),+plugin.mranderson/config install

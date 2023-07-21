@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.8.0
+
 * [#396](https://github.com/clojure-emacs/refactor-nrepl/pull/396) Handle the analyzing and parsing of Clojure code from .cljc files.
 * Upgrade various dependencies: [#393](https://github.com/clojure-emacs/refactor-nrepl/pull/393), [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394) & [#395](https://github.com/clojure-emacs/refactor-nrepl/pull/395).
   * Does not impact users, since we use [mranderson](https://github.com/benedekfazekas/mranderson).
