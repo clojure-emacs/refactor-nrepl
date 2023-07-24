@@ -2,10 +2,10 @@
   (:refer-clojure :exclude [macroexpand-1])
   (:require
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.tools.analyzer :as ana]
    [clojure.tools.analyzer.ast :refer [nodes]]
    [clojure.tools.analyzer.jvm :as aj]
-   [clojure.tools.analyzer.jvm.utils :as ajutils]
    [clojure.tools.namespace.parse :refer [read-ns-decl]]
    [clojure.tools.reader :as reader]
    [clojure.walk :as walk]
@@ -57,7 +57,8 @@
   ast)
 
 (defn- ns-on-cp? [ns]
-  (io/resource (ajutils/ns->relpath ns)))
+  (boolean (or (io/resource (-> ns str (string/replace \. \/) (string/replace \- \_) (str ".clj")))
+               (io/resource (-> ns str (string/replace \. \/) (string/replace \- \_) (str ".cljc"))))))
 
 (defn- shadow-unresolvable-symbol-handler [symbol-ns symbol-name symbol-ast]
   {:op :const

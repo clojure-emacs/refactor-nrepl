@@ -10,6 +10,7 @@
   * This helps clients avoiding the suggestion/insertion of candidates which are redundant
     * e.g. `+` is already interned, so is `Thread`
     * same for `:refer`s and `:rename`s
+* Fix a bug the newly introduced .cljc detection.
 
 ## 3.8.0
 
