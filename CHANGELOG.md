@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 3.9.0
+
+* [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns the wrong type
+* [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns non- `import`able classes.
+* [#402](https://github.com/clojure-emacs/refactor-nrepl/issues/402) `resolve-missing` now flags with `:already-interned true` the candidates that are already interned into the calling namespace.
+  * This helps clients avoiding the suggestion/insertion of candidates which are redundant
+    * e.g. `+` is already interned, so is `Thread`
+    * same for `:refer`s and `:rename`s
+
 ## 3.8.0
 
 * [#396](https://github.com/clojure-emacs/refactor-nrepl/pull/396) Handle the analyzing and parsing of Clojure code from .cljc files.

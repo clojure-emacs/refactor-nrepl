@@ -2,41 +2,72 @@
   "Resolve a missing symbol on the classpath."
   (:require
    [cider.nrepl.middleware.util.cljs :as cljs]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [orchard.cljs.analysis :as cljs-ana]
-   [orchard.info :refer [info]]
+   [orchard.info]
    [refactor-nrepl.core :refer [prefix suffix]]
    [refactor-nrepl.ns.imports-and-refers-analysis :as imports-and-refers-analysis]
    [refactor-nrepl.util :refer [self-referential?]]))
 
 (defn- candidates [sym]
   (reduce into
+          []
           [(when-let [p (prefix sym)]
              (imports-and-refers-analysis/candidates :import (symbol p) [] {}))
            (imports-and-refers-analysis/candidates :import (symbol (suffix sym)) [] {})
            (imports-and-refers-analysis/candidates :refer (symbol (suffix sym)) [] {})]))
 
-(defn- get-type [sym]
-  (let [info (info 'user sym)]
-    (if-let [_clazz (:class info)]
-      (cond
-        ((set (:interfaces info)) 'clojure.lang.IType) :type
-        ((set (:interfaces info)) 'clojure.lang.IRecord) :type
-        :else :class)                   ; interfaces are included here
-      :ns)))
+(defn- get-type [maybe-ns-sym sym]
+  (let [info (orchard.info/info (or maybe-ns-sym 'user)
+                                sym)
+        found? (:class info)
+        interfaces (if found?
+                     (some-> info :interfaces set)
+                     #{})]
+    (cond
+      (interfaces 'clojure.lang.IType)       :type
+      (interfaces 'clojure.lang.IRecord)     :type
+      found?                                 :class ;; interfaces are included here
+      (-> sym meta :refactor-nrepl/is-class) :class
+      :else                                  :ns)))
 
-(defn- collate-type-info
-  [candidates]
-  (map (fn [candidate]
-         (try
-           {:name candidate :type (get-type candidate)}
+(defn- collate-type-info [maybe-ns-sym candidates]
+  (mapv (fn [candidate]
+          (let [found-ns (some-> maybe-ns-sym find-ns)]
 
-           ;; This happends when class `candidate` depends on a class that is
-           ;; not available on the classpath.
-           (catch NoClassDefFoundError e
-             (refactor-nrepl.util/maybe-log-exception e)
-             {:name candidate :type :class})))
-       candidates))
+            (try
+              (cond-> {:name candidate
+                       :type (get-type maybe-ns-sym candidate)}
+                found-ns
+                (assoc :already-interned (if (-> candidate meta :refactor-nrepl/is-class)
+                                           (boolean (when-let [imports (some-> found-ns ns-imports)]
+                                                      (get imports (-> candidate str (string/split #"\.") last symbol))))
+                                           (boolean (when-let [refers (some-> found-ns ns-refers)]
+                                                      (let [var-namespace= (fn [var-ref]
+                                                                             (-> var-ref
+                                                                                 meta
+                                                                                 :ns
+                                                                                 ns-name
+                                                                                 (= candidate)))
+                                                            candidate-symbol (-> candidate meta :refactor-nrepl/symbol)]
+                                                        (or (some-> refers ;; refer
+                                                                    (get candidate-symbol)
+                                                                    (var-namespace=))
+                                                            (some->> refers ;; refer + rename
+                                                                     (some (fn [[k v]]
+                                                                             (when (and (var-namespace= v)
+                                                                                        (-> v
+                                                                                            meta
+                                                                                            :name
+                                                                                            (= candidate-symbol)))
+                                                                               k)))))))))))
+
+              ;; This happends when class `candidate` depends on a class that is
+              ;; not available on the classpath.
+              (catch NoClassDefFoundError e
+                (refactor-nrepl.util/maybe-log-exception e)
+                {:name candidate :type :class}))))
+        candidates))
 
 (defn- ns-publics-cljs [env ns-name]
   (->> ns-name (cljs-ana/public-vars env) keys))
@@ -60,19 +91,24 @@
                           (apply merge-with into))]
     (merge-with into ns-by-vars ns-by-macros)))
 
-(defn resolve-missing [{sym :symbol :as msg}]
-  (when (or (not (string? sym)) (str/blank? sym))
+(defn resolve-missing [{sym :symbol
+                        ns-str :ns
+                        jvm? :refactor-nrepl.internal/force-jvm?
+                        :as msg}]
+  (when (or (not (string? sym)) (string/blank? sym))
     (throw (IllegalArgumentException.
-            (str "Invalid input to resolve missing: '" sym "'"))))
-  (if-let [env (cljs/grab-cljs-env msg)]
-    (some->> sym
-             suffix
-             symbol
-             (get (cljs-vars-to-namespaces env))
-             pr-str)
-    (some->> sym
-             symbol
-             candidates
-             (remove self-referential?)
-             collate-type-info
-             pr-str)))
+            (str "Invalid input to resolve-missing: '" sym "'"))))
+  (let [ns-sym (some-> ns-str not-empty symbol)]
+    (if-let [env (and (not jvm?)
+                      (cljs/grab-cljs-env msg))]
+      (some->> sym
+               suffix
+               symbol
+               (get (cljs-vars-to-namespaces env))
+               pr-str)
+      (some->> sym
+               symbol
+               candidates
+               (remove self-referential?)
+               (collate-type-info ns-sym)
+               pr-str))))

@@ -3,15 +3,25 @@
 
   Formerly known as `refactor-nrepl.ns.slam.hound.search`."
   (:require
+   [clojure.java.io :as io]
    [clojure.string :as string]
-   [compliment.utils]))
+   [compliment.utils])
+  (:import
+   (java.io File)))
 
 (defn- get-available-classes []
-  (->> (dissoc (compliment.utils/classes-on-classpath)
-               "")
-       (vals)
-       (reduce into)
-       (mapv symbol)))
+  (let [classes (->> (dissoc (compliment.utils/classes-on-classpath)
+                             "")
+                     (vals)
+                     (reduce into))]
+    (into []
+          (comp (keep (fn [s]
+                        ;; https://github.com/alexander-yakushev/compliment/issues/105
+                        (when (io/resource (-> s (string/replace "." File/separator) (str ".class")))
+                          s)))
+                (distinct)
+                (map symbol))
+          classes)))
 
 (def available-classes
   (delay (get-available-classes)))

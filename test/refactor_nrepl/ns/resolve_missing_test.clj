@@ -1,9 +1,9 @@
 (ns refactor-nrepl.ns.resolve-missing-test
   (:require
-   [clojure.java.shell :as shell]
    [cider.piggieback :as piggieback]
    [clojure.edn :as edn]
-   [clojure.test :as t :refer [testing]]
+   [clojure.java.shell :as shell]
+   [clojure.test :refer [deftest is compose-fixtures testing use-fixtures]]
    [nrepl.core :as nrepl]
    [nrepl.server :as server]
    [refactor-nrepl.middleware :as middleware]))
@@ -30,7 +30,7 @@
        responses))))
 
 (def piggieback-fixture
-  (t/compose-fixtures
+  (compose-fixtures
    session-fixture
    (fn [f]
      (binding [*handler* (server/default-handler
@@ -45,41 +45,41 @@
        (message {:op :eval
                  :code (nrepl/code :cljs/quit)})))))
 
-(t/use-fixtures :each piggieback-fixture)
+(use-fixtures :each piggieback-fixture)
 
-(t/deftest sanity
+(deftest sanity
   (let [{:keys [exit]
          :as v} (shell/sh "node" "--version")]
     (assert (-> exit long zero?)
             (pr-str v)))
 
-  (t/testing "cljs repl is active"
+  (testing "cljs repl is active"
     (let [response (message {:op :eval
                              :code (nrepl/code js/console)})]
       (testing (pr-str response)
-        (t/is (= "cljs.user" (:ns response)))
-        (t/is (= #{"done"} (:status response))))))
+        (is (= "cljs.user" (:ns response)))
+        (is (= #{"done"} (:status response))))))
 
-  (t/testing "eval works"
+  (testing "eval works"
     (let [response (message {:op :eval
                              :code (nrepl/code (map even? (range 6)))})]
       (testing (pr-str response)
-        (t/is (= "cljs.user" (:ns response)))
-        (t/is (= ["(true false true false true false)"] (:value response)))
-        (t/is (= #{"done"} (:status response))))))
+        (is (= "cljs.user" (:ns response)))
+        (is (= ["(true false true false true false)"] (:value response)))
+        (is (= #{"done"} (:status response))))))
 
-  (t/testing "errors handled properly"
+  (testing "errors handled properly"
     (let [response (message {:op :eval
                              :code (nrepl/code (ffirst 1))})]
       (testing (pr-str response)
-        (t/is (= "class clojure.lang.ExceptionInfo"
-                 (:ex response)
-                 (:root-ex response)))
-        (t/is (string? (:err response)))
-        (t/is (= #{"eval-error" "done"} (:status response)))))))
+        (is (= "class clojure.lang.ExceptionInfo"
+               (:ex response)
+               (:root-ex response)))
+        (is (string? (:err response)))
+        (is (= #{"eval-error" "done"} (:status response)))))))
 
-(t/deftest resolve-missing-test
-  (t/testing "Finds functions is regular namespaces"
+(deftest resolve-missing-test
+  (testing "Finds functions is regular namespaces"
     (let [{:keys [^String error] :as response} (message {:op :resolve-missing :symbol 'print-doc})
           _ (assert (string? (:candidates response))
                     (pr-str response))
@@ -88,13 +88,13 @@
         (println error)
         (throw (RuntimeException. error)))
       (testing (pr-str response)
-        (t/is (= 'cljs.repl name))
-        (t/is (= :ns type))))
-    (t/testing "Finds macros"
+        (is (= 'cljs.repl name))
+        (is (= :ns type))))
+    (testing "Finds macros"
       (let [{:keys [^String error] :as response} (message {:op :resolve-missing :symbol 'dir})
             {:keys [name type]} (first (edn/read-string (:candidates response)))]
         (when error
           (throw (RuntimeException. error)))
         (testing (pr-str response)
-          (t/is (= 'cljs.repl name))
-          (t/is (= :macro type)))))))
+          (is (= 'cljs.repl name))
+          (is (= :macro type)))))))
