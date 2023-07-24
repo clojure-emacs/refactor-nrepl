@@ -21,14 +21,18 @@
 (defn- symbols->ns-syms
   ([]
    (symbols->ns-syms {} (all-ns)))
+
   ([init namespaces]
-   (reduce
-    (fn [m ns] (let [ns-sym (ns-name ns)]
-                 (reduce
-                  (fn [m k]
-                    (assoc m k (conj (or (m k) #{}) ns-sym)))
-                  m (keys (ns-publics ns)))))
-    init namespaces)))
+   (reduce (fn [m ns]
+             (let [ns-sym (ns-name ns)]
+               (reduce (fn [m k]
+                         (assoc m k (conj (or (m k) #{})
+                                          (with-meta ns-sym
+                                            {:refactor-nrepl/symbol k}))))
+                       m
+                       (keys (ns-publics ns)))))
+           init
+           namespaces)))
 
 (defn- ns-import-candidates
   "Search (all-ns) for imports that match missing-sym, returning a set of
@@ -38,7 +42,7 @@
   [missing-sym]
   (reduce (fn [s imports]
             (if-let [^Class cls (get imports missing-sym)]
-              (conj s (symbol (.getCanonicalName cls)))
+              (->> cls .getCanonicalName symbol (conj s))
               s))
           #{} (vals (all-ns-imports))))
 
@@ -46,6 +50,10 @@
   "Return a set of class or ns symbols that match the given constraints."
   [type missing _body _old-ns-map]
   (case type
-    :import (into (ns-import-candidates missing)
-                  (get @class-search/available-classes-by-last-segment missing))
-    :refer (get (symbols->ns-syms) missing)))
+    :import (into #{}
+                  (map (fn [s]
+                         (with-meta s
+                           {:refactor-nrepl/is-class true})))
+                  (reduce into #{} [(ns-import-candidates missing)
+                                    (get @class-search/available-classes-by-last-segment missing)]))
+    :refer  (get (symbols->ns-syms) missing)))

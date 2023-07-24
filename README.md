@@ -26,7 +26,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "3.8.0"]
+:plugins [[refactor-nrepl "3.9.0"]
           [cider/cider-nrepl "0.31.0"]]
 ```
 
@@ -202,11 +202,17 @@ classpath.  This symbol can be qualified, e.g. `walk/postwalk` or
 is a qualified reference to a clojure var and the second a reference
 to a static java method.
 
+The op also now expects (although does not require) `ns`, the current namespace expressed as a string.
+
 The return value `candidates` is a list of `({:name candidate.ns :type :ns} {:name candidate.package :type :type} ...)` where type is in `#{:type :class :ns
-:macro}` so we can branch on the various ways to make the symbol
-available.  `:type` means the symbol resolved to a var created by
-`defrecord` or `deftype`, `:class` is for Java classes but also includes interfaces.  `:macro`
-is only used if the op is called in a cljs context and means the var resolved to macro.
+:macro}` so we can branch on the various ways to make the symbol available.
+
+* `:type` means the symbol resolved to a var created by `defrecord` or `deftype`
+* `:class` is for Java classes but also includes interfaces.
+* `:macro` is only used if the op is called in a cljs context and means the var resolved to macro.
+
+The additional property `:already-interned` (boolean) indicates if the current namespace (as passed as `ns`) already had the given suggested
+interned (e.g.`Thread` and `Object` are interned by default in all JVM clojure namespaces). This helps avoiding the insertion of redundant requires/imports.
 
 ### hotload-dependency
 
@@ -365,7 +371,7 @@ When you want to release locally to the following:
 And here's how to deploy to Clojars:
 
 ```bash
-git tag -a v3.8.0 -m "3.8.0"
+git tag -a v3.9.0 -m "3.9.0"
 git push --tags
 ```
 
