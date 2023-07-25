@@ -1,6 +1,7 @@
 (ns refactor-nrepl.ns.prune-dependencies-test
   (:require
    [clojure.test :refer [are is deftest]]
+   [refactor-nrepl.ns.ns-parser :as ns-parser]
    [refactor-nrepl.ns.prune-dependencies :as sut]))
 
 (deftest libspec-in-use-without-refer-all?
@@ -64,3 +65,27 @@
     '[clojure.data.Data]  '[clojure data]         true
     '[clojure.data.Data]  '[clojure [data :as d]] true
     '[clojure.data.Data]  '[clojure foo]          false))
+
+(deftest prune-dependencies-test
+  (let [path "test-resources/clean_ns/cljc_ns.cljc"
+        result {:clj {:require
+                      '({:ns vlad.core,
+                         :as vlad,
+                         :refer (attr chain join present Validation),
+                         :rename {}}
+                        {:ns clojure.string, :as string, :rename {}}
+                        {:ns cemerick.url, :as url, :rename {}}),
+                      :import ()},
+                :cljs {:require
+                       '({:ns vlad.core,
+                          :as vlad,
+                          :refer (attr chain join present Validation),
+                          :rename {}}
+                         {:ns goog.date.Interval, :as interval, :rename {}}
+                         {:ns clojure.string, :as string, :rename {}}
+                         {:ns cemerick.url, :as url, :rename {}}),
+                       :import (),
+                       :require-macros ()},
+                :source-dialect :cljc}]
+    (is (= (sut/prune-dependencies (ns-parser/parse-ns path) path)
+           result))))

@@ -209,6 +209,21 @@
   (is (= (clean-ns cljc-ns-same-clj-cljs)
          cljc-ns-same-clj-cljs-cleaned)))
 
+(deftest does-use-read-conditionals-when-ns-are-not-equal
+  (let [good-ns (core/ns-form-from-string
+                 "(ns clean-ns.cljc-ns
+                    (:require
+                    [vlad.core :as vlad :refer [attr chain join present Validation]]
+                    [cemerick.url :as url]
+                    [clojure.string :as string]
+                    #?(:cljs [goog.date.Interval :as interval])))")]
+    (is (= (-> "test-resources/clean_ns/cljc_ns.cljc"
+               clean-msg
+               clean-ns
+               str
+               core/ns-form-from-string)
+           good-ns))))
+
 (deftest respects-no-prune-option
   (config/with-config {:prune-ns-form false
                        :prefix-rewriting true}

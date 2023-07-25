@@ -1,5 +1,6 @@
 (ns refactor-nrepl.ns.rebuild
   (:require
+   [clojure.data :refer [diff]]
    [clojure.string :as str]
    [refactor-nrepl.config :as config]
    [refactor-nrepl.core :refer [prefix prefix-form? suffix]]
@@ -264,10 +265,14 @@
       ;; otherwise if we have *both* clj and cljs form (but they're different),
       ;; or just one or the other, generate a splicing conditional form.
       (or clj-forms cljs-forms)
-      (list (symbol "#?@") (concat (when clj-forms
-                                     (list :clj (vec clj-forms)))
-                                   (when cljs-forms
-                                     (list :cljs (vec cljs-forms))))))))
+      (let [get-forms #(set (rest (first %)))
+            [clj-only cljs-only in-both] (diff (get-forms clj-forms)
+                                               (get-forms cljs-forms))]
+        (list (cons :require (concat in-both
+                                     (when clj-only
+                                       (list (symbol "#?") (apply list :clj clj-only)))
+                                     (when cljs-only
+                                       (list (symbol "#?") (apply list :cljs cljs-only))))))))))
 
 (defn build-dep-forms
   [{:keys [source-dialect] :as deps}]
