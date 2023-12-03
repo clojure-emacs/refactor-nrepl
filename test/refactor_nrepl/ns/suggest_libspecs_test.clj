@@ -82,7 +82,9 @@
                                                                                            clojure.set]}}    ["[something-else :as set]" "[clojure.set :as set]"]
 
     ;; Story 4:
-    "io"         "clj"       "clj"     [["io" "clojure.java.io" :only :clj]] '{:cljs {io [something-else]}}  ["[clojure.java.io :as io]"]
+    "io"         "clj"       "clj"     [["io" "clojure.java.io" :only :clj]]   '{:cljs {io [something-else]}}  ["[clojure.java.io :as io]"]
+    ;; https://github.com/clojure-emacs/clj-refactor.el/issues/556 :
+    "io"         "clj"       "clj"     [["io" "clojure.java.io" :only [:clj]]] '{:cljs {io [something-else]}}  ["[clojure.java.io :as io]"]
     ;; Story 5:
     "io"         "clj"       "clj"     [["io" "clojure.java.io" :only :clj]] '{:clj  {io [something-else]}}  ["[something-else :as io]"]
     "io"         "clj"       "clj"     [["io" "something-else" :only :cljs]] {}                              ["[clojure.java.io :as io]"]

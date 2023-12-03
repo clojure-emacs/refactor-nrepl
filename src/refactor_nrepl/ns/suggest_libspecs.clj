@@ -14,6 +14,10 @@
     (conj coll x)
     [x]))
 
+(def to-sym
+  (comp symbol
+        name)) ;; `name` for Clojure <= 1.9 compat
+
 (def parse-preferred-aliases
   (memoize (fn parse-preferred-aliases* [preferred-aliases]
              (let [preferred-aliases (into []
@@ -23,8 +27,10 @@
                                                         x)))
                                            (read-string preferred-aliases))
                    m (volatile! {})]
-               (doseq [[prefix ns-name _only-keyword only] (mapv (partial mapv (comp symbol
-                                                                                     name)) ;; `name` for Clojure <= 1.9 compat
+               (doseq [[prefix ns-name _only-keyword only] (mapv (partial mapv (fn [x]
+                                                                                 (cond->> x
+                                                                                   (coll? x)      (mapv to-sym)
+                                                                                   (not (coll? x)) to-sym)))
                                                                  preferred-aliases)
                        :let [files (ns-parser/ns-sym->ns-filenames ns-name)
                              only (or only [:clj :cljs])

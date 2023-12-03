@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 3.9.1
+
+* `suggest-libspecs` op: support collections for `:only` values.
+
 ## 3.9.0
 
 * [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns the wrong type

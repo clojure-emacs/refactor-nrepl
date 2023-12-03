@@ -13,7 +13,7 @@
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.2.3"]
                  ^:inline-dep [org.clojure/tools.namespace "1.4.4" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.6"]
-                 ^:inline-dep [cider/orchard "0.12.0"]
+                 ^:inline-dep [cider/orchard "0.21.0"]
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.310"]
                  ^:inline-dep [rewrite-clj "1.1.47"]
@@ -34,7 +34,7 @@
                :unresolved-tree false}
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {;; Clojure versions matrix
-             :provided {:dependencies [[cider/cider-nrepl "0.31.0"]
+             :provided {:dependencies [[cider/cider-nrepl "0.44.0"]
                                        [org.clojure/clojure "1.11.1"]
                                        ;; For satisfying `:pedantic?`:
                                        [com.google.code.findbugs/jsr305 "3.0.2"]
