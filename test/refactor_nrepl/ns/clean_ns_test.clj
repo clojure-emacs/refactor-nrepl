@@ -58,6 +58,8 @@
 (def ns-with-npm-strs (clean-msg "test-resources/ns_with_npm_strs.cljs"))
 (def ns-with-npm-strs-clean (clean-msg "test-resources/ns_with_npm_strs_clean.cljs"))
 
+(def ns-with-whitespace-changes-only (clean-msg "test-resources/ns_with_whitespace_changes_only.clj"))
+
 (deftest combines-requires
   (let [prefix-requires (config/with-config {:prefix-rewriting true}
                           (core/get-ns-component (clean-ns ns2) :require))
@@ -268,6 +270,14 @@
 (deftest npm-string-sorting
   (is (= (pprint-ns (clean-ns ns-with-npm-strs))
          (pprint-ns (read-string (slurp (:path ns-with-npm-strs-clean)))))))
+
+(deftest whitespace-only-changes-are-ignored-by-default
+  (is (nil? (clean-ns ns-with-whitespace-changes-only))))
+
+(deftest whitespace-only-changes-are-considered-when-always-return-ns-form-option-is-true
+  (is (= (read-string (slurp (:path ns-with-whitespace-changes-only)))
+         (clean-ns (assoc ns-with-whitespace-changes-only
+                          :always-return-ns-form true)))))
 
 (core/with-clojure-version->= {:major 1 :minor 11}
   (deftest as-alias

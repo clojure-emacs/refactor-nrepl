@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Add `always-return-ns-form` option to `clean-ns` message
+
 ## 3.9.1
 
 * `suggest-libspecs` op: support collections for `:only` values.

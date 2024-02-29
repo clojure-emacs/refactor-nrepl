@@ -35,8 +35,8 @@
   ns-form)
 
 (defn clean-ns
-  "Returns nil if there's nothing to clean."
-  [{:keys [path relative-path]}]
+  "Returns nil if there's nothing to clean unless always-return-ns-form is true."
+  [{:keys [path relative-path always-return-ns-form]}]
   (let [path (some (fn [p]
                      (when (and p (.exists (io/file p)))
                        p))
@@ -56,5 +56,6 @@
             new-ns-form (-> (ns-parser/parse-ns path)
                             deps-preprocessor
                             (rebuild-ns-form ns-form))]
-        (when-not (= ns-form new-ns-form)
+        (when (or always-return-ns-form
+                  (not= ns-form new-ns-form))
           new-ns-form)))))
