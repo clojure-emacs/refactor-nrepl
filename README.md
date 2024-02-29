@@ -100,6 +100,9 @@ Configuration settings are passed along with each msg, currently the recognized 
  ;; Should `clean-ns` favor prefix forms in the ns macro?
  :prefix-rewriting true
 
+ ;; Should `clean-ns` always return the ns form even if there were no structural changes? Useful for when there would only have been whitespace changes from pretty-printing it again.
+ :always-return-ns-form false
+
  ;; Should `pprint-ns` place a newline after the `:require` and `:import` tokens?
  :insert-newline-after-require true
 
