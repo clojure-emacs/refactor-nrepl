@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.10.0
+
 * Add `always-return-ns-form` option to `clean-ns` message
 
 ## 3.9.1
