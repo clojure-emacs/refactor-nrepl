@@ -4,6 +4,7 @@
    [nrepl.server :as nrepl]
    [refactor-nrepl.analyzer :as analyzer]
    [refactor-nrepl.client :refer [connect find-unbound find-usages resolve-missing version]]
+   [refactor-nrepl.config :as config]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.middleware]))
 
@@ -21,8 +22,8 @@
 
 (defn wrap-setup-once [f]
   (let [server (start-up-repl-server)]
-
-    (f)
+    (binding [config/*config* (assoc config/*config* :debug true)]
+      (f))
 
     (stop-repl-server server)))
 

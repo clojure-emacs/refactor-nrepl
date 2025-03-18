@@ -120,6 +120,9 @@
         error? (instance? Throwable ast-or-err)
         debug (:debug config/*config*)]
 
+    (when (and error? (System/getenv "CI"))
+      (.printStackTrace ^Throwable ast-or-err))
+
     (cond
       (and error? debug)
       (throw ast-or-err)
