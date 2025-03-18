@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Use `tools.analyzer.jvm` 1.3.2.
+* Use `tools.reader` 1.5.1.
 
 ## 3.10.0
 

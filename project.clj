@@ -12,7 +12,7 @@
                  ^:inline-dep [org.clojure/data.json "2.4.0"]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.2"]
                  ^:inline-dep [org.clojure/tools.namespace "1.4.4" :exclusions [org.clojure/tools.reader]]
-                 ^:inline-dep [org.clojure/tools.reader "1.3.6"]
+                 ^:inline-dep [org.clojure/tools.reader "1.5.1"]
                  ^:inline-dep [cider/orchard "0.21.0"]
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.310"]
