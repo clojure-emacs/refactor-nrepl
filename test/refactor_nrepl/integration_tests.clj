@@ -132,6 +132,12 @@
         foo-res (resolve-missing :transport transport :symbol "Foo")
         bar-res (resolve-missing :transport transport :symbol "Bar")
         baz-res (resolve-missing :transport transport :symbol "Baz")
+        _ (do
+            (assert split-res)
+            (assert date-res)
+            (assert foo-res)
+            (assert bar-res)
+            (assert baz-res))
         pattern-res (resolve-missing :transport transport :symbol "Pattern/quote")
         pattern-type (:type (first (filter #(= (:name %) 'java.util.regex.Pattern) pattern-res)))
         split-type (:type (first (filter #(= (:name %)  'clojure.string) split-res)))
