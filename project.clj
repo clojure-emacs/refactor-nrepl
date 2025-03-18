@@ -10,7 +10,7 @@
                  ^:inline-dep [compliment "0.4.0"]
                  ^:inline-dep [http-kit "2.5.0"]
                  ^:inline-dep [org.clojure/data.json "2.4.0"]
-                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.2.3"]
+                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.2"]
                  ^:inline-dep [org.clojure/tools.namespace "1.4.4" :exclusions [org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.3.6"]
                  ^:inline-dep [cider/orchard "0.21.0"]

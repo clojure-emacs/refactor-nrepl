@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Use `tools.analyzer.jvm` 1.3.2.
+
 ## 3.10.0
 
 * Add `always-return-ns-form` option to `clean-ns` message
