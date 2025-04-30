@@ -31,7 +31,12 @@
               ;; Odd stuff brought in by the `fs` dependency:
               "Implementing class"
               "org.apache.commons.compress.harmony.pack200.Segment can not implement"
-              "javax/xml/bind/ModuleUtil (wrong name: META-INF/versions/9/javax/xml/bind/ModuleUtil)"])
+              "javax/xml/bind/ModuleUtil (wrong name: META-INF/versions/9/javax/xml/bind/ModuleUtil)"
+              "META-INF/versions/9/javax/xml/bind/ModuleUtil (wrong name: javax/xml/bind/ModuleUtil)"
+              ;; Stuff brought in by the `leiningen-core` dependency:
+              "com/google/inject"
+              "org/osgi"
+              "org/codehaus/plexus"])
        (do
          (.printStackTrace e)
          false))

@@ -10,10 +10,7 @@
    (java.io File)))
 
 (defn- get-available-classes []
-  (let [classes (->> (dissoc (compliment.utils/classes-on-classpath)
-                             "")
-                     (vals)
-                     (reduce into))]
+  (let [classes (compliment.utils/classes-on-classpath)]
     (into []
           (comp (keep (fn [s]
                         ;; https://github.com/alexander-yakushev/compliment/issues/105
