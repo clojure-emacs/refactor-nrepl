@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+* Use `tools.analyzer.jvm` 1.3.2.
+* Use `tools.reader` 1.5.1.
+* Use `tools.namespace` 1.5.0.
+* Use `compliment` 0.7.0.
+* Use `orchard` 0.34.3.
+
 ## 3.10.0
 
 * Add `always-return-ns-form` option to `clean-ns` message
@@ -47,7 +53,7 @@
 
 ## 3.5.5
 
-* [#385](https://github.com/clojure-emacs/refactor-nrepl/pull/385): only `suggest-aliases` that are valid symbols. 
+* [#385](https://github.com/clojure-emacs/refactor-nrepl/pull/385): only `suggest-aliases` that are valid symbols.
   * Fixes an edge case for cljr-refactor.el's `cljr-slash`.
 
 ## 3.5.4
@@ -68,7 +74,7 @@
 
 ## 3.5.0
 
-* [#374](https://github.com/clojure-emacs/refactor-nrepl/issues/374): support Clojure 1.11's new `:as-alias` namespace directive. 
+* [#374](https://github.com/clojure-emacs/refactor-nrepl/issues/374): support Clojure 1.11's new `:as-alias` namespace directive.
 
 ## 3.4.2
 
@@ -122,11 +128,11 @@
 
 * [#344](https://github.com/clojure-emacs/refactor-nrepl/issues/344): make clean-ns's style closer to the [how to ns](https://stuartsierra.com/2016/08/27/how-to-ns) style.
 * [#333](https://github.com/clojure-emacs/refactor-nrepl/issues/333): skip scanning irrelevant directories in more places (as it was already done for various other functionalities; this limits ananlysis/refactoring to your source/test paths, skipping other artifacts).
-* Make `resolve-missing` able to find even more classes than before. 
+* Make `resolve-missing` able to find even more classes than before.
 * [#346](https://github.com/clojure-emacs/refactor-nrepl/issues/346): refine the heuristic for ignoring irrelevant dirs (see the above bullet point).
 * Introduce `print-right-margin`/`print-miser-width` configuration options, used during `pprint`ing of ns forms.
   * The default is one that is consistent with refactor-nrepl's traditional behavior.
-  * You can set both to `nil` for disabling line wrapping. 
+  * You can set both to `nil` for disabling line wrapping.
 * ns form printing: also wrap single-segment namespaces in a vector.
 
 ## 3.0.0 (2021-10-25)
