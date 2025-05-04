@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.11.0
+
 * Use `tools.analyzer.jvm` 1.3.2.
 * Use `tools.reader` 1.5.1.
 * Use `tools.namespace` 1.5.0.

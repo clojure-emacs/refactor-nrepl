@@ -26,7 +26,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "3.10.0"]
+:plugins [[refactor-nrepl "3.11.0"]
           [cider/cider-nrepl "0.31.0"]]
 ```
 
@@ -41,7 +41,7 @@ For that, you can use the following (more info can be found in the [nREPL Server
   "We build our own custom nrepl handler, mimicking CIDER's."
   (apply nrepl-server/default-handler
          (conj cider.nrepl.middleware/cider-middleware 'refactor-nrepl.middleware/wrap-refactor)))
-         
+
 (nrepl-server/start-server :port port :address bind-address :handler custom-nrepl-handler)
 ```
 
@@ -92,7 +92,7 @@ Configuration settings are passed along with each msg, currently the recognized 
   ;; but it also needs that `:ignore-paths` is correctly set, that all namespaces are valid,
   ;; that tools.analyzer is able to analyze all of them, etc
   :ignore-errors true
-   
+
  ;; When true `clean-ns` will remove unused symbols, otherwise just
  ;; sort etc
  :prune-ns-form true
@@ -326,7 +326,7 @@ project. The reply looks like this:
 The list of suggestions is sorted by frequency in decreasing order, so the first element is always the best suggestion.
 
 This op accepts a `:suggest` option, default falsey. If truthy, it will also include suggested aliases, following [Sierra's convention](https://stuartsierra.com/2015/05/10/clojure-namespace-aliases),
-for existing files that haven't been aliased yet. 
+for existing files that haven't been aliased yet.
 
 ### find-used-publics
 
@@ -369,12 +369,12 @@ If you want to use `mranderson` while developing locally with the REPL, the sour
 
 When you want to release locally to the following:
 
-    PROJECT_VERSION=3.5.3 make install
+    PROJECT_VERSION=1.2.3 make install
 
 And here's how to deploy to Clojars:
 
 ```bash
-git tag -a v3.10.0 -m "3.10.0"
+git tag -a v1.2.3 -m "1.2.3"
 git push --tags
 ```
 
