@@ -45,7 +45,7 @@ For that, you can use the following (more info can be found in the [nREPL Server
 (nrepl-server/start-server :port port :address bind-address :handler custom-nrepl-handler)
 ```
 
-The `cider-middleware` is technically optional but highly recommended.
+The `cider-middleware` is optional but highly recommended.
 
 ### Passing messages to and from refactor-nrepl
 
