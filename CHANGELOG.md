@@ -12,7 +12,7 @@
 
 ## 3.10.0
 
-* Add `always-return-ns-form` option to `clean-ns` message
+* Add `always-return-ns-form` option to `clean-ns` message.
 
 ## 3.9.1
 
@@ -20,7 +20,7 @@
 
 ## 3.9.0
 
-* [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns the wrong type
+* [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns the wrong type.
 * [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns non- `import`able classes.
 * [#402](https://github.com/clojure-emacs/refactor-nrepl/issues/402) `resolve-missing` now flags with `:already-interned true` the candidates that are already interned into the calling namespace.
   * This helps clients avoiding the suggestion/insertion of candidates which are redundant
