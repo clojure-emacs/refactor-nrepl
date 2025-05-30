@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#415](https://github.com/clojure-emacs/refactor-nrepl/issues/415): Remove Compliment dependency.
+
 ## 3.11.0 (2025-05-04)
 
 * Use `tools.analyzer.jvm` 1.3.2.

@@ -55,5 +55,5 @@
                          (with-meta s
                            {:refactor-nrepl/is-class true})))
                   (reduce into #{} [(ns-import-candidates missing)
-                                    (get @class-search/available-classes-by-last-segment missing)]))
+                                    (get (class-search/available-classes-by-last-segment) missing)]))
     :refer  (get (symbols->ns-syms) missing)))

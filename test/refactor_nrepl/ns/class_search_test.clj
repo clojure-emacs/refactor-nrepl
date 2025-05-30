@@ -66,22 +66,22 @@
    (contains? non-initializable-classes v)))
 
 (defn ok []
-  (is (< 3000 (count @sut/available-classes))
+  (is (< 3000 (count (sut/available-classes)))
       "There are plenty of completions offered / these's a test corpus")
 
-  (is (some #{'java.nio.channels.FileChannel} @sut/available-classes))
-  (is (some #{'java.io.File} @sut/available-classes))
-  (is (some #{'java.lang.Thread} @sut/available-classes))
+  (is (some #{'java.nio.channels.FileChannel} (sut/available-classes)))
+  (is (some #{'java.io.File} (sut/available-classes)))
+  (is (some #{'java.lang.Thread} (sut/available-classes)))
 
-  (is (< 3000 (count @sut/available-classes-by-last-segment)))
+  (is (< 3000 (count (sut/available-classes-by-last-segment))))
 
-  (doseq [x @sut/available-classes
+  (doseq [x (sut/available-classes)
           :let [v (resolve-class x)]]
     (when-not (result-can-be-ignored? v)
       (is (class? v)
           (pr-str x))))
 
-  (doseq [[suffix classes] @sut/available-classes-by-last-segment]
+  (doseq [[suffix classes] (sut/available-classes-by-last-segment)]
     (is (seq classes))
     (doseq [c classes
             :let [v (resolve-class c)]]
@@ -92,9 +92,7 @@
       (is (-> c str (.endsWith (str suffix))))))
 
   (is (= '[clojure.lang.ExceptionInfo]
-         (get @sut/available-classes-by-last-segment 'ExceptionInfo))))
+         (get (sut/available-classes-by-last-segment) 'ExceptionInfo))))
 
 (deftest works
-  (ok)
-  (sut/reset)
   (ok))
