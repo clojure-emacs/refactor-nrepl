@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 3.11.0
+## 3.11.0 (2025-05-04)
 
 * Use `tools.analyzer.jvm` 1.3.2.
 * Use `tools.reader` 1.5.1.
@@ -10,15 +10,15 @@
 * Use `compliment` 0.7.0.
 * Use `orchard` 0.34.3.
 
-## 3.10.0
+## 3.10.0 (2024-02-03)
 
 * Add `always-return-ns-form` option to `clean-ns` message.
 
-## 3.9.1
+## 3.9.1 (2023-12-03)
 
 * `suggest-libspecs` op: support collections for `:only` values.
 
-## 3.9.0
+## 3.9.0 (2023-07-24)
 
 * [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns the wrong type.
 * [#401](https://github.com/clojure-emacs/refactor-nrepl/issues/401) `resolve-missing` no longer returns non- `import`able classes.
@@ -28,7 +28,7 @@
     * same for `:refer`s and `:rename`s
 * Fix a bug the newly introduced .cljc detection.
 
-## 3.8.0
+## 3.8.0 (2023-07-21)
 
 * [#396](https://github.com/clojure-emacs/refactor-nrepl/pull/396) Handle the analyzing and parsing of Clojure code from .cljc files.
 * Upgrade various dependencies: [#393](https://github.com/clojure-emacs/refactor-nrepl/pull/393), [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394) & [#395](https://github.com/clojure-emacs/refactor-nrepl/pull/395).
@@ -37,16 +37,16 @@
 * `ns-tracker` no longer ignores cljs files with string requires [#394](https://github.com/clojure-emacs/refactor-nrepl/pull/394).
   * note that `ns-tracker` is normally used for clj files only.
 
-## 3.7.1
+## 3.7.1 (2023-07-06)
 
 * Fix an oversight in `suggest-libspecs`.
 
-## 3.7.0
+## 3.7.0 (2023-07-04)
 
 * Implement new middleware op: `suggest-libspecs`
   * Supports a beta clj-refactor.el feature.
 
-## 3.6.0
+## 3.6.0 (2022-10-23)
 
 * [#387](https://github.com/clojure-emacs/refactor-nrepl/issues/387): extend clj-kondo `:unused-namespace` integration. Now namespace local configuration is also taken into account.
   `:libspec-whitelist` can be augmented for particular namespace by:
