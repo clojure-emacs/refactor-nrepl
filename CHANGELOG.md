@@ -28,7 +28,7 @@
   * This helps clients avoiding the suggestion/insertion of candidates which are redundant
     * e.g. `+` is already interned, so is `Thread`
     * same for `:refer`s and `:rename`s
-* Fix a bug the newly introduced .cljc detection.
+* Fix a bug in the newly introduced .cljc detection.
 
 ## 3.8.0 (2023-07-21)
 
@@ -108,7 +108,7 @@
 
 * [#361](https://github.com/clojure-emacs/refactor-nrepl/pull/361) Honor clj-kondo `:unused-namespace` config, if present
   * This piece of config can inform/complement refactor-nrepl's own config.
-  * If you are using refactor-nrepl programatically (as opposed to as nREPL middleware), you can improve performance by using `refactor-nrepl.ns.libspec-allowlist/with-memoized-libspec-allowlist` prior to invoking `clean-ns`.
+  * If you are using refactor-nrepl programmatically (as opposed to as nREPL middleware), you can improve performance by using `refactor-nrepl.ns.libspec-allowlist/with-memoized-libspec-allowlist` prior to invoking `clean-ns`.
 
 ## 3.2.2 (2022-01-29)
 
@@ -131,7 +131,7 @@
 ### Changes
 
 * [#344](https://github.com/clojure-emacs/refactor-nrepl/issues/344): make clean-ns's style closer to the [how to ns](https://stuartsierra.com/2016/08/27/how-to-ns) style.
-* [#333](https://github.com/clojure-emacs/refactor-nrepl/issues/333): skip scanning irrelevant directories in more places (as it was already done for various other functionalities; this limits ananlysis/refactoring to your source/test paths, skipping other artifacts).
+* [#333](https://github.com/clojure-emacs/refactor-nrepl/issues/333): skip scanning irrelevant directories in more places (as it was already done for various other functionalities; this limits analysis/refactoring to your source/test paths, skipping other artifacts).
 * Make `resolve-missing` able to find even more classes than before.
 * [#346](https://github.com/clojure-emacs/refactor-nrepl/issues/346): refine the heuristic for ignoring irrelevant dirs (see the above bullet point).
 * Introduce `print-right-margin`/`print-miser-width` configuration options, used during `pprint`ing of ns forms.
@@ -253,7 +253,7 @@
 
 ### Changes
 
-* [#133](https://github.com/clojure-emacs/refactor-nrepl/issues/133) Filter out clojure source files without ns form when indexing/analyzing so projects whith such files are supported.
+* [#133](https://github.com/clojure-emacs/refactor-nrepl/issues/133) Filter out clojure source files without ns form when indexing/analyzing so projects with such files are supported.
 
 
 ## 2.0.0
@@ -271,7 +271,7 @@
 ### Bugs fixed
 
 * [clojure-emacs/clj-refactor.el#223](https://github.com/clojure-emacs/clj-refactor.el/issues/223) Fix clean-ns removing metadata when file starts with a comment.
-* [#103](https://github.com/clojure-emacs/refactor-nrepl/issues/108) `find-symbol` failes in projects with `cljc` files.
+* [#103](https://github.com/clojure-emacs/refactor-nrepl/issues/108) `find-symbol` fails in projects with `cljc` files.
 * [#106](https://github.com/clojure-emacs/refactor-nrepl/issues/106) Failure to build ASTs when namespaced keywords are present in the project.
 * [#127](https://github.com/clojure-emacs/refactor-nrepl/issues/127) tools.namespace's tracker doesn't handle namespaces of same name across dialects. Temporary fix, `:require-macros` dependencies not tracked across platforms, also see [TNS-38](http://dev.clojure.org/jira/browse/TNS-38)
 * [#91](https://github.com/clojure-emacs/refactor-nrepl/issues/91) Find usages/Rename symbol gets confused after rename file or dir
@@ -296,7 +296,7 @@ warn and exclude the middleware instead of failing catastrophically.
 ## 1.1.0
 
 * Add `rename-file-or-dir` which returns a file or a directory of clj files.
-* Add `extract-definition` which returns enough information to the clien to afford inlining of defs defns and let-bound vars.
+* Add `extract-definition` which returns enough information to the client to afford inlining of defs defns and let-bound vars.
 * Add `stubs-for-interface` for creating skeleton interface implementations
 * Add `warm-ast-cache` op for eagerly building, and caching, ASTs of project files
 
@@ -320,7 +320,7 @@ warn and exclude the middleware instead of failing catastrophically.
 * various bugfixes in clean-ns
 * improvements on error messages
 * fix in find unbound in case of s-expression is inside a macro
-* resolve missing works for static method, field and resolve missign will work right after hotload dependency
+* resolve missing works for static method, field and resolve missing will work right after hotload dependency
 
 ## 1.0.1
 

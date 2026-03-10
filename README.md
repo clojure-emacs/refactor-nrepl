@@ -23,7 +23,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 
 ### Adding the middleware via Leiningen
 
-Add the following, either in your project's `project.clj`,  or in the `:user` profile found at `~/.lein/profiles.clj`:
+Add the following, either in your project's `project.clj`, or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
 :plugins [[refactor-nrepl "3.11.0"]
@@ -53,7 +53,7 @@ We've already called this a middleware, but we haven't really talked
 about what that means.  refactor-nrepl is middleware for a REPL.
 Specifically it's middleware for a networked REPL, which is managed by
 [nREPL][].
-refactor-nrepl uses the running REPL to to gain insight about your
+refactor-nrepl uses the running REPL to gain insight about your
 project, in order to offer various refactorings.
 
 Most likely you're already in an environment with a nREPL client available, so you don't have to worry about anything except sending and receiving messages:
@@ -68,7 +68,7 @@ nil
 ;;=> [5]
 ```
 
-In the example above we're talking to one of the built-in nREPL ops, `eval`, passing it the data `:code "(+ 2 3)"`.  The rest of the readme details or own nREPL ops which provide various refactoring support.
+In the example above we're talking to one of the built-in nREPL ops, `eval`, passing it the data `:code "(+ 2 3)"`.  The rest of the readme details our own nREPL ops which provide various refactoring support.
 
 ## Available features
 
@@ -153,15 +153,15 @@ This op finds occurrences of a single symbol.
 
 `name` The name of the symbol.
 
-`line` The line number where the symbol occurrs, counting from 1.
+`line` The line number where the symbol occurs, counting from 1.
 
 `column` The column number where the symbol occurs, counting from 1.
 
 `ignore-errors` [optional] if set find symbol carries on even if there is broken namespace which we can not build AST for
 
-The return value is a stream of occurrences under the key `occurrence` which is an list of maps like this:
+The return value is a stream of occurrences under the key `occurrence` which is a list of maps like this:
 
-`{:line-beg 5 :line-end 5 :col-beg 19 :col-end 26 :name a-name :file \"/aboslute/path/to/file.clj\" :match (fn-name some args)}`
+`{:line-beg 5 :line-end 5 :col-beg 19 :col-end 26 :name a-name :file \"/absolute/path/to/file.clj\" :match (fn-name some args)}`
 
 When the final `occurrence` has been sent a final message is sent with `count`, indicating the total number of matches, and `status` `done`.
 
@@ -185,13 +185,13 @@ The `clean-ns` op will perform the following cleanups on an ns form:
 
 The `clean-ns` requires a `path` which must be the absolute path to the file containing the `ns` to be operated upon. A client should also pass in a `relative-path`, which is the path relative to the project root, and which is used as a fallback when the `path` does not exist. (see [clj-refactor.el #380](https://github.com/clojure-emacs/clj-refactor.el/issues/380)).
 
-The return value, `ns` is the entire `(ns ..)` form in prestine condition, or `nil` if nothing was done (so the client doesn't update the timestamp on files when nothing actually needs doing).
+The return value, `ns` is the entire `(ns ..)` form in pristine condition, or `nil` if nothing was done (so the client doesn't update the timestamp on files when nothing actually needs doing).
 
 Pretty-printing the `(ns ..)` form is surprisingly difficult.  The current implementation just puts stuff on the right line and delegates the actual indentation to the client.
 
 In the event of an error `clean-ns` will return `error` which is an error message intended for display to the user.
 
-**Warning**: The `clean-ns` op dependes on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
+**Warning**: The `clean-ns` op depends on `tools.analyzer` to determine which vars in a file are actually being used.  This means the code is evaluated and any top-level occurrences of `(launch-missiles)` should be avoided.
 
 This op can be [configured](#configuration).
 
@@ -367,7 +367,7 @@ Note the plus sign (`+`) before the leiningen profile.
 
 If you want to use `mranderson` while developing locally with the REPL, the source has to be modified in the `target/srcdeps` directory.
 
-When you want to release locally to the following:
+When you want to release locally do the following:
 
     PROJECT_VERSION=1.2.3 make install
 
