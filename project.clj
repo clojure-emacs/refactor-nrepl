@@ -80,6 +80,8 @@
                          {:dependencies [[clj-kondo "2022.06.22"]
                                          [com.fasterxml.jackson.core/jackson-core "2.13.3"]]}]
 
+             :antq {:plugins [[com.github.liquidz/antq "2.11.1276"]]}
+
              :deploy {:source-paths [".circleci/deploy"]}}
 
   :jvm-opts ~(cond-> []
