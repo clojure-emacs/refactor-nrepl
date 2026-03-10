@@ -253,6 +253,3 @@
            (#(find-usages-in-file % (io/file file)))
            (map #(select-keys % [:name :line-beg :line-end :col-beg :col-end :file]))))
 
-(defn warm-macro-occurrences-cache []
-  ;noop, will be removed with release 2.2.0
-  )

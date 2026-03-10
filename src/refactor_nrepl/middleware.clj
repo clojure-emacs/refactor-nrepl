@@ -167,13 +167,6 @@
   (reply transport msg :status :done
          :ast-statuses (serialize-response msg (@warm-ast-cache))))
 
-(def ^:private warm-macro-occurrences-cache
-  (delay (require-and-resolve 'refactor-nrepl.find.find-macros/warm-macro-occurrences-cache)))
-
-(defn- warm-macro-occurrences-cache-reply [{:keys [transport] :as msg}]
-  (@warm-macro-occurrences-cache)
-  (reply transport msg :status :done))
-
 (defn- stubs-for-interface-reply [{:keys [transport] :as msg}]
   (reply transport msg :status :done
          :functions (serialize-response msg (stubs-for-interface msg))))
@@ -235,8 +228,7 @@
    "stubs-for-interface"          stubs-for-interface-reply
    "find-used-publics"            find-used-publics-reply
    "version"                      version-reply
-   "warm-ast-cache"               warm-ast-cache-reply
-   "warm-macro-occurrences-cache" warm-macro-occurrences-cache-reply})
+   "warm-ast-cache"               warm-ast-cache-reply})
 
 (defn wrap-refactor
   [handler]

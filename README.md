@@ -340,6 +340,28 @@ In case namespace B depends on namespace A this operation finds occurrences of s
 
 Possible application of this operation to refactor a `:refer :all` style require into a refer or aliased style require.
 
+### cljr-suggest-libspecs (beta)
+
+Given a namespace alias prefix (e.g. what the user typed before `/`), suggests matching libspecs based on namespace aliases already in use in the project and an optional set of preferred aliases.
+
+This op is primarily intended for use by clj-refactor.el's `cljr-slash` feature.
+
+`cljr-suggest-libspecs` requires:
+
+`lib-prefix` The alias prefix to look up (e.g. `"set"` when the user typed `set/`).
+
+`buffer-language-context` The file's language: one of `"clj"`, `"cljs"`, or `"cljc"`.
+
+`input-language-context` The language context at point. Same as `buffer-language-context` outside reader conditionals; inside a reader conditional, typically `"clj"` or `"cljs"`.
+
+`preferred-aliases` A list of preferred alias mappings (as used by clj-refactor.el's `cljr-magic-require-namespaces`).
+
+`suggest` [optional] Whether to include suggested aliases (defaults to `true`).
+
+`ignore-errors` [optional] Whether to ignore errors during analysis (defaults to `true`).
+
+The return value `suggestions` is a list of libspec strings, e.g. `["[clojure.set :as set]"]`.
+
 ### Errors
 
 The middleware returns errors under one of two keys: `:error` or
