@@ -115,6 +115,16 @@ Configuration settings are passed along with each msg, currently the recognized 
 
  ;; Regexes matching paths that are to be ignored
  :ignore-paths []
+
+ ;; Will be forwarded to clojure.pprint/*print-right-margin* when
+ ;; pprinting ns forms. You can set it to nil for disabling line wrapping.
+ ;; See also: :print-miser-width
+ :print-right-margin 72
+
+ ;; Will be forwarded to clojure.pprint/*print-miser-width* when
+ ;; pprinting ns forms. You can set it to nil for disabling line wrapping.
+ ;; See also: :print-right-margin
+ :print-miser-width 40
 }
 ```
 
