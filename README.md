@@ -98,7 +98,7 @@ Configuration settings are passed along with each msg, currently the recognized 
  :prune-ns-form true
 
  ;; Should `clean-ns` favor prefix forms in the ns macro?
- :prefix-rewriting true
+ :prefix-rewriting false
 
  ;; Should `clean-ns` always return the ns form even if there were no structural changes? Useful for when there would only have been whitespace changes from pretty-printing it again.
  :always-return-ns-form false
