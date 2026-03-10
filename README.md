@@ -219,6 +219,8 @@ interned (e.g.`Thread` and `Object` are interned by default in all JVM clojure n
 
 ### hotload-dependency
 
+**Note:** This feature is currently disabled due to Java 10+ compatibility issues.
+
 Loads a new project dependency into the currently active repl.
 
 The op requires `coordinates` which is a leiningen style dependency.
