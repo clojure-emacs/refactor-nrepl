@@ -6,16 +6,16 @@
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "https://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "1.3.1" :exclusions [org.clojure/clojure]]
-                 ^:inline-dep [http-kit "2.5.0"]
-                 ^:inline-dep [org.clojure/data.json "2.5.0"]
-                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.2"]
-                 ^:inline-dep [org.clojure/tools.namespace "1.5.0" :exclusions [org.clojure/tools.reader]]
-                 ^:inline-dep [org.clojure/tools.reader "1.5.2"]
-                 ^:inline-dep [cider/orchard "0.35.0" :exclusions [org.clojure/clojure]]
+  :dependencies [[nrepl "1.6.0" :exclusions [org.clojure/clojure]]
+                 ^:inline-dep [http-kit "2.8.1"]
+                 ^:inline-dep [org.clojure/data.json "2.5.2"]
+                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.4"]
+                 ^:inline-dep [org.clojure/tools.namespace "1.5.1" :exclusions [org.clojure/tools.reader]]
+                 ^:inline-dep [org.clojure/tools.reader "1.6.0"]
+                 ^:inline-dep [cider/orchard "0.39.0" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
-                 ^:inline-dep [clj-commons/fs "1.6.310"]
-                 ^:inline-dep [rewrite-clj "1.1.49"]
+                 ^:inline-dep [clj-commons/fs "1.6.312"]
+                 ^:inline-dep [rewrite-clj "1.2.52"]
                  ^:inline-dep [version-clj "2.0.3"]]
    ; see versions matrix below
 
