@@ -87,7 +87,7 @@ commands:
       cache_version:
         type: string
         description: "Change this value to force a cache update"
-        default: "1"
+        default: "2"
     steps:
       - run:
           name: Install make
