@@ -6,16 +6,16 @@
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "https://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "1.3.1" :exclusions [org.clojure/clojure]]
+  :dependencies [[nrepl "1.6.0" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [http-kit "2.5.0"]
-                 ^:inline-dep [org.clojure/data.json "2.5.0"]
-                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.2"]
-                 ^:inline-dep [org.clojure/tools.namespace "1.5.0" :exclusions [org.clojure/tools.reader]]
-                 ^:inline-dep [org.clojure/tools.reader "1.5.2"]
-                 ^:inline-dep [cider/orchard "0.35.0" :exclusions [org.clojure/clojure]]
+                 ^:inline-dep [org.clojure/data.json "2.5.2" :exclusions [org.clojure/clojure]]
+                 ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.4" :exclusions [org.clojure/clojure]]
+                 ^:inline-dep [org.clojure/tools.namespace "1.5.1" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
+                 ^:inline-dep [org.clojure/tools.reader "1.6.0" :exclusions [org.clojure/clojure]]
+                 ^:inline-dep [cider/orchard "0.39.0" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
-                 ^:inline-dep [clj-commons/fs "1.6.310"]
-                 ^:inline-dep [rewrite-clj "1.1.49"]
+                 ^:inline-dep [clj-commons/fs "1.6.312"]
+                 ^:inline-dep [rewrite-clj "1.2.52" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [version-clj "2.0.3"]]
    ; see versions matrix below
 
@@ -27,7 +27,7 @@
                                     :username :env/clojars_username
                                     :password :env/clojars_password
                                     :sign-releases false}]]
-  :plugins [[thomasa/mranderson "0.5.4-SNAPSHOT"]]
+  :plugins [[thomasa/mranderson "0.5.4-fix76"]]
   :mranderson {:project-prefix  "refactor-nrepl.inlined-deps"
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}
@@ -43,13 +43,13 @@
 
              :master {:repositories [["snapshots"
                                       "https://oss.sonatype.org/content/repositories/snapshots"]]
-                      :dependencies [[org.clojure/clojure "1.12.0-master-SNAPSHOT"]
-                                     [org.clojure/clojure "1.12.0-master-SNAPSHOT" :classifier "sources"]]}
+                      :dependencies [[org.clojure/clojure "1.13.0-master-SNAPSHOT"]
+                                     [org.clojure/clojure "1.13.0-master-SNAPSHOT" :classifier "sources"]]}
              :dev {}
              :test {:dependencies [[cider/piggieback "0.6.0"]
                                    [org.clojure/clojurescript "1.11.60"]
                                    [org.clojure/core.async "1.6.673" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
-                                   [commons-io/commons-io "2.13.0"]
+                                   [commons-io/commons-io "2.20.0"]
                                    [leiningen-core "2.11.2"
                                     :exclusions [org.clojure/clojure
                                                  commons-codec

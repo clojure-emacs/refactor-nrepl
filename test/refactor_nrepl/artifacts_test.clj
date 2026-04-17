@@ -22,18 +22,26 @@
   "Retries a flaky fn `f`.
 
   In our case the flakiness is outside of our control since Maven Central,
-  Clojars, etc can always have hiccups."
+  Clojars, etc can always have hiccups. Retries on both exceptions and
+  empty results."
   ([f]
    (retry-flaky f 0))
   ([f ^long attempts]
-   (try
-     (f)
-     (catch Exception e
-       ;; give Maven a break:
-       (Thread/sleep 18000)
-       (if (< attempts 7)
-         (retry-flaky f (inc attempts))
-         (throw e))))))
+   (let [result (try
+                  (f)
+                  (catch Exception e
+                    (if (< attempts 7)
+                      ::retry
+                      (throw e))))]
+     (if (or (= result ::retry)
+             (and (coll? result) (empty? result)))
+       (do
+         ;; give Maven a break:
+         (Thread/sleep 18000)
+         (if (< attempts 7)
+           (retry-flaky f (inc attempts))
+           result))
+       result))))
 
 (deftest get-mvn-artifacts!-test
   (is (> (count (retry-flaky (fn []
