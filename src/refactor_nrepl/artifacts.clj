@@ -4,9 +4,9 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [org.httpkit.client :as http]
    [version-clj.core :as versions])
   (:import
+   (java.net HttpURLConnection URL)
    (java.util.zip GZIPInputStream)))
 
 (def artifacts-file (str (io/file (System/getProperty "java.io.tmpdir")
@@ -27,13 +27,25 @@
 
 (def millis-per-day (* 24 60 60 1000))
 
-(defn- get-proxy-opts
-  "Generates proxy options from JVM properties for httpkit-client "
-  []
-  (when-let [proxy-host (some #(System/getProperty %) ["https.proxyHost" "http.proxyHost"])]
-    {:proxy-host proxy-host
-     :proxy-port (some->> ["https.proxyPort" "http.proxyPort"]
-                          (some #(System/getProperty %)) Integer/parseInt)}))
+(defn- http-get
+  "Fetches `url` via HTTP GET and returns the body as a string, or nil on a
+  non-200, blank body, timeout, or connection error.
+  Honors the standard `https.proxy{Host,Port}`/`http.proxy{Host,Port}` JVM properties."
+  [^String url]
+  (try
+    (let [conn ^HttpURLConnection (.openConnection (URL. url))]
+      (.setConnectTimeout conn 10000)
+      (.setReadTimeout conn 30000)
+      (try
+        (when (= 200 (.getResponseCode conn))
+          (with-open [in (.getInputStream conn)]
+            (let [body (slurp in :encoding "UTF-8")]
+              (when-not (str/blank? body)
+                body))))
+        (finally
+          (.disconnect conn))))
+    (catch Exception _
+      nil)))
 
 (defn- stale-cache?
   []
@@ -69,36 +81,31 @@
 (defn- get-mvn-artifacts!
   "All the artifacts under org.clojure in mvn central"
   [group-id]
-  (let [search-prefix "https://search.maven.org/solrsearch/select?q=g:%22"
-        search-suffix "%22+AND+p:%22jar%22&rows=2000&wt=json"
-        search-url (str search-prefix group-id search-suffix)
-        p (http/get search-url (assoc (get-proxy-opts) :as :text))
-        {:keys [_ _ body _]} (deref p 7000 {})]
-    (if (empty? body)
-      []
+  (let [url (str "https://search.maven.org/solrsearch/select?q=g:%22"
+                 group-id
+                 "%22+AND+p:%22jar%22&rows=2000&wt=json")]
+    (if-let [body (http-get url)]
       (->> (json/read-str body :key-fn keyword)
            :response
            :docs
-           (keep :a)))))
+           (keep :a))
+      [])))
 
 (defn- get-mvn-versions!
   "Fetches all the versions of particular artifact from maven repository."
   [artifact]
   (let [[group-id artifact] (str/split artifact #"/")
-        search-prefix "https://search.maven.org/solrsearch/select?q=g:%22"
-        p (http/get (str search-prefix
-                         group-id
-                         "%22+AND+a:%22"
-                         artifact
-                         "%22&core=gav&rows=100&wt=json")
-                    (assoc (get-proxy-opts) :as :text))
-        {:keys [_ _ body _]} (deref p 7000 {})]
-    (if (empty? body)
-      []
+        url (str "https://search.maven.org/solrsearch/select?q=g:%22"
+                 group-id
+                 "%22+AND+a:%22"
+                 artifact
+                 "%22&core=gav&rows=100&wt=json")]
+    (if-let [body (http-get url)]
       (->> (json/read-str body :key-fn keyword)
            :response
            :docs
-           (keep :v)))))
+           (keep :v))
+      [])))
 
 (defn- get-artifacts-from-mvn-central! []
   (->> ["org.clojure" "com.cognitect"]
@@ -113,13 +120,10 @@
 (defn get-clojars-versions!
   "Fetches all the versions of particular artifact from Clojars."
   [artifact]
-  (let [p (http/get (str "https://clojars.org/api/artifacts/"
-                         artifact))
-        {:keys [body status]} (deref p 7000 {})]
-    (when (= 200 status)
-      (->> (json/read-str body :key-fn keyword)
-           :recent_versions
-           (keep :version)))))
+  (when-let [body (http-get (str "https://clojars.org/api/artifacts/" artifact))]
+    (->> (json/read-str body :key-fn keyword)
+         :recent_versions
+         (keep :version))))
 
 (defn- get-artifacts-from-clojars!
   []
