@@ -206,7 +206,7 @@ jobs:
 #
 # - run tests against the target matrix
 #   - All our defined JDKs
-#   - Clojure 1.10, 1.11, master
+#   - Clojure 1.10, 1.11, 1.12
 # - linter, eastwood and cljfmt
 # - runs code coverage report
 
@@ -217,7 +217,7 @@ workflows:
       - test_code:
           matrix:
             parameters:
-              clojure_version: ["1.10", "1.11", "master"]
+              clojure_version: ["1.10", "1.11", "1.12"]
               jdk_version: [openjdk8, openjdk11, openjdk16, openjdk17]
           filters:
             branches:
@@ -227,7 +227,7 @@ workflows:
       - exercise_code_jarring:
           matrix:
             parameters:
-              clojure_version: ["1.10", "1.11", "master"]
+              clojure_version: ["1.10", "1.11", "1.12"]
               jdk_version: [openjdk8, openjdk11, openjdk16, openjdk17]
           filters:
             branches:

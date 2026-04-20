@@ -39,11 +39,8 @@
                                        [com.google.errorprone/error_prone_annotations "2.20.0"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
              :1.11 {:dependencies [[org.clojure/clojure "1.11.1"]]}
+             :1.12 {:dependencies [[org.clojure/clojure "1.12.0"]]}
 
-             :master {:repositories [["snapshots"
-                                      "https://oss.sonatype.org/content/repositories/snapshots"]]
-                      :dependencies [[org.clojure/clojure "1.13.0-master-SNAPSHOT"]
-                                     [org.clojure/clojure "1.13.0-master-SNAPSHOT" :classifier "sources"]]}
              :dev {}
              :test {:dependencies [[cider/piggieback "0.6.0"]
                                    [org.clojure/clojurescript "1.11.60"]
