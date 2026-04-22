@@ -37,7 +37,10 @@
               ;; Stuff brought in by the `leiningen-core` dependency:
               "com/google/inject"
               "org/osgi"
-              "org/codehaus/plexus"])
+              "org/codehaus/plexus"
+              ;; Stuff brought in by the `tools.deps` dependency:
+              "junit/framework"
+              "org/eclipse/jetty"])
        (do
          (.printStackTrace e)
          false))

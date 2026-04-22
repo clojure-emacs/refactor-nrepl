@@ -6,7 +6,7 @@
    [clojure.string :as str]
    [version-clj.core :as versions])
   (:import
-   (java.net HttpURLConnection URL)
+   (java.net HttpURLConnection URI)
    (java.util.zip GZIPInputStream)))
 
 (def artifacts-file (str (io/file (System/getProperty "java.io.tmpdir")
@@ -33,7 +33,7 @@
   Honors the standard `https.proxy{Host,Port}`/`http.proxy{Host,Port}` JVM properties."
   [^String url]
   (try
-    (let [conn ^HttpURLConnection (.openConnection (URL. url))]
+    (let [conn ^HttpURLConnection (.openConnection (.toURL (URI. url)))]
       (.setConnectTimeout conn 10000)
       (.setReadTimeout conn 30000)
       (try
@@ -162,6 +162,27 @@
        reverse
        list*))
 
+(defn- parse-coordinates
+  "Parse a Leiningen-style dep vector string (e.g. `\"[some/lib \\\"1.0.0\\\"]\"`)
+  or a deps.edn-style map literal into a deps.edn-style map."
+  [^String s]
+  (let [v (edn/read-string s)]
+    (cond
+      (map? v) v
+
+      (and (vector? v) (symbol? (first v)) (string? (second v)))
+      {(first v) {:mvn/version (second v)}}
+
+      :else
+      (throw (IllegalArgumentException.
+              (str "Unrecognized coordinate format: " s))))))
+
 (defn hotload-dependency
-  []
-  (throw (IllegalArgumentException. "Temporarily disabled until a solution for java 10 is found.")))
+  "Add a Maven dependency to the running classpath.
+
+  `:coordinates` is a Leiningen-style vector string `\"[group/artifact \\\"version\\\"]\"`
+  or a deps.edn-style map literal string. Returns the input string on success."
+  [{:keys [coordinates]}]
+  ((requiring-resolve 'refactor-nrepl.hotload/add-libs!)
+   (parse-coordinates coordinates))
+  coordinates)

@@ -1,4 +1,5 @@
 /target
+/.eastwood
 /lib
 /classes
 /checkouts
