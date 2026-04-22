@@ -74,7 +74,7 @@ commands:
             for file in << parameters.files >>
             do
               find . -name $file -exec cat {} +
-            done | shasum | awk '{print $1}' > /tmp/clojure_cache_seed
+            done | sha256sum | awk '{print $1}' > /tmp/clojure_cache_seed
       - restore_cache:
           key: clojure-<< parameters.cache_version >>-{{ checksum "/tmp/clojure_cache_seed" }}
       - steps: << parameters.steps >>
