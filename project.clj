@@ -7,6 +7,7 @@
   :license {:name "Eclipse Public License"
             :url "https://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "1.6.0" :exclusions [org.clojure/clojure]]
+                 [org.clojure/tools.deps "0.23.1512" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [org.clojure/data.json "2.5.2" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.4" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [org.clojure/tools.namespace "1.5.1" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
