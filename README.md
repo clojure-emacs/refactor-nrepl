@@ -228,13 +228,13 @@ interned (e.g.`Thread` and `Object` are interned by default in all JVM clojure n
 
 ### hotload-dependency
 
-**Note:** This feature is currently disabled due to Java 10+ compatibility issues.
-
 Loads a new project dependency into the currently active repl.
 
-The op requires `coordinates` which is a leiningen style dependency.
+The op requires `coordinates`, either a Leiningen-style dependency vector (e.g. `[hiccup "2.0.0"]`) or a deps.edn map literal (e.g. `{hiccup {:mvn/version "2.0.0"}}`). Transitive deps are resolved and added.
 
-The return value is a `status` of `done` and `dependency` which is the coordinate vector that was hotloaded, or `error` when something went wrong.
+The return value has `status` of `done` and `dependency` echoing the input coordinates, or `error` when something went wrong.
+
+Implemented on top of `clojure.tools.deps`, so it works under both Leiningen and the Clojure CLI. A `DynamicClassLoader` must be reachable from the calling thread; nREPL provides one by default.
 
 ### find-used-locals
 

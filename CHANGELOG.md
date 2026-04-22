@@ -3,6 +3,7 @@
 ## Unreleased
 
 * [#415](https://github.com/clojure-emacs/refactor-nrepl/issues/415): Remove Compliment dependency.
+* [#231](https://github.com/clojure-emacs/refactor-nrepl/issues/231): Restore `hotload-dependency` on top of `clojure.tools.deps`. Also accepts `deps.edn`-style map literals in addition to Leiningen vectors.
 
 ## 3.11.0 (2025-05-04)
 
