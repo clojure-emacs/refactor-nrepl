@@ -7,14 +7,16 @@
   :license {:name "Eclipse Public License"
             :url "https://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[nrepl "1.6.0" :exclusions [org.clojure/clojure]]
-                 [org.clojure/tools.deps "0.23.1512" :exclusions [org.clojure/clojure]]
+                 [org.clojure/tools.deps "0.23.1512" :exclusions [org.clojure/clojure
+                                                                  org.clojure/core.async
+                                                                  org.codehaus.plexus/plexus-utils]]
                  ^:inline-dep [org.clojure/data.json "2.5.2" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [org.clojure/tools.analyzer.jvm "1.3.4" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [org.clojure/tools.namespace "1.5.1" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
                  ^:inline-dep [org.clojure/tools.reader "1.6.0" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [cider/orchard "0.39.0" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
-                 ^:inline-dep [clj-commons/fs "1.6.312"]
+                 ^:inline-dep [clj-commons/fs "1.6.312" :exclusions [org.apache.commons/commons-lang3]]
                  ^:inline-dep [rewrite-clj "1.2.52" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [version-clj "2.0.3"]]
    ; see versions matrix below
@@ -50,7 +52,17 @@
                                    [leiningen-core "2.11.2"
                                     :exclusions [org.clojure/clojure
                                                  commons-codec
-                                                 com.google.code.findbugs/jsr305]]]
+                                                 com.google.code.findbugs/jsr305
+                                                 org.apache.maven.resolver/maven-resolver-api
+                                                 org.apache.maven.resolver/maven-resolver-spi
+                                                 org.apache.maven.resolver/maven-resolver-impl
+                                                 org.apache.maven.resolver/maven-resolver-util
+                                                 org.apache.maven.resolver/maven-resolver-connector-basic
+                                                 org.apache.maven.resolver/maven-resolver-transport-file
+                                                 org.apache.maven.resolver/maven-resolver-transport-http
+                                                 org.apache.maven.resolver/maven-resolver-named-locks
+                                                 org.apache.httpcomponents/httpclient
+                                                 org.apache.httpcomponents/httpcore]]]
                     :repl-options {:nrepl-middleware [cider.piggieback/wrap-cljs-repl]}
                     :jvm-opts ["-Dorchard.use-dynapath=false"]
                     :resource-paths ["test-resources"
