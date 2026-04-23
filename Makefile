@@ -1,4 +1,4 @@
-.PHONY: inline-deps test deploy clean
+.PHONY: inline-deps test deploy clean lint
 
 VERSION ?= 1.11
 
@@ -32,6 +32,7 @@ eastwood:
 kondo:
 	lein with-profile -user,-dev,+$(VERSION),+clj-kondo run -m clj-kondo.main --lint src test
 
+lint: kondo cljfmt eastwood
 
 # Deployment is performed via CI by creating a git tag prefixed with "v".
 # Please do not deploy locally as it skips various measures (particularly around mranderson).

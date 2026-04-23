@@ -4,13 +4,12 @@
    [clojure.string :as str]
    [clojure.test :refer [deftest testing is use-fixtures]]
    [nrepl.core :as nrepl]
-   [refactor-nrepl.ns.resolve-missing-test :refer [session-fixture]]))
+   [refactor-nrepl.test-session :as session]))
 
-(use-fixtures :each session-fixture)
+(use-fixtures :each session/session-fixture)
 
 (defn message [arg-map]
-  (let [{:keys [^String error] :as response}
-        (refactor-nrepl.ns.resolve-missing-test/message arg-map)]
+  (let [{:keys [^String error] :as response} (session/message arg-map)]
     (when error
       (throw (RuntimeException. error)))
     response))
