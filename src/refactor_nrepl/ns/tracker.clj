@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.tracker
+(ns ^:no-doc refactor-nrepl.ns.tracker
   (:require
    [clojure.java.io :as io]
    [clojure.string :as str]

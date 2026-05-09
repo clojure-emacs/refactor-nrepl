@@ -1,7 +1,7 @@
 ;; Taken from https://github.com/alexander-yakushev/compliment 0.2.4
 ;; Copyright © 2013-2014 Alexander Yakushev. Distributed under the
 ;; Eclipse Public License, the same as Clojure.
-(ns refactor-nrepl.find.bindings)
+(ns ^:no-doc refactor-nrepl.find.bindings)
 
 (def ^:private let-like-forms
   "Forms that create binding vector like let does."

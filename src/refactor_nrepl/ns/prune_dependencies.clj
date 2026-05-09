@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.prune-dependencies
+(ns ^:no-doc refactor-nrepl.ns.prune-dependencies
   (:require
    [cider.nrepl.middleware.info :as info]
    [clojure.set :as set]

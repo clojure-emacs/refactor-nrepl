@@ -1,4 +1,4 @@
-(ns refactor-nrepl.util.meta
+(ns ^:no-doc refactor-nrepl.util.meta
   "Metadata-oriented helpers."
   (:refer-clojure :exclude [distinct]))
 
