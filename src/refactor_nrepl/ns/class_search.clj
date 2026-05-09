@@ -129,3 +129,11 @@
 
 (defn available-classes-by-last-segment []
   (recompute-if-classpath-changed #(get-available-classes-by-last-segment)))
+
+;; Eagerly populate the cache in the background as soon as this namespace loads,
+;; so that the first user-triggered call (typically through `resolve-missing`)
+;; doesn't pay the full classpath-scanning cost. The cache itself is keyed on
+;; classpath hash, so re-running on namespace reload is harmless.
+(future
+  (try (available-classes-by-last-segment)
+       (catch Throwable _)))
