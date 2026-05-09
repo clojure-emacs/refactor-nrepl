@@ -7,7 +7,10 @@
 
 (deftest ns-ast-test
   (doseq [f ["core_async_usage.clj"
-             "clashing_defprotocol_method_name.clj"]
+             "clashing_defprotocol_method_name.clj"
+             ;; https://github.com/clojure-emacs/refactor-nrepl/issues/347
+             "uses_warn_on_reflection.clj"
+             "uses_warn_on_reflection_cljc.cljc"]
           :let [c (-> f io/resource slurp)]]
     (is (some? (sut/ns-ast c)))))
 
