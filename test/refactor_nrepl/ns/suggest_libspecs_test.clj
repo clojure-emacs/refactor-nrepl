@@ -66,6 +66,14 @@
     "test"       "cljc"      "cljs"     []                                   {}                              ["[clojure.test :as test]"]
     "test"       "cljc"      "cljc"     []                                   {}                              ["[clojure.test :as test]"]
 
+    ;; clojure.math is auto-aliased to cljs.math by the ClojureScript compiler, so it should not be
+    ;; wrapped in a :clj reader conditional in .cljc files - https://github.com/clojure-emacs/refactor-nrepl/issues/408
+    "math"       "clj"       "clj"      [["math" "clojure.math"]]            {}                              ["[clojure.math :as math]"]
+    "math"       "cljs"      "cljs"     [["math" "clojure.math"]]            {}                              ["[clojure.math :as math]"]
+    "math"       "cljc"      "clj"      [["math" "clojure.math"]]            {}                              ["[clojure.math :as math]"]
+    "math"       "cljc"      "cljs"     [["math" "clojure.math"]]            {}                              ["[clojure.math :as math]"]
+    "math"       "cljc"      "cljc"     [["math" "clojure.math"]]            {}                              ["[clojure.math :as math]"]
+
     ;; Example story 1:
     "set"        "cljc"      "cljc"     [["set" "clojure.set"]]              {}                              ["[clojure.set :as set]"]
     ;; Story 2 - preferred-aliases are disregarded if the libspecs found in the project differ:

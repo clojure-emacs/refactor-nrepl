@@ -4,6 +4,7 @@
 
 * [#415](https://github.com/clojure-emacs/refactor-nrepl/issues/415): Remove Compliment dependency.
 * [#231](https://github.com/clojure-emacs/refactor-nrepl/issues/231): Restore `hotload-dependency` on top of `clojure.tools.deps`. Also accepts `deps.edn`-style map literals in addition to Leiningen vectors.
+* [#408](https://github.com/clojure-emacs/refactor-nrepl/issues/408): `suggest-libspecs` no longer wraps `clojure.math` (and other ClojureScript auto-aliased namespaces like `clojure.pprint`, `clojure.repl`) in a `:clj` reader conditional inside `.cljc` files.
 
 ## 3.11.0 (2025-05-04)
 
