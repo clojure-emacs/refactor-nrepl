@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* [#380](https://github.com/clojure-emacs/refactor-nrepl/issues/380): Mark internal helper namespaces with `^:no-doc` so cljdoc surfaces only the public API (the namespaces backing nREPL ops plus a few user-facing helpers like `ns.libspec-allowlist` and `ns.pprint`).
 * [#347](https://github.com/clojure-emacs/refactor-nrepl/issues/347): Add regression test covering AST building for namespaces that `set!` `*warn-on-reflection*`/`*unchecked-math*`. The original failure no longer reproduces with the current `tools.analyzer.jvm`.
 * [#415](https://github.com/clojure-emacs/refactor-nrepl/issues/415): Remove Compliment dependency.
 * [#231](https://github.com/clojure-emacs/refactor-nrepl/issues/231): Restore `hotload-dependency` on top of `clojure.tools.deps`. Also accepts `deps.edn`-style map literals in addition to Leiningen vectors.

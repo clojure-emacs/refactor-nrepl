@@ -1,4 +1,4 @@
-(ns refactor-nrepl.find.symbols-in-file
+(ns ^:no-doc refactor-nrepl.find.symbols-in-file
   (:require
    [clojure.java.io :as io]
    [clojure.tools.reader :as reader]

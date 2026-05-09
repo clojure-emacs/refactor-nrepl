@@ -1,4 +1,4 @@
-(ns refactor-nrepl.fs
+(ns ^:no-doc refactor-nrepl.fs
   "Sets the compile-time feature-flags from the `fs` library.
   This ns should be `require`d before any other `fs` ns."
   (:require

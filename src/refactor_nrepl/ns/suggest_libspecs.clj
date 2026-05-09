@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.suggest-libspecs
+(ns ^:no-doc refactor-nrepl.ns.suggest-libspecs
   "Beta middleware, meant only for internal development. Subject to change."
   (:refer-clojure :exclude [alias])
   (:require

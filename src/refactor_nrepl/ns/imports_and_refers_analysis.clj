@@ -1,7 +1,7 @@
 ;;;; Copied from slamhound 1.5.5
 ;;;; Copyright © 2011-2012 Phil Hagelberg and contributors
 ;;;; Distributed under the Eclipse Public License, the same as Clojure.
-(ns refactor-nrepl.ns.imports-and-refers-analysis
+(ns ^:no-doc refactor-nrepl.ns.imports-and-refers-analysis
   "Formerly known as `refactor-nrepl.ns.slam.hound.regrow`."
   (:require
    [refactor-nrepl.ns.class-search :as class-search]))

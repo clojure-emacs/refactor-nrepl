@@ -1,4 +1,4 @@
-(ns refactor-nrepl.ns.rebuild
+(ns ^:no-doc refactor-nrepl.ns.rebuild
   (:require
    [clojure.string :as str]
    [refactor-nrepl.config :as config]

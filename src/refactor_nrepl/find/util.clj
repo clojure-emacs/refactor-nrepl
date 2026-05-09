@@ -1,4 +1,4 @@
-(ns refactor-nrepl.find.util
+(ns ^:no-doc refactor-nrepl.find.util
   (:require
    [clojure.java.io :as io]
    [refactor-nrepl.core :as core]))
