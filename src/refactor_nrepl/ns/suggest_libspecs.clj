@@ -74,16 +74,32 @@
               (distinct))
         filenames))
 
+;; ClojureScript auto-aliases requires of these `clojure.*` namespaces to their
+;; `cljs.*` counterparts (see `cljs.analyzer/aliasable-clj-ns?`). That makes a
+;; plain `[clojure.X :as ...]` valid in both Clojure and ClojureScript, so we
+;; should treat them as `:cljc` even though only the JVM file is on the classpath.
+(def cljs-auto-aliased-paths
+  #{"clojure/test.clj"
+    "clojure/pprint.clj"
+    "clojure/math.clj"
+    "clojure/repl.clj"
+    "clojure/template.clj"
+    "clojure/spec/alpha.clj"
+    "clojure/spec/gen/alpha.clj"
+    "clojure/spec/test/alpha.clj"})
+
 (defn files->platform [filenames]
   (let [extensions (filenames->extensions filenames)
         cljc? (some #{".cljc"} extensions)
         clj? (some #{".clj"} extensions)
         cljs? (some #{".cljs"} extensions)
-        jvm-clojure-test? (some (fn [s]
-                                  (string/ends-with? s "clojure/test.clj"))
-                                filenames)]
+        cljs-auto-aliased? (some (fn [s]
+                                   (some (fn [suffix]
+                                           (string/ends-with? s suffix))
+                                         cljs-auto-aliased-paths))
+                                 filenames)]
     (cond
-      jvm-clojure-test? ;; 'clojure.test can always be used in any platform
+      cljs-auto-aliased? ;; usable from both platforms thanks to cljs auto-aliasing
       :cljc
 
       (and cljc?
