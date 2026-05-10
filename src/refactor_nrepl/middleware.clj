@@ -103,11 +103,19 @@
 ;; assoc for ops with non-standard reply logic). `def-op` is shorthand
 ;; for the common case: a handler that takes the incoming msg and whose
 ;; return value gets echoed back under a single response key.
+;;
+;; Each op is registered under two keys: the legacy bare name (e.g.
+;; `clean-ns`) and the namespaced form (`refactor/clean-ns`). The
+;; namespaced form is preferred; the bare names are retained for
+;; backward compatibility and will be removed in a future major release.
+;; This mirrors the convention used by cider-nrepl.
 
 (defonce refactor-nrepl-ops (atom {}))
 
+(def op-prefix "refactor/")
+
 (defn- register-op! [op-name reply-fn]
-  (swap! refactor-nrepl-ops assoc op-name reply-fn))
+  (swap! refactor-nrepl-ops assoc op-name reply-fn (str op-prefix op-name) reply-fn))
 
 (defmacro def-op
   "Register a simple nREPL op.
@@ -202,9 +210,16 @@
   (fn [{:keys [op] :as msg}]
     ((get @refactor-nrepl-ops op handler) msg)))
 
+(defn- describe-op [op-name]
+  (if (.startsWith ^String op-name op-prefix)
+    {:doc "See the refactor-nrepl README"
+     :returns {} :requires {}}
+    {:doc (str "Deprecated: use `" op-prefix op-name "` instead. See the refactor-nrepl README.")
+     :returns {} :requires {}}))
+
 (set-descriptor!
  #'wrap-refactor
  (cljs/requires-piggieback
-  {:handles (zipmap (keys @refactor-nrepl-ops)
-                    (repeat {:doc "See the refactor-nrepl README"
-                             :returns {} :requires {}}))}))
+  {:handles (into {}
+                  (map (fn [op] [op (describe-op op)]))
+                  (keys @refactor-nrepl-ops))}))
