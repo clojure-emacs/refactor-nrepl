@@ -26,7 +26,7 @@ Be aware that this isn't the case if you connect to an already running REPL proc
 Add the following, either in your project's `project.clj`, or in the `:user` profile found at `~/.lein/profiles.clj`:
 
 ```clojure
-:plugins [[refactor-nrepl "3.11.0"]
+:plugins [[refactor-nrepl "3.12.0"]
           [cider/cider-nrepl "0.31.0"]]
 ```
 
