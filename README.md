@@ -70,6 +70,16 @@ nil
 
 In the example above we're talking to one of the built-in nREPL ops, `eval`, passing it the data `:code "(+ 2 3)"`.  The rest of the readme details our own nREPL ops which provide various refactoring support.
 
+> [!NOTE]
+> Starting with 3.13.0, every refactor-nrepl op is also available under
+> a `refactor/`-prefixed name (e.g. `refactor/clean-ns`,
+> `refactor/find-symbol`). The bare names (`clean-ns`, `find-symbol`,
+> ...) continue to work for backward compatibility but are deprecated
+> and will be removed in a future major release. Prefer the namespaced
+> form in new client code; it avoids collisions with other middleware
+> that may register ops with the same bare name (`version`, `clean-ns`,
+> etc.).
+
 ## Available features
 
 ### Configuration

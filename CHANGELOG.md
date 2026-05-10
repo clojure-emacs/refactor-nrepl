@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* Register every nREPL op under both its bare name and a `refactor/`-prefixed name (e.g. `refactor/clean-ns`, `refactor/find-symbol`). The bare names continue to work but are deprecated and will be removed in a future major release. Mirrors the convention used by `cider-nrepl`.
+
 ## 3.12.0 (2026-05-10)
 
 * [#380](https://github.com/clojure-emacs/refactor-nrepl/issues/380): Mark internal helper namespaces with `^:no-doc` so cljdoc surfaces only the public API (the namespaces backing nREPL ops plus a few user-facing helpers like `ns.libspec-allowlist` and `ns.pprint`).
