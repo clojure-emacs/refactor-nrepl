@@ -40,7 +40,9 @@
               "org/codehaus/plexus"
               ;; Stuff brought in by the `tools.deps` dependency:
               "junit/framework"
-              "org/eclipse/jetty"])
+              "org/eclipse/jetty"
+              ;; Stuff brought in by ClojureScript's bundled Closure Compiler:
+              "com/google/javascript/jscomp/jarjar"])
        (do
          (.printStackTrace e)
          false))

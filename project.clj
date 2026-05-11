@@ -6,7 +6,10 @@
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "https://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "1.6.0" :exclusions [org.clojure/clojure]]
+  :dependencies [[nrepl "1.7.0" :exclusions [org.clojure/clojure]]
+                 ;; Pinned: 0.29.x+ uses clojure.core/update-keys which
+                 ;; requires Clojure 1.11. Bump in tandem with dropping 1.10
+                 ;; from the test matrix.
                  [org.clojure/tools.deps "0.23.1512" :exclusions [org.clojure/clojure
                                                                   org.clojure/core.async
                                                                   org.codehaus.plexus/plexus-utils]]
@@ -17,7 +20,7 @@
                  ^:inline-dep [cider/orchard "0.39.0" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.312" :exclusions [org.apache.commons/commons-lang3]]
-                 ^:inline-dep [rewrite-clj "1.2.52" :exclusions [org.clojure/clojure]]
+                 ^:inline-dep [rewrite-clj "1.2.54" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [version-clj "2.0.3"]]
    ; see versions matrix below
 
@@ -46,9 +49,12 @@
 
              :dev {}
              :test {:dependencies [[cider/piggieback "0.6.0"]
+                                   ;; Pinned: 1.12.x bundles a Closure Compiler
+                                   ;; compiled for Java 21; bump in tandem with
+                                   ;; dropping older JDKs from the test matrix.
                                    [org.clojure/clojurescript "1.11.60"]
                                    [org.clojure/core.async "1.6.673" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
-                                   [commons-io/commons-io "2.20.0"]
+                                   [commons-io/commons-io "2.22.0"]
                                    [leiningen-core "2.11.2"
                                     :exclusions [org.clojure/clojure
                                                  commons-codec
@@ -78,7 +84,7 @@
                                           with-debug-bindings [[:inner 0]]
                                           merge-meta [[:inner 0]]
                                           try-if-let [[:block 1]]}}}]
-             :eastwood {:plugins         [[jonase/eastwood "1.4.0"]]
+             :eastwood {:plugins         [[jonase/eastwood "1.4.3"]]
                         :eastwood {;; :implicit-dependencies would fail spuriously when the CI matrix runs for Clojure < 1.10,
                                    ;; because :implicit-dependencies can only work for a certain corner case starting from 1.10.
                                    :exclude-linters [:implicit-dependencies]

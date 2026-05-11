@@ -3,6 +3,12 @@
 ## Unreleased
 
 * Register every nREPL op under both its bare name and a `refactor/`-prefixed name (e.g. `refactor/clean-ns`, `refactor/find-symbol`). The bare names continue to work but are deprecated and will be removed in a future major release. Mirrors the convention used by `cider-nrepl`.
+* Bump dependencies:
+  * `nrepl` 1.6.0 → 1.7.0
+  * `rewrite-clj` 1.2.52 → 1.2.54
+  * `commons-io/commons-io` 2.20.0 → 2.22.0 (test)
+  * `jonase/eastwood` 1.4.0 → 1.4.3 (dev)
+  * `actions/checkout` v4 → v6 (GH Actions release workflow)
 
 ## 3.12.0 (2026-05-10)
 
