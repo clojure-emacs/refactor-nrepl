@@ -17,7 +17,7 @@
                  ^:inline-dep [cider/orchard "0.39.0" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [cljfmt "0.9.2" :exclusions [rewrite-clj rewrite-cljs]]
                  ^:inline-dep [clj-commons/fs "1.6.312" :exclusions [org.apache.commons/commons-lang3]]
-                 ^:inline-dep [rewrite-clj "1.2.52" :exclusions [org.clojure/clojure]]
+                 ^:inline-dep [rewrite-clj "1.2.54" :exclusions [org.clojure/clojure]]
                  ^:inline-dep [version-clj "2.0.3"]]
    ; see versions matrix below
 

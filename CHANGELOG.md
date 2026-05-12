@@ -5,6 +5,7 @@
 * Register every nREPL op under both its bare name and a `refactor/`-prefixed name (e.g. `refactor/clean-ns`, `refactor/find-symbol`). The bare names continue to work but are deprecated and will be removed in a future major release. Mirrors the convention used by `cider-nrepl`.
 * Fix `referred-syms-by-file&fullname` (used by `find-symbol`) leaking parse exceptions out of its `pmap` when a source directory contained an unparseable file (e.g. an empty placeholder or `data_readers.clj`). The two other call sites already wrapped via `with-suppressed-errors`; this aligns the third.
 * Bump `nrepl` 1.6.0 → 1.7.0.
+* Bump `rewrite-clj` 1.2.52 → 1.2.54.
 
 ## 3.12.0 (2026-05-10)
 
