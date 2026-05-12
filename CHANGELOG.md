@@ -3,6 +3,7 @@
 ## Unreleased
 
 * Register every nREPL op under both its bare name and a `refactor/`-prefixed name (e.g. `refactor/clean-ns`, `refactor/find-symbol`). The bare names continue to work but are deprecated and will be removed in a future major release. Mirrors the convention used by `cider-nrepl`.
+* Bump `nrepl` 1.6.0 → 1.7.0.
 
 ## 3.12.0 (2026-05-10)
 
