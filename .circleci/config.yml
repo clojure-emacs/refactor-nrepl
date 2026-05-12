@@ -149,7 +149,13 @@ jobs:
           steps:
             - run:
                 name: Running tests with inlined deps
-                command: make test
+                command: |
+                  mkdir -p target
+                  make test 2>&1 | tee target/test-output.log
+                  exit ${PIPESTATUS[0]}
+            - store_artifacts:
+                path: target/test-output.log
+                when: always
   exercise_code_jarring:
     description: |
       Exercise jarring against given version of JDK and Clojure
