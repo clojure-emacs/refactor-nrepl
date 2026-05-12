@@ -6,7 +6,7 @@
   :url "https://github.com/clojure-emacs/refactor-nrepl"
   :license {:name "Eclipse Public License"
             :url "https://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[nrepl "1.6.0" :exclusions [org.clojure/clojure]]
+  :dependencies [[nrepl "1.7.0" :exclusions [org.clojure/clojure]]
                  [org.clojure/tools.deps "0.23.1512" :exclusions [org.clojure/clojure
                                                                   org.clojure/core.async
                                                                   org.codehaus.plexus/plexus-utils]]
