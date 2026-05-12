@@ -202,15 +202,21 @@
    (referred-syms-by-file&fullname false))
   ([ignore-errors?]
    ;; `pmap` is used as it has proved to be more efficient, both for cached and non-cached cases.
+   ;; `with-suppressed-errors` makes sure files that can't be parsed (e.g. empty placeholder
+   ;; files, `data_readers.clj`) don't surface an exception out of `pmap`.
    {:clj  (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/clj-file? core/cljc-file?)
                                        ignore-errors?)
                                      (core/source-dirs-on-classpath))
-               (pmap (juxt identity (partial get-libspec-from-file-with-caching :clj)))
+               (pmap (juxt identity (util/with-suppressed-errors
+                                      (partial get-libspec-from-file-with-caching :clj)
+                                      ignore-errors?)))
                sym-by-file&fullname)
     :cljs (->> (core/find-in-project (util/with-suppressed-errors
                                        (some-fn core/cljs-file? core/cljc-file?)
                                        ignore-errors?)
                                      (core/source-dirs-on-classpath))
-               (pmap (juxt identity (partial get-libspec-from-file-with-caching :cljs)))
+               (pmap (juxt identity (util/with-suppressed-errors
+                                      (partial get-libspec-from-file-with-caching :cljs)
+                                      ignore-errors?)))
                sym-by-file&fullname)}))
