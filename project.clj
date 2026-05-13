@@ -45,7 +45,7 @@
              :1.12 {:dependencies [[org.clojure/clojure "1.12.0"]]}
 
              :dev {}
-             :test {:dependencies [[cider/piggieback "0.6.0"]
+             :test {:dependencies [[cider/piggieback "0.6.1"]
                                    [org.clojure/clojurescript "1.11.60"]
                                    [org.clojure/core.async "1.6.673" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
                                    [commons-io/commons-io "2.22.0"]
