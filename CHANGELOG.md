@@ -8,6 +8,7 @@
 * Bump `rewrite-clj` 1.2.52 → 1.2.54.
 * Bump `commons-io` 2.20.0 → 2.22.0 (test dependency).
 * Bump `eastwood` 1.4.0 → 1.4.3 (lint dependency).
+* Bump `piggieback` 0.6.0 → 0.6.1 (test dependency).
 
 ## 3.12.0 (2026-05-10)
 
