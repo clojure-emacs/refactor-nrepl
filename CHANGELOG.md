@@ -6,6 +6,7 @@
 * Fix `referred-syms-by-file&fullname` (used by `find-symbol`) leaking parse exceptions out of its `pmap` when a source directory contained an unparseable file (e.g. an empty placeholder or `data_readers.clj`). The two other call sites already wrapped via `with-suppressed-errors`; this aligns the third.
 * Bump `nrepl` 1.6.0 → 1.7.0.
 * Bump `rewrite-clj` 1.2.52 → 1.2.54.
+* Bump `commons-io` 2.20.0 → 2.22.0 (test dependency).
 
 ## 3.12.0 (2026-05-10)
 
