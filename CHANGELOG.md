@@ -9,6 +9,7 @@
 * Bump `commons-io` 2.20.0 → 2.22.0 (test dependency).
 * Bump `eastwood` 1.4.0 → 1.4.3 (lint dependency).
 * Bump `piggieback` 0.6.0 → 0.6.1 (test dependency).
+* Bump `orchard` 0.39.0 → 0.41.0.
 
 ## 3.12.0 (2026-05-10)
 
