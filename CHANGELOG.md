@@ -12,6 +12,7 @@
 * Bump `orchard` 0.39.0 → 0.41.0.
 * Bump `error_prone_annotations` 2.20.0 → 2.49.0 (pedantic dependency).
 * Bump `clojure` (in matrix's `:1.12` cell) 1.12.0 → 1.12.4.
+* Bump `leiningen-core` 2.11.2 → 2.12.0 (test dependency).
 
 ## 3.12.0 (2026-05-10)
 
