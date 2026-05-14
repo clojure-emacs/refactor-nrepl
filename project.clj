@@ -39,7 +39,7 @@
                                        [org.clojure/clojure "1.12.0"]
                                        ;; For satisfying `:pedantic?`:
                                        [com.google.code.findbugs/jsr305 "3.0.2"]
-                                       [com.google.errorprone/error_prone_annotations "2.20.0"]]}
+                                       [com.google.errorprone/error_prone_annotations "2.49.0"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
              :1.11 {:dependencies [[org.clojure/clojure "1.11.1"]]}
              :1.12 {:dependencies [[org.clojure/clojure "1.12.0"]]}
