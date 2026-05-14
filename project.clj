@@ -36,13 +36,13 @@
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {;; Clojure versions matrix
              :provided {:dependencies [[cider/cider-nrepl "0.55.7"]
-                                       [org.clojure/clojure "1.12.0"]
+                                       [org.clojure/clojure "1.12.4"]
                                        ;; For satisfying `:pedantic?`:
                                        [com.google.code.findbugs/jsr305 "3.0.2"]
                                        [com.google.errorprone/error_prone_annotations "2.49.0"]]}
              :1.10 {:dependencies [[org.clojure/clojure "1.10.3"]]}
              :1.11 {:dependencies [[org.clojure/clojure "1.11.1"]]}
-             :1.12 {:dependencies [[org.clojure/clojure "1.12.0"]]}
+             :1.12 {:dependencies [[org.clojure/clojure "1.12.4"]]}
 
              :dev {}
              :test {:dependencies [[cider/piggieback "0.6.1"]
