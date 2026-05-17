@@ -1,12 +1,24 @@
 (ns refactor-nrepl.middleware
   (:require
-   [cider.nrepl.middleware.util.cljs :as cljs]
    [clojure.stacktrace :refer [print-cause-trace]]
    [clojure.walk :as walk]
    [refactor-nrepl.config :as config]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.libspec-allowlist :as libspec-allowlist]
    [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
+
+(defn- maybe-require-piggieback
+  "If piggieback is on the classpath, return `descriptor` with piggieback's
+  `wrap-cljs-repl` middleware var added to its `:requires` set; otherwise
+  return `descriptor` unchanged.
+
+  Inlined here instead of calling `cider.nrepl.middleware.util.cljs/requires-piggieback`,
+  which became a deprecated no-op in cider-nrepl 0.59."
+  [descriptor]
+  (if-let [pb (try (requiring-resolve 'cider.piggieback/wrap-cljs-repl)
+                   (catch Exception _ nil))]
+    (update descriptor :requires (fnil conj #{}) pb)
+    descriptor))
 
 ;; Compatibility with the legacy tools.nrepl.
 ;; It is not recommended to use the legacy tools.nrepl,
@@ -219,7 +231,7 @@
 
 (set-descriptor!
  #'wrap-refactor
- (cljs/requires-piggieback
+ (maybe-require-piggieback
   {:handles (into {}
                   (map (fn [op] [op (describe-op op)]))
                   (keys @refactor-nrepl-ops))}))

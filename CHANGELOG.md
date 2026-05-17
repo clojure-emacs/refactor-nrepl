@@ -13,6 +13,7 @@
 * Bump `error_prone_annotations` 2.20.0 → 2.49.0 (pedantic dependency).
 * Bump `clojure` (in matrix's `:1.12` cell) 1.12.0 → 1.12.4.
 * Bump `leiningen-core` 2.11.2 → 2.12.0 (test dependency).
+* Bump `cider-nrepl` (provided/test dependency) 0.55.7 → 0.59.0. The piggieback wiring previously delegated to `cider.nrepl.middleware.util.cljs/requires-piggieback`, which became a deprecated no-op in 0.59; that wiring is now inlined inside `refactor-nrepl.middleware`.
 * Bump `actions/checkout` v4 → v6 in the GitHub Release workflow.
 
 ## 3.12.0 (2026-05-10)
