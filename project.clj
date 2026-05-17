@@ -35,7 +35,7 @@
                :unresolved-tree false}
   :filespecs [{:type :bytes :path "refactor-nrepl/refactor-nrepl/project.clj" :bytes ~(slurp "project.clj")}]
   :profiles {;; Clojure versions matrix
-             :provided {:dependencies [[cider/cider-nrepl "0.55.7"]
+             :provided {:dependencies [[cider/cider-nrepl "0.59.0"]
                                        [org.clojure/clojure "1.12.4"]
                                        ;; For satisfying `:pedantic?`:
                                        [com.google.code.findbugs/jsr305 "3.0.2"]
