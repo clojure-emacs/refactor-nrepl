@@ -7,6 +7,12 @@
 
 (defn- assert-single-alias
   [libspecs alias]
+  ;; NOTE: `for` is lazy, so this whole expression is effectively a no-op
+  ;; today — see https://github.com/clojure-emacs/refactor-nrepl/issues/444.
+  ;; Keeping the shape but ignoring the unused value so clj-kondo doesn't
+  ;; flag it; switching to `doseq` makes the assertion fire and breaks tests
+  ;; that rely on calling this with `alias` = nil/"".
+  #_:clj-kondo/ignore
   (for [libspec libspecs
         :let [libspec-alias (:as libspec)]]
     (when (and libspec-alias (not= libspec-alias alias))
