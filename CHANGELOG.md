@@ -16,6 +16,7 @@
 * Bump `cider-nrepl` (provided/test dependency) 0.55.7 → 0.59.0. The piggieback wiring previously delegated to `cider.nrepl.middleware.util.cljs/requires-piggieback`, which became a deprecated no-op in 0.59; that wiring is now inlined inside `refactor-nrepl.middleware`.
 * Bump `actions/checkout` v4 → v6 in the GitHub Release workflow.
 * Bump `clj-kondo` 2022.06.22 → 2026.04.15 and `jackson-core` 2.13.3 → 2.21.3 (lint-only dependencies).
+* Bump `clojure` (in matrix's `:1.12` cell) 1.12.4 → 1.12.5.
 
 ## 3.12.0 (2026-05-10)
 
