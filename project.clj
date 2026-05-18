@@ -86,8 +86,9 @@
                                    :add-linters [:performance :boxed-math]
                                    :config-files ["eastwood.clj"]}}
              :clj-kondo [:test
-                         {:dependencies [[clj-kondo "2022.06.22"]
-                                         [com.fasterxml.jackson.core/jackson-core "2.13.3"]]}]
+                         {:dependencies [[clj-kondo "2026.04.15" :exclusions [com.cognitect/transit-java
+                                                                              javax.xml.bind/jaxb-api]]
+                                         [com.fasterxml.jackson.core/jackson-core "2.21.3"]]}]
 
              :antq {:plugins [[com.github.liquidz/antq "2.11.1276"]]}
 
