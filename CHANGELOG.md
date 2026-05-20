@@ -2,22 +2,23 @@
 
 ## Unreleased
 
+## 3.13.0 (2026-05-20)
+
 * Register every nREPL op under both its bare name and a `refactor/`-prefixed name (e.g. `refactor/clean-ns`, `refactor/find-symbol`). The bare names continue to work but are deprecated and will be removed in a future major release. Mirrors the convention used by `cider-nrepl`.
 * Fix `referred-syms-by-file&fullname` (used by `find-symbol`) leaking parse exceptions out of its `pmap` when a source directory contained an unparseable file (e.g. an empty placeholder or `data_readers.clj`). The two other call sites already wrapped via `with-suppressed-errors`; this aligns the third.
-* Bump `nrepl` 1.6.0 → 1.7.0.
-* Bump `rewrite-clj` 1.2.52 → 1.2.54.
-* Bump `commons-io` 2.20.0 → 2.22.0 (test dependency).
-* Bump `eastwood` 1.4.0 → 1.4.3 (lint dependency).
-* Bump `piggieback` 0.6.0 → 0.6.1 (test dependency).
-* Bump `orchard` 0.39.0 → 0.41.0.
-* Bump `error_prone_annotations` 2.20.0 → 2.49.0 (pedantic dependency).
-* Bump `clojure` (in matrix's `:1.12` cell) 1.12.0 → 1.12.4.
-* Bump `leiningen-core` 2.11.2 → 2.12.0 (test dependency).
 * Bump `cider-nrepl` (provided/test dependency) 0.55.7 → 0.59.0. The piggieback wiring previously delegated to `cider.nrepl.middleware.util.cljs/requires-piggieback`, which became a deprecated no-op in 0.59; that wiring is now inlined inside `refactor-nrepl.middleware`.
+* Bump `nrepl` 1.6.0 → 1.7.0.
+* Bump `orchard` 0.39.0 → 0.41.0.
+* Bump `rewrite-clj` 1.2.52 → 1.2.54.
+* Bump `clojure` (matrix's `:1.12` cell) 1.12.0 → 1.12.5.
+* Bump `core.async` (test) 1.6.673 → 1.9.865.
+* Bump `commons-io` (test) 2.20.0 → 2.22.0.
+* Bump `piggieback` (test) 0.6.0 → 0.6.1.
+* Bump `leiningen-core` (test) 2.11.2 → 2.12.0.
+* Bump `eastwood` (lint) 1.4.0 → 1.4.3.
+* Bump `clj-kondo` (lint) 2022.06.22 → 2026.04.15 and `jackson-core` (lint) 2.13.3 → 2.21.3.
+* Bump `error_prone_annotations` (pedantic-only) 2.20.0 → 2.49.0.
 * Bump `actions/checkout` v4 → v6 in the GitHub Release workflow.
-* Bump `clj-kondo` 2022.06.22 → 2026.04.15 and `jackson-core` 2.13.3 → 2.21.3 (lint-only dependencies).
-* Bump `clojure` (in matrix's `:1.12` cell) 1.12.4 → 1.12.5.
-* Bump `core.async` 1.6.673 → 1.9.865 (test dependency).
 
 ## 3.12.0 (2026-05-10)
 
