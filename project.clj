@@ -47,7 +47,7 @@
              :dev {}
              :test {:dependencies [[cider/piggieback "0.6.1"]
                                    [org.clojure/clojurescript "1.11.60"]
-                                   [org.clojure/core.async "1.6.673" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
+                                   [org.clojure/core.async "1.9.865" :exclusions [org.clojure/clojure org.clojure/tools.reader]]
                                    [commons-io/commons-io "2.22.0"]
                                    [leiningen-core "2.12.0"
                                     :exclusions [org.clojure/clojure
