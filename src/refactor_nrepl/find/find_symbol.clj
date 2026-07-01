@@ -103,11 +103,33 @@
          (str/join "\n")
          str/trim)))
 
+(defn- unqualified-name
+  "The last `/`-separated segment of a (possibly qualified) symbol NAME."
+  [fully-qualified-name]
+  (let [i (.lastIndexOf ^String fully-qualified-name "/")]
+    (if (neg? i)
+      fully-qualified-name
+      (subs fully-qualified-name (inc i)))))
+
+(defn- name-mentioned?
+  "Cheap textual pre-check used to skip building an AST for files that cannot
+  possibly reference NAME.
+
+  `find-symbol` only reports occurrences that are present *before*
+  macroexpansion (see `present-before-expansion?`), so a file whose source never
+  mentions the unqualified name textually cannot contain a match.  Skipping the
+  AST build for such files is the difference between analyzing (i.e. loading and
+  evaluating) the whole project and analyzing only the handful of files that
+  actually mention the symbol."
+  [fully-qualified-name ^String file-content]
+  (str/includes? file-content (unqualified-name fully-qualified-name)))
+
 (defn- find-symbol-in-file [fully-qualified-name ignore-errors referred-syms ^File file]
   (let [file-content (slurp file)
-        locs (try (->> (ana/ns-ast file-content)
-                       (find-symbol-in-ast fully-qualified-name)
-                       (filter :line-beg))
+        locs (try (when (name-mentioned? fully-qualified-name file-content)
+                    (->> (ana/ns-ast file-content)
+                         (find-symbol-in-ast fully-qualified-name)
+                         (filter :line-beg)))
                   (catch Exception e
                     (util/maybe-log-exception e)
                     (when-not ignore-errors
