@@ -20,6 +20,40 @@
 ;;; The structure here is {ns {content-hash ast}}
 (def ^:private ast-cache (atom {}))
 
+(def ast-cache-limit
+  "Maximum number of namespaces whose ASTs are retained in `ast-cache`.
+
+  `tools.analyzer` ASTs are large, so an unbounded cache can exhaust the heap on
+  big projects (e.g. when `find-symbol` or `warm-ast-cache` touch many
+  namespaces - see the OutOfMemoryError reports).  When the cache grows past
+  this limit the least-recently-used entries are evicted; eviction only costs a
+  rebuild on the next access, never correctness.
+
+  Set to `nil` to disable the bound, or `reset!` it to tune the speed/memory
+  trade-off."
+  (atom 512))
+
+;;; Tracks per-ns last-access order for LRU eviction: {:ticks {ns tick} :counter n}
+(def ^:private ast-cache-access (atom {:ticks {} :counter 0}))
+
+(defn- touch-ns! [ns]
+  (swap! ast-cache-access
+         (fn [{:keys [ticks counter]}]
+           {:ticks (assoc ticks ns counter)
+            :counter (inc (long counter))})))
+
+(defn- evict-lru! []
+  (when-let [limit @ast-cache-limit]
+    (when (> (count @ast-cache) (long limit))
+      (let [keep-set (->> @ast-cache-access
+                          :ticks
+                          (sort-by val >)
+                          (take limit)
+                          (map key)
+                          set)]
+        (swap! ast-cache select-keys keep-set)
+        (swap! ast-cache-access update :ticks select-keys keep-set)))))
+
 (defn get-alias [as v]
   (cond as (first v)
         (= (first v) :as) (get-alias true (rest v))
@@ -47,13 +81,17 @@
 
 (defn- get-ast-from-cache
   [ns file-content]
-  (-> @ast-cache
-      (get ns)
-      (get (hash file-content))))
+  (when-let [ast (-> @ast-cache
+                     (get ns)
+                     (get (hash file-content)))]
+    (touch-ns! ns)
+    ast))
 
 (defn- update-ast-cache
   [file-content ns ast]
   (swap! ast-cache assoc ns {(hash file-content) ast})
+  (touch-ns! ns)
+  (evict-lru!)
   ast)
 
 (defn- ns-on-cp? [ns]
@@ -90,8 +128,16 @@
                   {:validate/unresolvable-symbol-handler shadow-unresolvable-symbol-handler
                    :validate/throw-on-arity-mismatch     false
                    :validate/wrong-tag-handler           shadow-wrong-tag-handler}}]
+        ;; `analyze-ns` analyzes *and evaluates* each top-level form.  Namespaces
+        ;; that do `(set! *warn-on-reflection* true)` (or `*unchecked-math*`) at
+        ;; the top level would otherwise fail with "Can't change/establish root
+        ;; binding ... with set", since those vars aren't thread-bound during
+        ;; analysis the way they are during normal compilation.  Establish
+        ;; thread-local bindings so the `set!` targets those instead of the root.
         (binding [ana/macroexpand-1 noop-macroexpand-1
-                  reader/*data-readers* *data-readers*]
+                  reader/*data-readers* *data-readers*
+                  *warn-on-reflection* *warn-on-reflection*
+                  *unchecked-math* *unchecked-math*]
           (assoc-in (aj/analyze-ns ns (aj/empty-env) opts) [0 :alias-info] aliases))))))
 
 (defn- cachable-ast [file-content]
