@@ -12,7 +12,7 @@
    [rewrite-clj.zip :as zip])
   (:import
    (clojure.lang LineNumberingPushbackReader)
-   (java.io File FileReader StringReader)))
+   (java.io File StringReader)))
 
 ;; The structure here is {path [timestamp macros]}
 (def ^:private macro-defs-cache (atom {}))
@@ -47,21 +47,26 @@
 (defn- find-macro-definitions-in-file
   [^File f]
   (util/with-additional-ex-data [:file (.getAbsolutePath f)]
-    (with-open [file-rdr (FileReader. f)]
-      (binding [*ns* (or (core/path->namespace :no-error f) *ns*)
-                reader/*read-eval* false
-                reader/*data-readers* *data-readers*]
-        (let [rdr (LineNumberingPushbackReader. file-rdr)
-              opts {:read-cond :allow :features #{:clj} :eof :eof}]
-          (loop [macros [], form (reader/read opts rdr)]
-            (cond
-              (or (= form :eof)
-                  (util/interrupted?)) macros
-              (and (sequential? form) (= (first form) 'defmacro))
-              (recur (conj macros (build-macro-meta form f))
-                     (reader/read opts rdr))
-              :else
-              (recur macros (reader/read opts rdr)))))))))
+    (let [file-content (slurp f)]
+      ;; Cheap pre-check: a file that never mentions `defmacro` textually cannot
+      ;; define a macro, so skip the comparatively expensive form-by-form read.
+      (if-not (str/includes? file-content "defmacro")
+        []
+        (with-open [file-rdr (StringReader. file-content)]
+          (binding [*ns* (or (core/path->namespace :no-error f) *ns*)
+                    reader/*read-eval* false
+                    reader/*data-readers* *data-readers*]
+            (let [rdr (LineNumberingPushbackReader. file-rdr)
+                  opts {:read-cond :allow :features #{:clj} :eof :eof}]
+              (loop [macros [], form (reader/read opts rdr)]
+                (cond
+                  (or (= form :eof)
+                      (util/interrupted?)) macros
+                  (and (sequential? form) (= (first form) 'defmacro))
+                  (recur (conj macros (build-macro-meta form f))
+                         (reader/read opts rdr))
+                  :else
+                  (recur macros (reader/read opts rdr)))))))))))
 
 (defn- get-cached-macro-definitions [^File f]
   (when-let [[ts v] (get @macro-defs-cache (.getAbsolutePath f))]
@@ -219,24 +224,29 @@
   [fully-qualified-name ignore-errors?]
   (when (fully-qualified-name? fully-qualified-name)
     (let [all-defs (find-macro-definitions-in-project ignore-errors?)
-          macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))
-          tracker (tracker/build-tracker (util/with-suppressed-errors
-                                           (every-pred (complement util/interrupted?)
-                                                       tracker/default-file-filter-predicate)
-                                           ignore-errors?))
-          origin-ns (symbol (core/prefix fully-qualified-name))
-          dependents (tracker/get-dependents tracker origin-ns)]
-      (some->> macro-def
-               ^String (:file)
-               File.
-               (conj dependents)
-               (keep (fn [x]
-                       (when-not (util/interrupted?)
-                         (find-usages-in-file [macro-def] x))))
-               (apply concat)
-               (into #{})
-               (remove nil?)
-               (sort-by :line-beg)))))
+          macro-def (first (filter #(= (:name %) fully-qualified-name) all-defs))]
+      ;; Only build the project tracker (which scans and parses every source
+      ;; file) once we know the queried symbol actually is a macro defined in
+      ;; the project.  For the common case of a non-macro symbol this skips the
+      ;; whole dependents computation.
+      (when macro-def
+        (let [tracker (tracker/build-tracker (util/with-suppressed-errors
+                                               (every-pred (complement util/interrupted?)
+                                                           tracker/default-file-filter-predicate)
+                                               ignore-errors?))
+              origin-ns (symbol (core/prefix fully-qualified-name))
+              dependents (tracker/get-dependents tracker origin-ns)]
+          (some->> macro-def
+                   ^String (:file)
+                   File.
+                   (conj dependents)
+                   (keep (fn [x]
+                           (when-not (util/interrupted?)
+                             (find-usages-in-file [macro-def] x))))
+                   (apply concat)
+                   (into #{})
+                   (remove nil?)
+                   (sort-by :line-beg)))))))
 
 (defn find-used-macros
   "Finds used macros of the namespace given as `used-ns` in the file."
