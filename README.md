@@ -388,6 +388,61 @@ The middleware returns errors under one of two keys: `:error` or
 for the end user.  The key `:err` is used for unexpected failures and
 contains among other things a full stacktrace.
 
+## Limitations of the AST-based analysis
+
+Several of refactor-nrepl's features - `find-symbol` (and everything built on it:
+find usages, rename, `change-function-signature`, `extract-definition`),
+`find-used-locals`, `find-used-publics` and `warm-ast-cache` - work by building an
+AST for your namespaces with [`tools.analyzer`][tools-analyzer]. This is powerful
+and runtime-accurate, but it comes with trade-offs worth understanding, because
+they explain most of the surprises people run into.
+
+- **It loads and evaluates your code.** Building the AST for a namespace
+  `require`s it, which runs its top-level side effects (and can run tests if the
+  namespace triggers them at load time). Analysis is not a purely static,
+  read-only operation.
+- **It fails on code that can't be loaded.** A namespace that doesn't compile,
+  has missing dependencies, relies on a particular load order, or is in the
+  middle of being edited cannot be analyzed - you'll see "unable to build an AST
+  for ...". Since a buffer being edited is frequently in a broken state, this is
+  the most common source of trouble.
+- **No ClojureScript.** `tools.analyzer.jvm` only understands Clojure. The
+  AST-based features do not work for `.cljs` files, and for `.cljc` files only the
+  `:clj` branch is analyzed.
+- **Macros are only approximated.** Macroexpansion is intentionally suppressed
+  during analysis, so occurrences that only exist *after* a macro expands are not
+  found, and some macro-heavy code may be analyzed imperfectly.
+- **A REPL is required.** Unlike static tools, refactor-nrepl needs a live,
+  connected nREPL with your project on the classpath. You can't refactor before
+  the project starts, and results reflect the *running* system.
+- **First use can be slow.** On a cold cache the first AST-dependent operation may
+  need to analyze (i.e. load) large parts of the project. `warm-ast-cache` pays
+  this cost up front.
+- **Memory.** ASTs are large. The cache is bounded (see
+  `refactor-nrepl.analyzer/ast-cache-limit`, default 512 namespaces) to avoid
+  exhausting the heap, at the cost of occasionally rebuilding evicted entries.
+- **Analysis is serialized.** Because analysis performs evaluation and `require`,
+  AST builds are guarded by a global lock and cannot run in parallel.
+
+### Mitigations
+
+- `ignore-errors` (a config option, also a `find-symbol` op parameter) lets
+  `find-symbol` and the features built on it carry on past namespaces that fail
+  to analyze, instead of aborting. Recommended for read-only operations like find
+  usages; be careful with the destructive ones.
+- `:ignore-paths` excludes paths that are known not to analyze.
+- `clojure.tools.namespace.repl/set-refresh-dirs` narrows which directories are
+  scanned.
+- `refactor-nrepl.analyzer/ast-cache-limit` tunes the memory/speed trade-off
+  (`reset!` it, or set it to `nil` to disable the bound).
+
+If you need static analysis, ClojureScript support, or refactoring without a
+running REPL, [clojure-lsp][clojure-lsp] is a good complement: it builds on
+clj-kondo's static analysis and never loads your code.
+
+[tools-analyzer]: https://github.com/clojure/tools.analyzer.jvm
+[clojure-lsp]: https://clojure-lsp.io
+
 ## Development with `mranderson`
 
 [mranderson][] is used to avoid classpath collisions between any application deps and the deps of `refactor-nrepl` itself.
