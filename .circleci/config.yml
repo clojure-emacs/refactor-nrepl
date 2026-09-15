@@ -209,7 +209,9 @@ workflows:
             branches:
               only: /.*/
             tags:
-              only: /^v\d+\.\d+\.\d+(-alpha\d+)?$/
+              only:
+                - /^v\d+\.\d+\.\d+(-(alpha|beta|rc)\d+)?$/
+                - /^v\d+\.\d+\.\d+-SNAPSHOT$/
       - exercise_code_jarring:
           matrix:
             parameters:
@@ -219,14 +221,18 @@ workflows:
             branches:
               only: /.*/
             tags:
-              only: /^v\d+\.\d+\.\d+(-alpha\d+)?$/
+              only:
+                - /^v\d+\.\d+\.\d+(-(alpha|beta|rc)\d+)?$/
+                - /^v\d+\.\d+\.\d+-SNAPSHOT$/
       - util_job:
           name: Code Linting
           filters:
             branches:
               only: /.*/
             tags:
-              only: /^v\d+\.\d+\.\d+(-alpha\d+)?$/
+              only:
+                - /^v\d+\.\d+\.\d+(-(alpha|beta|rc)\d+)?$/
+                - /^v\d+\.\d+\.\d+-SNAPSHOT$/
           steps:
             - run:
                 name: Running cljfmt
@@ -240,6 +246,9 @@ workflows:
                 name: Running Eastwood
                 command: |
                   make eastwood
+      # Releases, prereleases and snapshots all go through the same gate: the
+      # whole matrix has to be green first. A vX.Y.Z-SNAPSHOT tag is the way
+      # to exercise the full release path without cutting a release.
       - deploy:
           requires:
             - test_code
@@ -249,4 +258,6 @@ workflows:
             branches:
               ignore: /.*/
             tags:
-              only: /^v\d+\.\d+\.\d+(-alpha\d+)?$/
+              only:
+                - /^v\d+\.\d+\.\d+(-(alpha|beta|rc)\d+)?$/
+                - /^v\d+\.\d+\.\d+-SNAPSHOT$/
