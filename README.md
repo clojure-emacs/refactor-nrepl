@@ -186,6 +186,9 @@ Clients are advised to set `ignore-errors` on only for find usages as the rest o
 
 ### clean-ns
 
+> [!WARNING]
+> Deprecated in 3.15.0, and going away in 3.17.0. cider-nrepl's `cider/clean-ns` replaces it.
+
 The `clean-ns` op will perform the following cleanups on an ns form:
 
 * Eliminate :use clauses
@@ -215,6 +218,9 @@ In the event of an error `clean-ns` will return `error` which is an error messag
 This op can be [configured](#configuration).
 
 ### resolve-missing
+
+> [!WARNING]
+> Deprecated in 3.15.0, and going away in 3.17.0. cider-nrepl's `cider/resolve-missing` replaces it.
 
 The goal of the op is to provide intelligent suggestions when the user wants to import or require the unresolvable symbol at point.
 
@@ -334,6 +340,9 @@ restore point in your version control system.
 
 ### namespace-aliases
 
+> [!WARNING]
+> Deprecated in 3.15.0, and going away in 3.17.0. cider-nrepl's `cider/resolve-alias` replaces it, answering for one alias at a time.
+
 Returns `namespace-aliases` which is a list of all the namespace aliases that are in use in the
 project. The reply looks like this:
 
@@ -360,6 +369,9 @@ In case namespace B depends on namespace A this operation finds occurrences of s
 Possible application of this operation to refactor a `:refer :all` style require into a refer or aliased style require.
 
 ### cljr-suggest-libspecs (beta)
+
+> [!WARNING]
+> Deprecated in 3.15.0, and going away in 3.17.0. cider-nrepl's `cider/resolve-alias` replaces it.
 
 Given a namespace alias prefix (e.g. what the user typed before `/`), suggests matching libspecs based on namespace aliases already in use in the project and an optional set of preferred aliases.
 

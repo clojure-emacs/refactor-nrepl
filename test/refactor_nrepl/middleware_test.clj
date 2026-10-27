@@ -19,6 +19,18 @@
         (is (identical? (get @middleware/refactor-nrepl-ops op)
                         (get @middleware/refactor-nrepl-ops (str middleware/op-prefix op))))))))
 
+(deftest moved-ops-are-described-as-deprecated
+  (doseq [[op replacement] middleware/moved-ops
+          op-name [op (str middleware/op-prefix op)]]
+    (testing op-name
+      (is (contains? @middleware/refactor-nrepl-ops op-name))
+      (is (= (str "Deprecated: use cider-nrepl's `" replacement "` instead. See the refactor-nrepl README.")
+             (:doc (#'middleware/describe-op op-name))))))
+  (testing "other ops keep their docs"
+    (is (= "See the refactor-nrepl README" (:doc (#'middleware/describe-op "refactor/find-symbol"))))
+    (is (= "Deprecated: use `refactor/find-symbol` instead. See the refactor-nrepl README."
+           (:doc (#'middleware/describe-op "find-symbol"))))))
+
 (deftest version-op-works-under-both-names
   (testing "bare name (legacy)"
     (let [response (session/message {:op "version"})]
