@@ -217,16 +217,26 @@
 
 ;;; Middleware
 
+(def moved-ops
+  "The ops cider-nrepl has taken over, with the ones that replace them
+  there. They're deprecated and go away in 3.17.0."
+  {"resolve-missing"       "cider/resolve-missing"
+   "clean-ns"              "cider/clean-ns"
+   "namespace-aliases"     "cider/resolve-alias"
+   "cljr-suggest-libspecs" "cider/resolve-alias"})
+
 (defn wrap-refactor
   [handler]
   (fn [{:keys [op] :as msg}]
     ((get @refactor-nrepl-ops op handler) msg)))
 
 (defn- describe-op [op-name]
-  (if (.startsWith ^String op-name op-prefix)
-    {:doc "See the refactor-nrepl README"
-     :returns {} :requires {}}
-    {:doc (str "Deprecated: use `" op-prefix op-name "` instead. See the refactor-nrepl README.")
+  (let [namespaced? (.startsWith ^String op-name op-prefix)
+        replacement (get moved-ops (cond-> op-name namespaced? (subs (count op-prefix))))]
+    {:doc (cond
+            replacement (str "Deprecated: use cider-nrepl's `" replacement "` instead. See the refactor-nrepl README.")
+            namespaced? "See the refactor-nrepl README"
+            :else (str "Deprecated: use `" op-prefix op-name "` instead. See the refactor-nrepl README."))
      :returns {} :requires {}}))
 
 (set-descriptor!

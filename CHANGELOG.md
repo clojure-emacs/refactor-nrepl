@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#451](https://github.com/clojure-emacs/refactor-nrepl/pull/451): Deprecate `resolve-missing`, `clean-ns`, `namespace-aliases` and `cljr-suggest-libspecs`, which cider-nrepl's `cider/resolve-missing`, `cider/clean-ns` and `cider/resolve-alias` replace. They'll be removed in 3.17.0.
+
 ## 3.14.0 (2026-07-01)
 
 * Performance: `find-symbol`/`find-usages` no longer build an AST (which requires loading and evaluating the namespace) for files whose source doesn't even mention the symbol. Since only occurrences present before macroexpansion are ever reported, a textual pre-check safely skips the expensive analysis for the vast majority of files, turning "analyze the whole project" into "analyze the few files that reference the symbol". This also improves reliability, as far fewer namespaces get loaded.
