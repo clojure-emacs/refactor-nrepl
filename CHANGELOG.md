@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.15.0 (2026-10-28)
+
 * [#451](https://github.com/clojure-emacs/refactor-nrepl/pull/451): Deprecate `resolve-missing`, `clean-ns`, `namespace-aliases` and `cljr-suggest-libspecs`, which cider-nrepl's `cider/resolve-missing`, `cider/clean-ns` and `cider/resolve-alias` replace. They'll be removed in 3.17.0.
 
 ## 3.14.0 (2026-07-01)
