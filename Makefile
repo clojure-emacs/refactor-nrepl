@@ -1,6 +1,9 @@
-.PHONY: inline-deps test deploy clean lint
+.PHONY: clean inline-deps fast-test quick-test test cljfmt cljfmt-fix eastwood kondo lint deploy jar install check-env
 
-VERSION ?= 1.11
+VERSION ?= 1.12
+# The version local installs get. Releases take theirs from the git tag.
+PROJECT_VERSION ?= 99.99
+export PROJECT_VERSION
 
 clean:
 	lein clean
@@ -42,9 +45,8 @@ deploy: check-env .inline-deps
 jar: .inline-deps
 	lein with-profile -user,-dev,+$(VERSION),+plugin.mranderson/config jar
 
-# Usage: PROJECT_VERSION=3.12.0 make install
-# PROJECT_VERSION is needed because it's not computed dynamically
-install: check-install-env .inline-deps
+# Usage: make install (or PROJECT_VERSION=3.12.0 make install)
+install: .inline-deps
 	 LEIN_JVM_OPTS="-Dmranderson.internal.no-parallelism=true" lein with-profile -user,-dev,+$(VERSION),+plugin.mranderson/config install
 
 check-env:
@@ -56,9 +58,4 @@ ifndef CLOJARS_PASSWORD
 endif
 ifndef CIRCLE_TAG
 	$(error CIRCLE_TAG is undefined)
-endif
-
-check-install-env:
-ifndef PROJECT_VERSION
-	$(error Please set PROJECT_VERSION as an env var beforehand.)
 endif
