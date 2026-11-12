@@ -13,8 +13,11 @@
 (def ^:private transp (atom nil))
 
 (defn- nrepl-message
+  ;; In a session of its own, the way an editor would send it. The
+  ;; long-running ops behave differently there: they run on the session's
+  ;; thread.
   ([timeout tr payload]
-   (nrepl/message (nrepl/client tr timeout) payload))
+   (nrepl/message (nrepl/client-session (nrepl/client tr timeout)) payload))
   ([tr payload]
    (nrepl-message 5000 tr payload)))
 
