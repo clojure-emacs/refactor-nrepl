@@ -22,8 +22,11 @@
 (def clojars-artifacts (resource "clojars-artifacts.edn"))
 
 ;; The tests below run against canned responses. The ones that talk to the
-;; actual services are tagged `:network`, and only run with `make network-test`,
-;; as Maven Central and Clojars having a bad day shouldn't fail the build.
+;; actual services only run with `make network-test`, as Maven Central and
+;; Clojars having a bad day shouldn't fail the build.
+
+(def ^:private network-tests?
+  (some? (System/getenv "NETWORK_TESTS")))
 
 (deftest get-mvn-artifacts!-test
   (testing "Extracts the artifact ids from the search results"
@@ -84,13 +87,15 @@
     (with-redefs [artifacts/clojars-all-jars-url "file:///no/such/all-jars.clj.gz"]
       (is (empty? (#'artifacts/get-clojars-artifacts!))))))
 
-(deftest ^:network live-maven-central-test
-  (is (> (count (#'artifacts/get-mvn-artifacts! "org.clojure")) 10))
-  (is (> (count (#'artifacts/get-mvn-versions! "org.clojure/clojure")) 20)))
+(deftest live-maven-central-test
+  (when network-tests?
+    (is (> (count (#'artifacts/get-mvn-artifacts! "org.clojure")) 10))
+    (is (> (count (#'artifacts/get-mvn-versions! "org.clojure/clojure")) 20))))
 
-(deftest ^:network live-clojars-test
-  (is (> (count (#'artifacts/get-clojars-artifacts!)) 1000))
-  (is (> (count (artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl")) 30)))
+(deftest live-clojars-test
+  (when network-tests?
+    (is (> (count (#'artifacts/get-clojars-artifacts!)) 1000))
+    (is (> (count (artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl")) 30))))
 
 (deftest creates-a-map-of-artifacts
   (reset! artifacts/artifacts {})
