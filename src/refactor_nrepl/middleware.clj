@@ -179,11 +179,14 @@
   ;; The search itself has to run under the error handler as well (and not
   ;; just the replies), otherwise a failure never reaches the client, which is
   ;; left waiting for a response that isn't coming.
+  ;; Likewise for the config: the search consults it (`:ignore-paths`,
+  ;; `:debug`), and the occurrences are a lazy seq that's realized here.
   (with-errors-being-passed-on transport msg
-    (let [occurrences (@find-symbol msg)]
-      (doseq [occurrence occurrences]
-        (reply transport msg :occurrence (serialize-response msg occurrence)))
-      (reply transport msg :count (count occurrences) :status :done))))
+    (config/with-config msg
+      (let [occurrences (@find-symbol msg)]
+        (doseq [occurrence occurrences]
+          (reply transport msg :occurrence (serialize-response msg occurrence)))
+        (reply transport msg :count (count occurrences) :status :done)))))
 
 (register-op! "find-symbol" find-symbol-reply)
 
