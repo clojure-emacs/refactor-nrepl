@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 3.16.0 (2026-11-12)
+
 * [#453](https://github.com/clojure-emacs/refactor-nrepl/pull/453): Fix `find-symbol` ignoring the request's `ignore-paths` and `debug` options.
 * [#452](https://github.com/clojure-emacs/refactor-nrepl/pull/452): Fix `find-symbol` leaving the client without a response when the search fails (e.g. the namespace can't be analyzed).
 * [#452](https://github.com/clojure-emacs/refactor-nrepl/pull/452): Make the "unable to build an AST" error name the root cause's class and its line/column, and suggest reloading the namespace.
