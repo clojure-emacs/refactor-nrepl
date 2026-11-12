@@ -77,6 +77,21 @@
   (when (System/getProperty "refactor-nrepl.internal.log-exceptions")
     (.printStackTrace e)))
 
+(def ^:dynamic *skipped-files*
+  "An atom holding the files an op has skipped because they couldn't be
+  analyzed, as `{:file path :error message}` maps, or nil when nobody's
+  keeping track. Lets an op that's told to ignore errors still say what it
+  left out."
+  nil)
+
+(defn note-skipped-file!
+  "Record that `file` was skipped because of `error`, a description of what
+  went wrong, if someone is keeping track."
+  [^File file error]
+  (some-> *skipped-files*
+          (swap! conj {:file (.getCanonicalPath file)
+                       :error error})))
+
 (defn with-suppressed-errors
   "Wraps a predicate `f` in a try-catch, depending on `ignore-errors?`.
 

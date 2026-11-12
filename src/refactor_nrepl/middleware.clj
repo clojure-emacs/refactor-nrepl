@@ -5,7 +5,8 @@
    [refactor-nrepl.config :as config]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.ns.libspec-allowlist :as libspec-allowlist]
-   [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]))
+   [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]
+   [refactor-nrepl.util :as util]))
 
 (defn- maybe-require-piggieback
   "If piggieback is on the classpath, return `descriptor` with piggieback's
@@ -181,12 +182,19 @@
   ;; left waiting for a response that isn't coming.
   ;; Likewise for the config: the search consults it (`:ignore-paths`,
   ;; `:debug`), and the occurrences are a lazy seq that's realized here.
+  ;; With `ignore-errors` the search carries on past files it can't analyze.
+  ;; Those are reported in the final message, since their occurrences are
+  ;; missing from the results.
   (with-errors-being-passed-on transport msg
     (config/with-config msg
-      (let [occurrences (@find-symbol msg)]
-        (doseq [occurrence occurrences]
-          (reply transport msg :occurrence (serialize-response msg occurrence)))
-        (reply transport msg :count (count occurrences) :status :done)))))
+      (binding [util/*skipped-files* (atom [])]
+        (let [occurrences (@find-symbol msg)]
+          (doseq [occurrence occurrences]
+            (reply transport msg :occurrence (serialize-response msg occurrence)))
+          (reply transport msg
+                 :count (count occurrences)
+                 :skipped (serialize-response msg (distinct @util/*skipped-files*))
+                 :status :done))))))
 
 (register-op! "find-symbol" find-symbol-reply)
 

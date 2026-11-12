@@ -169,6 +169,25 @@
     (is (= 3 (find-foo [])))
     (is (= 0 (find-foo ["testproject"])))))
 
+(deftest find-symbol-reports-skipped-files
+  (let [transport (connect :port 7777)
+        skipped (fn [name]
+                  (->> {:op :find-symbol :ns 'com.example.two :name name
+                        :file (str test-project-dir "/com/example/one.clj")
+                        :line 6 :column 19 :dir test-project-dir
+                        :ignore-errors "true"}
+                       (nrepl/message (nrepl/client transport 60000))
+                       (some :skipped)
+                       read-string))]
+    (testing "With ignore-errors the files that couldn't be analyzed are listed in the final message"
+      ;; cljc_test_file.cljc mentions foo, and requires a namespace that doesn't exist.
+      (let [[{:keys [^String file error]} :as files] (skipped "foo")]
+        (is (= 1 (count files)))
+        (is (.endsWith file "com/move/cljc_test_file.cljc"))
+        (is (re-find #"FileNotFoundException at line 1" error))))
+    (testing "Files that don't mention the symbol aren't analyzed, so they can't be skipped"
+      (is (empty? (skipped "no-such-symbol"))))))
+
 (deftest find-symbol-reports-unanalyzable-ns
   (testing "An analysis failure is sent back to the client instead of being left unanswered"
     (let [transport (connect :port 7777)]

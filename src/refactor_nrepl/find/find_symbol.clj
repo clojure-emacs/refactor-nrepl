@@ -133,7 +133,9 @@
                   (catch Exception e
                     (util/maybe-log-exception e)
                     (when-not ignore-errors
-                      (throw e))))
+                      (throw e))
+                    (util/note-skipped-file! file (ana/error-summary e))
+                    nil))
         locs (into
               locs (some->
                     referred-syms
