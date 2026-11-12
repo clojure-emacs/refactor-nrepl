@@ -14,6 +14,10 @@
 
 (def ^:dynamic *handler* (server/default-handler #'middleware/wrap-refactor))
 (def ^:dynamic *session* nil)
+(def ^:dynamic *transport*
+  "The transport `*session*` talks through, for the tests that set up their
+  own clients."
+  nil)
 
 (defn session-fixture
   [f]
@@ -22,7 +26,8 @@
               ^nrepl.transport.FnTransport
               transport (nrepl/connect :port (:port server))]
     (let [client (nrepl/client transport Long/MAX_VALUE)]
-      (binding [*session* (nrepl/client-session client)]
+      (binding [*session* (nrepl/client-session client)
+                *transport* transport]
         (f)))))
 
 (defn message
