@@ -156,6 +156,15 @@
     (is (= split-type :ns)
         (pr-str (filter #(= (:name %)  'clojure.string) split-res)))))
 
+(deftest find-symbol-reports-unanalyzable-ns
+  (testing "An analysis failure is sent back to the client instead of being left unanswered"
+    (let [transport (connect :port 7777)]
+      (is (thrown-with-msg? IllegalStateException
+                            #"unable to build an AST for throws-at-load"
+                            (find-usages :transport transport :name "x"
+                                         :file "test-resources/throws_at_load.clj"
+                                         :line 5 :column 24))))))
+
 (deftest find-local-arg
   (let [three-file (str test-project-dir "/com/example/three.clj")
         transport (connect :port 7777)
