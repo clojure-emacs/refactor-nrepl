@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+* [#452](https://github.com/clojure-emacs/refactor-nrepl/pull/452): Fix `find-symbol` leaving the client without a response when the search fails (e.g. the namespace can't be analyzed).
+* [#452](https://github.com/clojure-emacs/refactor-nrepl/pull/452): Make the "unable to build an AST" error name the root cause's class and its line/column, and suggest reloading the namespace.
+
 ## 3.15.0 (2026-10-28)
 
 * [#451](https://github.com/clojure-emacs/refactor-nrepl/pull/451): Deprecate `resolve-missing`, `clean-ns`, `namespace-aliases` and `cljr-suggest-libspecs`, which cider-nrepl's `cider/resolve-missing`, `cider/clean-ns` and `cider/resolve-alias` replace. They'll be removed in 3.17.0.

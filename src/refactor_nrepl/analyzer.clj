@@ -152,12 +152,44 @@
                                       th))]
           (update-ast-cache file-content ns new-ast-or-err))))))
 
+(defn- cause-chain [^Throwable th]
+  (take-while some? (iterate #(.getCause ^Throwable %) th)))
+
+(defn- error-location
+  "Where in the namespace the analysis failed, if the exception chain knows.
+  The compiler reports it under `:clojure.error/line`, tools.analyzer under `:line`."
+  [th]
+  (some (fn [t]
+          (let [data (ex-data t)]
+            (when-let [line (or (:clojure.error/line data) (:line data))]
+              (str "line " line
+                   (when-let [column (or (:clojure.error/column data) (:column data))]
+                     (str ", column " column))))))
+        (cause-chain th)))
+
+(defn- error-summary
+  "Describes the root cause of `th` in a single line.
+  The outermost exception is often just a wrapper with an unhelpful message of
+  its own (e.g. the compiler's \"Syntax error macroexpanding at ...\"), while
+  the root cause's message alone can be cryptic without its class."
+  [^Throwable th]
+  (let [^Throwable root (last (cause-chain th))
+        location (error-location th)
+        message (.getMessage root)]
+    (str (.getName (class root))
+         (when location (str " at " location))
+         (when message (str ": " message)))))
+
 (defn- throw-ast-in-bad-state
-  [file-content msg]
-  (throw (IllegalStateException.
-          (str "refactor-nrepl is unable to build an AST for "
-               (first (parse-ns file-content))
-               ". tools.analyzer encountered the following problem: " msg))))
+  [file-content ^Throwable th]
+  (let [ns (first (parse-ns file-content))]
+    (throw (IllegalStateException.
+            (str "refactor-nrepl is unable to build an AST for " ns
+                 ". tools.analyzer encountered the following problem: "
+                 (error-summary th)
+                 "\nBuilding an AST loads and evaluates the namespace, so check that"
+                 " it loads cleanly, e.g. with (require '" ns " :reload).")
+            th))))
 
 (defn ns-ast
   "Build AST for a namespace"
@@ -171,7 +203,7 @@
       (throw ast-or-err)
 
       error?
-      (throw-ast-in-bad-state file-content (.getMessage ^Throwable ast-or-err))
+      (throw-ast-in-bad-state file-content ast-or-err)
 
       :else
       ast-or-err)))
@@ -185,7 +217,7 @@
                          vals
                          (reduce (fn [init x]
                                    (if (instance? Throwable x)
-                                     (reduced (list "error" (.getMessage ^Throwable x)))
+                                     (reduced (list "error" (error-summary x)))
                                      init))
                                  "OK"))
                     k))

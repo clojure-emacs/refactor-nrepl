@@ -2,7 +2,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.pprint :as pprint]
-   [clojure.test :refer [deftest is]]
+   [clojure.test :refer [deftest is testing]]
    [refactor-nrepl.analyzer :as sut]))
 
 (deftest ns-ast-test
@@ -13,6 +13,16 @@
              "uses_warn_on_reflection_cljc.cljc"]
           :let [c (-> f io/resource slurp)]]
     (is (some? (sut/ns-ast c)))))
+
+(deftest ns-ast-error-test
+  (testing "A namespace that throws while loading is reported with the root cause and its location"
+    (let [c (-> "throws_at_load.clj" io/resource slurp)
+          ^Throwable e (is (thrown? IllegalStateException (sut/ns-ast c)))
+          message (.getMessage e)]
+      (is (re-find #"unable to build an AST for throws-at-load" message))
+      (is (re-find #"java\.lang\.NullPointerException at line 8, column 13" message))
+      (is (re-find #"\(require 'throws-at-load :reload\)" message))
+      (is (instance? NullPointerException (last (take-while some? (iterate ex-cause e))))))))
 
 (deftest warm-ast-cache-test
   (let [pairs (partition 2 (sut/warm-ast-cache))]
