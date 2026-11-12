@@ -2,38 +2,18 @@
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
    [nrepl.core :as nrepl]
-   [nrepl.server :as nrepl.server]
    [refactor-nrepl.analyzer :as analyzer]
-   [refactor-nrepl.client :refer [connect find-unbound find-usages resolve-missing version]]
+   [refactor-nrepl.client :refer [find-unbound find-usages resolve-missing version]]
    [refactor-nrepl.core :as core]
    [refactor-nrepl.find.find-symbol]
-   [refactor-nrepl.middleware]))
+   [refactor-nrepl.test-session :as session]))
 
-(defn start-up-repl-server []
-  (let [server
-        (nrepl.server/start-server
-         :bind "localhost"
-         :port 7777
-         :handler (nrepl.server/default-handler
-                   #'refactor-nrepl.middleware/wrap-refactor))]
-    server))
-
-(defn stop-repl-server [server]
-  (nrepl.server/stop-server server))
-
-(defn wrap-setup-once [f]
-  (let [server (start-up-repl-server)]
-
-    (f)
-
-    (stop-repl-server server)))
-
-(use-fixtures :once wrap-setup-once)
+(use-fixtures :once session/session-fixture)
 
 (def test-project-dir "testproject/src")
 
 (deftest test-find-two-foo
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         response (find-usages :transport transport :ns 'com.example.two
                               :file (str test-project-dir "/com/example/one.clj")
                               :line 6 :column 19
@@ -56,7 +36,7 @@
 
 (deftest test-find-two-foo-errors-ignored
   (with-redefs [analyzer/ns-ast ns-ast-throw-error-for-five]
-    (let [transport (connect :port 7777)
+    (let [transport session/*transport*
           response (find-usages :transport transport :ns 'com.example.two
                                 :file (str test-project-dir "/com/example/one.clj")
                                 :line 6 :column 19
@@ -75,7 +55,7 @@
         (is (some (partial re-matches #"(?s).*two.clj \[3\].*") result) "def of foo not found in ns com.example.two")))))
 
 (deftest test-shouldnt-find-str-in-assert
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         response (find-usages :transport transport :ns 'clojure.core
                               :file (str test-project-dir "/com/example/macros.clj")
                               :line 8 :column 4
@@ -85,7 +65,7 @@
     (is (not-any? #(.contains ^String % "(assert (> x 0)") result) "`assert` found when searching for `clojure.core/str`")))
 
 (deftest test-shouldnt-find-expanded-fn-in-place-of-macro
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         response (find-usages :transport transport :ns 'com.example.macros
                               :file (str test-project-dir "/com/example/macros.clj")
                               :line 7 :column 11
@@ -96,7 +76,7 @@
     (is (not-any? #(.contains ^String % "(nicely x)") result) "`str-nicely` found at macro call site")))
 
 (deftest test-find-fn-in-similarly-named-ns
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         response (find-usages :transport transport :ns 'com.example.three
                               :file (str test-project-dir "/com/example/four.clj")
                               :line 11 :column 3
@@ -105,7 +85,7 @@
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-find-fn-in-dashed-ns
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         response (find-usages :transport transport :ns 'com.example.twenty-four
                               :file (str test-project-dir "/com/example/four.clj")
                               :line 14 :column 4
@@ -115,7 +95,7 @@
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest test-find-dashed-fn
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         response (find-usages :transport transport :ns 'com.example.twenty-four
                               :file (str test-project-dir "/com/example/four.clj")
                               :line 16 :column 4
@@ -128,7 +108,7 @@
 (definterface Baz)
 
 (deftest test-resolve-missing
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         split-res (resolve-missing :transport transport :symbol "split")
         date-res (resolve-missing :transport transport :symbol "Date")
         foo-res (resolve-missing :transport transport :symbol "Foo")
@@ -159,7 +139,7 @@
         (pr-str (filter #(= (:name %)  'clojure.string) split-res)))))
 
 (deftest find-symbol-honors-ignore-paths
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         find-foo (fn [ignore-paths]
                    (->> {:op :find-symbol :ns 'com.example.two :name "foo"
                          :file (str test-project-dir "/com/example/one.clj")
@@ -171,7 +151,7 @@
     (is (= 0 (find-foo ["testproject"])))))
 
 (deftest find-symbol-reports-skipped-files
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         skipped (fn [name]
                   (->> {:op :find-symbol :ns 'com.example.two :name name
                         :file (str test-project-dir "/com/example/one.clj")
@@ -190,7 +170,7 @@
       (is (empty? (skipped "no-such-symbol"))))))
 
 (deftest long-running-ops-can-be-interrupted
-  (let [transport (connect :port 7777)
+  (let [transport session/*transport*
         client (nrepl/client transport 30000)
         session (nrepl/new-session client)
         started (promise)
@@ -227,7 +207,7 @@
 
 (deftest session-bindings-dont-leak-into-ops
   (testing "Output printed while an op runs on the session's thread isn't sent to the client"
-    (let [transport (connect :port 7777)
+    (let [transport session/*transport*
           client (nrepl/client transport 30000)
           session (nrepl/new-session client)]
       (with-redefs [refactor-nrepl.find.find-symbol/find-symbol
@@ -246,7 +226,7 @@
 
 (deftest find-symbol-reports-unanalyzable-ns
   (testing "An analysis failure is sent back to the client instead of being left unanswered"
-    (let [transport (connect :port 7777)]
+    (let [transport session/*transport*]
       (is (thrown-with-msg? IllegalStateException
                             #"unable to build an AST for throws-at-load"
                             (find-usages :transport transport :name "x"
@@ -255,35 +235,35 @@
 
 (deftest find-local-arg
   (let [three-file (str test-project-dir "/com/example/three.clj")
-        transport (connect :port 7777)
+        transport session/*transport*
         response (find-usages :transport transport :name "a" :file three-file :line 3 :column 24)
         result (remove keyword? response)]
     (is (= 5 (count result)) (format "expected 5 results but got %d" (count result)))))
 
 (deftest find-local-let
   (let [three-file (str test-project-dir "/com/example/three.clj")
-        transport (connect :port 7777)
+        transport session/*transport*
         response (find-usages :transport transport :name "right" :file three-file :line 12 :column 12)
         result (remove keyword? response)]
     (is (= 2 (count result)) (format "expected 2 results but got %d" (count result)))))
 
 (deftest find-local-in-optmap-default
   (let [five-file (str test-project-dir "/com/example/five.clj")
-        transport (connect :port 7777)
+        transport session/*transport*
         response (find-usages :transport transport :name "foo" :file five-file :line 47 :column 10)
         result (remove keyword? response)]
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest find-local-in-optmap-default-linebreaks
   (let [five-file (str test-project-dir "/com/example/five.clj")
-        transport (connect :port 7777)
+        transport session/*transport*
         response (find-usages :transport transport :name "foo" :file five-file :line 50 :column 12)
         result (remove keyword? response)]
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
 
 (deftest find-local-in-optmap-default-in-let
   (let [five-file (str test-project-dir "/com/example/five.clj")
-        transport (connect :port 7777)
+        transport session/*transport*
         response (find-usages :transport transport :name "foo" :file five-file :line 60 :column 12)
         result (remove keyword? response)]
     (is (= 3 (count result)) (format "expected 3 results but got %d" (count result)))))
@@ -291,14 +271,14 @@
 (core/with-clojure-version->= {:major 1 :minor 9}
   (deftest find-local-in-namespaced-destructuring
     (let [five-file (str test-project-dir "/com/example/five.clj")
-          transport (connect :port 7777)
+          transport session/*transport*
           response (find-usages :transport transport :name "foo" :file five-file :line 67 :column 16)
           result (remove keyword? response)]
       (is (= 2 (count result)) (format "expected 3 results but got %d" (count result))))))
 
 (deftest test-find-used-locals
   (let [five-file (str test-project-dir "/com/example/five.clj")
-        transport (connect :port 7777)]
+        transport session/*transport*]
     (is (= (find-unbound :transport transport :file five-file :line 13 :column 6)
            '(s)))
     (is (= (find-unbound :transport transport :file five-file :line 14 :column 13)
@@ -319,10 +299,10 @@
 
 (deftest find-unbound-fails-on-cljs
   (let [cljs-file (str test-project-dir "/tmp/src/com/example/file.cljs")
-        transport (connect :port 7777)]
+        transport session/*transport*]
     (is (:error (find-unbound :transport transport :file cljs-file
                               :line 12 :column 6)))))
 
 (deftest test-version
   (is (= (str (core/version))
-         (version :transport (connect :port 7777)))))
+         (version :transport session/*transport*))))
