@@ -1,7 +1,8 @@
 (ns refactor-nrepl.integration-tests
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [nrepl.server :as nrepl]
+   [nrepl.core :as nrepl]
+   [nrepl.server :as nrepl.server]
    [refactor-nrepl.analyzer :as analyzer]
    [refactor-nrepl.client :refer [connect find-unbound find-usages resolve-missing version]]
    [refactor-nrepl.core :as core]
@@ -9,15 +10,15 @@
 
 (defn start-up-repl-server []
   (let [server
-        (nrepl/start-server
+        (nrepl.server/start-server
          :bind "localhost"
          :port 7777
-         :handler (nrepl/default-handler
+         :handler (nrepl.server/default-handler
                    #'refactor-nrepl.middleware/wrap-refactor))]
     server))
 
 (defn stop-repl-server [server]
-  (nrepl/stop-server server))
+  (nrepl.server/stop-server server))
 
 (defn wrap-setup-once [f]
   (let [server (start-up-repl-server)]
@@ -155,6 +156,18 @@
     (is (= baz-type :class))
     (is (= split-type :ns)
         (pr-str (filter #(= (:name %)  'clojure.string) split-res)))))
+
+(deftest find-symbol-honors-ignore-paths
+  (let [transport (connect :port 7777)
+        find-foo (fn [ignore-paths]
+                   (->> {:op :find-symbol :ns 'com.example.two :name "foo"
+                         :file (str test-project-dir "/com/example/one.clj")
+                         :line 6 :column 19 :dir test-project-dir
+                         :ignore-errors "true" :ignore-paths ignore-paths}
+                        (nrepl/message (nrepl/client transport 60000))
+                        (some :count)))]
+    (is (= 3 (find-foo [])))
+    (is (= 0 (find-foo ["testproject"])))))
 
 (deftest find-symbol-reports-unanalyzable-ns
   (testing "An analysis failure is sent back to the client instead of being left unanswered"
