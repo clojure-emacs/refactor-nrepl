@@ -176,10 +176,14 @@
   (delay (require-and-resolve 'refactor-nrepl.find.find-symbol/find-symbol)))
 
 (defn- find-symbol-reply [{:keys [transport] :as msg}]
-  (let [occurrences (@find-symbol msg)]
-    (doseq [occurrence occurrences]
-      (reply transport msg :occurrence (serialize-response msg occurrence)))
-    (reply transport msg :count (count occurrences) :status :done)))
+  ;; The search itself has to run under the error handler as well (and not
+  ;; just the replies), otherwise a failure never reaches the client, which is
+  ;; left waiting for a response that isn't coming.
+  (with-errors-being-passed-on transport msg
+    (let [occurrences (@find-symbol msg)]
+      (doseq [occurrence occurrences]
+        (reply transport msg :occurrence (serialize-response msg occurrence)))
+      (reply transport msg :count (count occurrences) :status :done))))
 
 (register-op! "find-symbol" find-symbol-reply)
 
