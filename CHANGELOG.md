@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* [#458](https://github.com/clojure-emacs/refactor-nrepl/pull/458): Describe what every op requires, accepts and returns in the middleware descriptor, so that nREPL's `describe` op reports it.
 * [#456](https://github.com/clojure-emacs/refactor-nrepl/pull/456): Fix `artifact-list` missing most of the `org.clojure` and `com.cognitect` artifacts, and stalling for 30 seconds, because it asked Maven Central for more results than its search API serves.
 * [#456](https://github.com/clojure-emacs/refactor-nrepl/pull/456): Fix `artifact-versions` leaving out the older versions of an artifact that has more than 100 of them on Maven Central.
 * [#455](https://github.com/clojure-emacs/refactor-nrepl/pull/455): Run the long-running ops (`find-symbol` and the like) on the session's thread, so that nREPL's `interrupt` op can stop them.

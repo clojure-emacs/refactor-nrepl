@@ -82,6 +82,8 @@ In the example above we're talking to one of the built-in nREPL ops, `eval`, pas
 
 ## Available features
 
+The sections below describe the ops at length. A running server can tell you the short version: nREPL's `describe` op, with `verbose?` set, lists what each op requires, what's optional and what it returns.
+
 ### Configuration
 
 Configuration settings are passed along with each msg, currently the recognized options are as follows:
@@ -146,13 +148,12 @@ Two ops are available:
 
 #### artifact-list
 
-Takes no arguments and returns a list of all available artifacts.
+Takes one optional argument, `force`, which triggers a forced update of the cached artifacts, and returns a list of all available artifacts.
 
 #### artifact-versions
 
 Takes one required argument, `artifact` which is the full name of the
-artifact e.g. `org.clojure/clojure`, and one optional argument `force`
-which optionally triggers a forced update of the cached artifacts.
+artifact e.g. `org.clojure/clojure`.
 
 The return value is a sorted list, in decreasing order of relevance, with all the available versions.
 

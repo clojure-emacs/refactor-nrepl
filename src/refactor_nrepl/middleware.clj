@@ -4,6 +4,7 @@
    [clojure.walk :as walk]
    [refactor-nrepl.config :as config]
    [refactor-nrepl.core :as core]
+   [refactor-nrepl.descriptors :as descriptors]
    [refactor-nrepl.ns.libspec-allowlist :as libspec-allowlist]
    [refactor-nrepl.stubs-for-interface :refer [stubs-for-interface]]
    [refactor-nrepl.util :as util]))
@@ -302,12 +303,16 @@
 
 (defn- describe-op [op-name]
   (let [namespaced? (.startsWith ^String op-name op-prefix)
-        replacement (get moved-ops (bare-op-name op-name))]
+        bare-name (bare-op-name op-name)
+        replacement (get moved-ops bare-name)
+        {:keys [doc requires optional returns]} (get descriptors/ops bare-name)]
     {:doc (cond
-            replacement (str "Deprecated: use cider-nrepl's `" replacement "` instead. See the refactor-nrepl README.")
-            namespaced? "See the refactor-nrepl README"
-            :else (str "Deprecated: use `" op-prefix op-name "` instead. See the refactor-nrepl README."))
-     :returns {} :requires {}}))
+            replacement (str "Deprecated: use cider-nrepl's `" replacement "` instead. " doc)
+            namespaced? doc
+            :else (str "Deprecated: use `" op-prefix op-name "` instead. " doc))
+     :requires (or requires {})
+     :optional (or optional {})
+     :returns (or returns {})}))
 
 (set-descriptor!
  #'wrap-refactor
