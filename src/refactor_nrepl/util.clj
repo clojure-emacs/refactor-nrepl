@@ -119,6 +119,18 @@
   ([_]
    (.isInterrupted (Thread/currentThread))))
 
+(defn interruption?
+  "Is `th` the result of its thread being interrupted, or stopped?
+  Such an exception says nothing about the code that was running."
+  [^Throwable th]
+  (boolean
+   (some #(contains? #{"java.lang.InterruptedException"
+                       "java.lang.ThreadDeath"
+                       "java.io.InterruptedIOException"
+                       "java.nio.channels.ClosedByInterruptException"}
+                     (.getName (class %)))
+         (take-while some? (iterate #(.getCause ^Throwable %) th)))))
+
 (defn dir-outside-root-dir?
   "Dirs outside the root dir often represent uninteresting dirs to examine, e.g.
   Lein checkouts, .gitlibs from deps.edn, or other extraneous source paths

@@ -132,7 +132,7 @@
                          (filter :line-beg)))
                   (catch Exception e
                     (util/maybe-log-exception e)
-                    (when-not ignore-errors
+                    (when (or (not ignore-errors) (util/interruption? e))
                       (throw e))
                     (util/note-skipped-file! file (ana/error-summary e))
                     nil))

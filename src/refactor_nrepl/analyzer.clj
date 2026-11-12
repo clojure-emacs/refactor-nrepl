@@ -148,6 +148,10 @@
         (when-let [new-ast-or-err (try
                                     (build-ast ns aliases)
                                     (catch Throwable th
+                                      ;; An interrupted analysis says nothing
+                                      ;; about the namespace: don't cache it.
+                                      (when (util/interruption? th)
+                                        (throw th))
                                       (util/maybe-log-exception th)
                                       th))]
           (update-ast-cache file-content ns new-ast-or-err))))))
