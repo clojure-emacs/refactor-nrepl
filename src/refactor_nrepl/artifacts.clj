@@ -81,11 +81,13 @@
       [])))
 
 (defn- get-mvn-artifacts!
-  "All the artifacts under org.clojure in mvn central"
+  "All the artifacts under `group-id` in mvn central"
   [group-id]
+  ;; The search API serves 200 rows at most. Asking for more doesn't get an
+  ;; error, but the default 20 rows, or no response at all.
   (let [url (str "https://search.maven.org/solrsearch/select?q=g:%22"
                  group-id
-                 "%22+AND+p:%22jar%22&rows=2000&wt=json")]
+                 "%22+AND+p:%22jar%22&rows=200&wt=json")]
     (if-let [body (http-get url)]
       (->> (json/read-str body :key-fn keyword)
            :response

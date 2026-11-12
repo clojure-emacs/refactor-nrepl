@@ -35,7 +35,9 @@
                                                 {\"g\": \"org.clojure\", \"a\": \"core.async\"},
                                                 {\"g\": \"org.clojure\"}]}}")]
         (is (= ["clojure" "core.async"] (#'artifacts/get-mvn-artifacts! "org.clojure")))
-        (is (re-find #"q=g:%22org\.clojure%22" @requested)))))
+        (is (re-find #"q=g:%22org\.clojure%22" @requested))
+        (is (re-find #"rows=200&" @requested)
+            "the search API doesn't serve more than 200 rows"))))
   (testing "Comes back empty when Maven Central can't be reached"
     (with-redefs [artifacts/http-get (constantly nil)]
       (is (empty? (#'artifacts/get-mvn-artifacts! "org.clojure"))))))
