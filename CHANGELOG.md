@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* [#456](https://github.com/clojure-emacs/refactor-nrepl/pull/456): Fix `artifact-list` missing most of the `org.clojure` and `com.cognitect` artifacts, and stalling for 30 seconds, because it asked Maven Central for more results than its search API serves.
 * [#455](https://github.com/clojure-emacs/refactor-nrepl/pull/455): Run the long-running ops (`find-symbol` and the like) on the session's thread, so that nREPL's `interrupt` op can stop them.
 * [#454](https://github.com/clojure-emacs/refactor-nrepl/pull/454): Make `find-symbol` list the files it skipped because of `ignore-errors` under `skipped` in its final message.
 
