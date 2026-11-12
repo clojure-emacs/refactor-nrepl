@@ -173,30 +173,31 @@
   (let [transport session/*transport*
         client (nrepl/client transport 30000)
         session (nrepl/new-session client)
-        started (promise)
-        ;; Every response to the op, up to and including the one that ends it.
-        responses (future
-                    (->> (nrepl/message client {:op :find-symbol :id "slow" :session session
-                                                :ns 'com.example.two :name "foo"
-                                                :file (str test-project-dir "/com/example/one.clj")
-                                                :line 6 :column 19 :dir test-project-dir})
-                         doall))]
+        started (promise)]
     (with-redefs [refactor-nrepl.find.find-symbol/find-symbol
                   (fn [_]
                     (deliver started true)
                     (Thread/sleep 30000)
                     [])]
-      (is (deref started 10000 false) "the op didn't start")
-      (is (= #{"done"}
-             (->> (nrepl/message client {:op :interrupt :session session :interrupt-id "slow"})
-                  (mapcat :status)
-                  set)))
-      (let [responses (deref responses 10000 :timeout)]
-        (is (= [#{"interrupted" "done"}] (map (comp set :status) responses))
-            "the client is only told that the op was interrupted")
-        (is (not-any? :count responses))
-        (is (not-any? :error responses))
-        (is (not-any? :err responses))))
+      ;; Sent with the stub in place: every response to the op, up to and
+      ;; including the one that ends it.
+      (let [responses (future
+                        (->> (nrepl/message client {:op :find-symbol :id "slow" :session session
+                                                    :ns 'com.example.two :name "foo"
+                                                    :file (str test-project-dir "/com/example/one.clj")
+                                                    :line 6 :column 19 :dir test-project-dir})
+                             doall))]
+        (is (deref started 10000 false) "the op didn't start")
+        (is (= #{"done"}
+               (->> (nrepl/message client {:op :interrupt :session session :interrupt-id "slow"})
+                    (mapcat :status)
+                    set)))
+        (let [responses (deref responses 10000 :timeout)]
+          (is (= [#{"interrupted" "done"}] (map (comp set :status) responses))
+              "the client is only told that the op was interrupted")
+          (is (not-any? :count responses))
+          (is (not-any? :error responses))
+          (is (not-any? :err responses)))))
     (testing "The session is still usable afterwards"
       (is (= 3 (->> (nrepl/message client {:op :find-symbol :session session
                                            :ns 'com.example.two :name "foo"
