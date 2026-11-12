@@ -395,6 +395,12 @@ This op is primarily intended for use by clj-refactor.el's `cljr-slash` feature.
 
 The return value `suggestions` is a list of libspec strings, e.g. `["[clojure.set :as set]"]`.
 
+### Interrupting long-running ops
+
+The ops that analyze the project or go out to the network can take a while: `find-symbol`, `extract-definition`, `find-used-publics`, `find-used-locals`, `rename-file-or-dir`, `hotload-dependency` and `artifact-versions`. They run on the session's thread, the way evaluations do, so nREPL's standard `interrupt` op stops them. Send it with the session and, as `interrupt-id`, the id of the request to stop; the request then ends with the `interrupted` status and nothing else.
+
+Running on the session's thread also means such an op waits for its turn if the session is busy evaluating something, and that evaluations wait for it.
+
 ### Errors
 
 The middleware returns errors under one of two keys: `:error` or

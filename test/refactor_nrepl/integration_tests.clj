@@ -6,6 +6,7 @@
    [refactor-nrepl.analyzer :as analyzer]
    [refactor-nrepl.client :refer [connect find-unbound find-usages resolve-missing version]]
    [refactor-nrepl.core :as core]
+   [refactor-nrepl.find.find-symbol]
    [refactor-nrepl.middleware]))
 
 (defn start-up-repl-server []
@@ -187,6 +188,61 @@
         (is (re-find #"FileNotFoundException at line 1" error))))
     (testing "Files that don't mention the symbol aren't analyzed, so they can't be skipped"
       (is (empty? (skipped "no-such-symbol"))))))
+
+(deftest long-running-ops-can-be-interrupted
+  (let [transport (connect :port 7777)
+        client (nrepl/client transport 30000)
+        session (nrepl/new-session client)
+        started (promise)
+        ;; Every response to the op, up to and including the one that ends it.
+        responses (future
+                    (->> (nrepl/message client {:op :find-symbol :id "slow" :session session
+                                                :ns 'com.example.two :name "foo"
+                                                :file (str test-project-dir "/com/example/one.clj")
+                                                :line 6 :column 19 :dir test-project-dir})
+                         doall))]
+    (with-redefs [refactor-nrepl.find.find-symbol/find-symbol
+                  (fn [_]
+                    (deliver started true)
+                    (Thread/sleep 30000)
+                    [])]
+      (is (deref started 10000 false) "the op didn't start")
+      (is (= #{"done"}
+             (->> (nrepl/message client {:op :interrupt :session session :interrupt-id "slow"})
+                  (mapcat :status)
+                  set)))
+      (let [responses (deref responses 10000 :timeout)]
+        (is (= [#{"interrupted" "done"}] (map (comp set :status) responses))
+            "the client is only told that the op was interrupted")
+        (is (not-any? :count responses))
+        (is (not-any? :error responses))
+        (is (not-any? :err responses))))
+    (testing "The session is still usable afterwards"
+      (is (= 3 (->> (nrepl/message client {:op :find-symbol :session session
+                                           :ns 'com.example.two :name "foo"
+                                           :file (str test-project-dir "/com/example/one.clj")
+                                           :line 6 :column 19 :dir test-project-dir
+                                           :ignore-errors "true"})
+                    (some :count)))))))
+
+(deftest session-bindings-dont-leak-into-ops
+  (testing "Output printed while an op runs on the session's thread isn't sent to the client"
+    (let [transport (connect :port 7777)
+          client (nrepl/client transport 30000)
+          session (nrepl/new-session client)]
+      (with-redefs [refactor-nrepl.find.find-symbol/find-symbol
+                    (fn [_]
+                      (println "loading...")
+                      (binding [*out* *err*]
+                        (println "Reflection warning"))
+                      [])]
+        (let [responses (doall (nrepl/message client {:op :find-symbol :session session
+                                                      :ns 'com.example.two :name "foo"
+                                                      :file (str test-project-dir "/com/example/one.clj")
+                                                      :line 6 :column 19 :dir test-project-dir}))]
+          (is (= 0 (some :count responses)))
+          (is (not-any? :out responses))
+          (is (not-any? :err responses)))))))
 
 (deftest find-symbol-reports-unanalyzable-ns
   (testing "An analysis failure is sent back to the client instead of being left unanswered"

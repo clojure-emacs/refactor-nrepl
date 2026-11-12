@@ -34,10 +34,12 @@
                false)))
     (require
      '[clojure.tools.nrepl.middleware :refer [set-descriptor!]]
+     '[clojure.tools.nrepl.middleware.session]
      '[clojure.tools.nrepl.misc :refer [response-for]]
      '[clojure.tools.nrepl.transport :as transport])
     (require
      '[nrepl.middleware :refer [set-descriptor!]]
+     '[nrepl.middleware.session]
      '[nrepl.misc :refer [response-for]]
      '[nrepl.transport :as transport])))
 
@@ -71,18 +73,34 @@
     :else
     (err-info ex :refactor-nrepl-error)))
 
-(defmacro ^:private with-errors-being-passed-on [transport msg & body]
+(defmacro ^:private with-errors-being-passed-on
+  "Runs `body`, replying with the error if it throws.
+  An interrupted op isn't an error, though: the session middleware has
+  already told the client about it, so there's nothing left to say. The
+  exception isn't rethrown either, as the session's thread doesn't expect
+  the code it runs to throw. `ThreadDeath` is the exception to that: it has
+  to keep unwinding the thread that's being stopped."
+  [transport msg & body]
   `(try
      ~@body
+     (catch ThreadDeath e#
+       (throw e#))
      (catch Throwable e#
-       (transport/send ~transport (response-for ~msg (reply-error e#))))))
+       (when-not (or (util/interruption? e#) (util/interrupted?))
+         (transport/send ~transport (response-for ~msg (reply-error e#)))))))
 
-(defmacro ^:private reply [transport msg & kvs]
+(defmacro ^:private reply
+  "Sends a response to `msg` made of `kvs`.
+  Nothing is sent once the op has been interrupted. By then the client has
+  been told that the request is over, and whatever the op came up with is
+  incomplete."
+  [transport msg & kvs]
   `(libspec-allowlist/with-memoized-libspec-allowlist
      (with-errors-being-passed-on ~transport ~msg
        (config/with-config ~msg
-         (transport/send ~transport
-                         (response-for ~msg ~(apply hash-map kvs)))))))
+         (let [response# (response-for ~msg ~(apply hash-map kvs))]
+           (when-not (util/interrupted?)
+             (transport/send ~transport response#)))))))
 
 (defn- bencode-friendly-data [data]
   ;; Bencode only supports byte strings, integers, lists and maps.
@@ -240,14 +258,51 @@
    "namespace-aliases"     "cider/resolve-alias"
    "cljr-suggest-libspecs" "cider/resolve-alias"})
 
+(def interruptible-ops
+  "The ops that can take a while, as they analyze the project or go out to
+  the network. They run on the session's thread, like evaluations do, which
+  lets the standard `interrupt` op stop them. It also means they wait for
+  their turn if the session is busy.
+
+  `warm-ast-cache` and `artifact-list` are left out on purpose: clients run
+  them in the background, where they shouldn't hold up evaluations."
+  #{"find-symbol" "extract-definition" "find-used-publics" "find-used-locals"
+    "rename-file-or-dir" "hotload-dependency" "artifact-versions"})
+
+(defn- bare-op-name [^String op]
+  (cond-> op (.startsWith op op-prefix) (subs (count op-prefix))))
+
+(def ^:private handler-thread-bindings
+  "What the vars the session rebinds for evaluations are bound to on the
+  thread that handles requests. An op has to see these on the session's
+  thread too: output printed while a namespace is being analyzed would
+  otherwise be sent to the client as part of the op's response, and the way
+  the user set up printing in the REPL would shape the op's results."
+  (into {}
+        (map (fn [v] [v (.getRawRoot ^clojure.lang.Var v)]))
+        [#'*out* #'*err* #'*print-length* #'*print-level* #'*print-meta*
+         #'*print-namespace-maps* #'*print-readably* #'*print-dup*]))
+
+(defn- run-op
+  "Runs the op behind `reply-fn` for `msg`, on the session's thread if it's
+  an interruptible one."
+  [reply-fn {:keys [op session id] :as msg}]
+  (let [exec (when (contains? interruptible-ops (bare-op-name op))
+               (:exec (meta session)))]
+    (if exec
+      (exec id #(with-bindings handler-thread-bindings (reply-fn msg)) nil)
+      (reply-fn msg))))
+
 (defn wrap-refactor
   [handler]
   (fn [{:keys [op] :as msg}]
-    ((get @refactor-nrepl-ops op handler) msg)))
+    (if-let [reply-fn (get @refactor-nrepl-ops op)]
+      (run-op reply-fn msg)
+      (handler msg))))
 
 (defn- describe-op [op-name]
   (let [namespaced? (.startsWith ^String op-name op-prefix)
-        replacement (get moved-ops (cond-> op-name namespaced? (subs (count op-prefix))))]
+        replacement (get moved-ops (bare-op-name op-name))]
     {:doc (cond
             replacement (str "Deprecated: use cider-nrepl's `" replacement "` instead. See the refactor-nrepl README.")
             namespaced? "See the refactor-nrepl README"
@@ -257,6 +312,9 @@
 (set-descriptor!
  #'wrap-refactor
  (maybe-require-piggieback
-  {:handles (into {}
+  ;; The session middleware provides the thread the interruptible ops run on.
+  ;; It lives next to whichever `set-descriptor!` got required above.
+  {:requires #{(-> #'set-descriptor! meta :ns ns-name (str ".session/session") symbol resolve)}
+   :handles (into {}
                   (map (fn [op] [op (describe-op op)]))
                   (keys @refactor-nrepl-ops))}))
