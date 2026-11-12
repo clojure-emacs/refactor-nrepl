@@ -20,7 +20,7 @@ quick-test: fast-test
 # The tests that talk to Maven Central and Clojars. They're not a part of the
 # regular test run, as those services being slow or down would fail it.
 network-test: clean
-	lein with-profile -user,-dev,+$(VERSION) test :network
+	NETWORK_TESTS=true lein with-profile -user,-dev,+$(VERSION) test :only refactor-nrepl.artifacts-test
 
 test: .inline-deps
 	lein with-profile -user,-dev,+$(VERSION),+plugin.mranderson/config test
