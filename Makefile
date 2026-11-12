@@ -1,4 +1,4 @@
-.PHONY: inline-deps test deploy clean lint
+.PHONY: inline-deps test fast-test quick-test network-test deploy clean lint
 
 VERSION ?= 1.11
 
@@ -16,6 +16,11 @@ fast-test: clean
 	lein with-profile -user,-dev,+$(VERSION) test
 
 quick-test: fast-test
+
+# The tests that talk to Maven Central and Clojars. They're not a part of the
+# regular test run, as those services being slow or down would fail it.
+network-test: clean
+	lein with-profile -user,-dev,+$(VERSION) test :network
 
 test: .inline-deps
 	lein with-profile -user,-dev,+$(VERSION),+plugin.mranderson/config test
