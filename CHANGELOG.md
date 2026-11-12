@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* [#454](https://github.com/clojure-emacs/refactor-nrepl/pull/454): Make `find-symbol` list the files it skipped because of `ignore-errors` under `skipped` in its final message.
+
 ## 3.16.0 (2026-11-12)
 
 * [#453](https://github.com/clojure-emacs/refactor-nrepl/pull/453): Fix `find-symbol` ignoring the request's `ignore-paths` and `debug` options.

@@ -167,7 +167,7 @@
                      (str ", column " column))))))
         (cause-chain th)))
 
-(defn- error-summary
+(defn error-summary
   "Describes the root cause of `th` in a single line.
   The outermost exception is often just a wrapper with an unhelpful message of
   its own (e.g. the compiler's \"Syntax error macroexpanding at ...\"), while

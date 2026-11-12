@@ -182,6 +182,8 @@ The return value is a stream of occurrences under the key `occurrence` which is 
 
 When the final `occurrence` has been sent a final message is sent with `count`, indicating the total number of matches, and `status` `done`.
 
+That message also carries `skipped`, a list of the files that `ignore-errors` let the search carry on past, as maps like `{:file "/absolute/path/to/file.clj" :error "java.io.FileNotFoundException at line 1, column 1: ..."}`. Any occurrences in those files are missing from the results, so clients should tell the user about them.
+
 Clients are advised to set `ignore-errors` on only for find usages as the rest of the operations built on find-symbol supposed to modify the project as well therefore can be destructive if some namespaces can not be analyzed.
 
 ### clean-ns
