@@ -30,6 +30,10 @@
                                     :password :env/clojars_password
                                     :sign-releases false}]]
   :plugins [[thomasa/mranderson "0.5.4-SNAPSHOT"]]
+  ;; The tests tagged `:network` talk to Maven Central and Clojars, which can
+  ;; be slow or down, so they only run on request (`make network-test`).
+  :test-selectors {:default (complement :network)
+                   :network :network}
   :mranderson {:project-prefix  "refactor-nrepl.inlined-deps"
                :expositions     [[org.clojure/tools.analyzer.jvm org.clojure/tools.analyzer]]
                :unresolved-tree false}

@@ -3,7 +3,10 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.test :refer [deftest is testing]]
-   [refactor-nrepl.artifacts :as artifacts]))
+   [refactor-nrepl.artifacts :as artifacts])
+  (:import
+   (java.io File)
+   (java.util.zip GZIPOutputStream)))
 
 (defn- resource [filename]
   (edn/read-string (slurp (io/resource filename))))
@@ -18,50 +21,74 @@
 (def clojure-artifacts ["clojure"])
 (def clojars-artifacts (resource "clojars-artifacts.edn"))
 
-(defn retry-flaky
-  "Retries a flaky fn `f`.
-
-  In our case the flakiness is outside of our control since Maven Central,
-  Clojars, etc can always have hiccups. Retries on both exceptions and
-  empty results."
-  ([f]
-   (retry-flaky f 0))
-  ([f ^long attempts]
-   (let [result (try
-                  (f)
-                  (catch Exception e
-                    (if (< attempts 7)
-                      ::retry
-                      (throw e))))]
-     (if (or (= result ::retry)
-             (and (coll? result) (empty? result)))
-       (do
-         ;; give Maven a break:
-         (Thread/sleep 18000)
-         (if (< attempts 7)
-           (retry-flaky f (inc attempts))
-           result))
-       result))))
+;; The tests below run against canned responses. The ones that talk to the
+;; actual services are tagged `:network`, and only run with `make network-test`,
+;; as Maven Central and Clojars having a bad day shouldn't fail the build.
 
 (deftest get-mvn-artifacts!-test
-  (is (> (count (retry-flaky (fn []
-                               (#'artifacts/get-mvn-artifacts! "org.clojure"))))
-         10)))
-
-(deftest get-clojars-artifacts!-test
-  (is (> (count (retry-flaky (fn []
-                               (#'artifacts/get-clojars-artifacts!))))
-         1000)))
+  (testing "Extracts the artifact ids from the search results"
+    (let [requested (atom nil)]
+      (with-redefs [artifacts/http-get
+                    (fn [url]
+                      (reset! requested url)
+                      "{\"response\": {\"docs\": [{\"g\": \"org.clojure\", \"a\": \"clojure\"},
+                                                {\"g\": \"org.clojure\", \"a\": \"core.async\"},
+                                                {\"g\": \"org.clojure\"}]}}")]
+        (is (= ["clojure" "core.async"] (#'artifacts/get-mvn-artifacts! "org.clojure")))
+        (is (re-find #"q=g:%22org\.clojure%22" @requested)))))
+  (testing "Comes back empty when Maven Central can't be reached"
+    (with-redefs [artifacts/http-get (constantly nil)]
+      (is (empty? (#'artifacts/get-mvn-artifacts! "org.clojure"))))))
 
 (deftest get-mvn-versions!-test
-  (is (> (count (retry-flaky (fn []
-                               (#'artifacts/get-mvn-versions! "org.clojure/clojure"))))
-         20)))
+  (testing "Extracts the versions from the search results"
+    (let [requested (atom nil)]
+      (with-redefs [artifacts/http-get
+                    (fn [url]
+                      (reset! requested url)
+                      "{\"response\": {\"docs\": [{\"v\": \"1.12.0\"}, {\"v\": \"1.11.1\"}, {}]}}")]
+        (is (= ["1.12.0" "1.11.1"] (#'artifacts/get-mvn-versions! "org.clojure/clojure")))
+        (is (re-find #"g:%22org\.clojure%22\+AND\+a:%22clojure%22" @requested)))))
+  (testing "Comes back empty when Maven Central can't be reached"
+    (with-redefs [artifacts/http-get (constantly nil)]
+      (is (empty? (#'artifacts/get-mvn-versions! "org.clojure/clojure"))))))
 
 (deftest get-clojars-versions!-test
-  (is (> (count (retry-flaky (fn []
-                               (#'artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl"))))
-         30)))
+  (testing "Extracts the versions from the artifact's details"
+    (let [requested (atom nil)]
+      (with-redefs [artifacts/http-get
+                    (fn [url]
+                      (reset! requested url)
+                      "{\"recent_versions\": [{\"version\": \"3.16.0\", \"downloads\": 1},
+                                            {\"version\": \"3.15.0\", \"downloads\": 2}]}")]
+        (is (= ["3.16.0" "3.15.0"] (artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl")))
+        (is (= "https://clojars.org/api/artifacts/refactor-nrepl/refactor-nrepl" @requested)))))
+  (testing "Has nothing to say when Clojars can't be reached"
+    (with-redefs [artifacts/http-get (constantly nil)]
+      (is (nil? (artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl"))))))
+
+(deftest get-clojars-artifacts!-test
+  (testing "Reads the gzipped list of jars, skipping the lines it can't read"
+    (let [file (File/createTempFile "all-jars" ".clj.gz")]
+      (try
+        (with-open [out (io/writer (GZIPOutputStream. (io/output-stream file)))]
+          (.write out "[alembic \"0.3.1\"]\n[bad/1.1 \"funky\"]\n[aero \"1.1.6\"]\n"))
+        (with-redefs [artifacts/clojars-all-jars-url (str (.toURL (.toURI file)))]
+          (is (= '[[alembic "0.3.1"] [aero "1.1.6"]]
+                 (#'artifacts/get-clojars-artifacts!))))
+        (finally
+          (.delete file)))))
+  (testing "Comes back empty when Clojars can't be reached"
+    (with-redefs [artifacts/clojars-all-jars-url "file:///no/such/all-jars.clj.gz"]
+      (is (empty? (#'artifacts/get-clojars-artifacts!))))))
+
+(deftest ^:network live-maven-central-test
+  (is (> (count (#'artifacts/get-mvn-artifacts! "org.clojure")) 10))
+  (is (> (count (#'artifacts/get-mvn-versions! "org.clojure/clojure")) 20)))
+
+(deftest ^:network live-clojars-test
+  (is (> (count (#'artifacts/get-clojars-artifacts!)) 1000))
+  (is (> (count (artifacts/get-clojars-versions! "refactor-nrepl/refactor-nrepl")) 30)))
 
 (deftest creates-a-map-of-artifacts
   (reset! artifacts/artifacts {})

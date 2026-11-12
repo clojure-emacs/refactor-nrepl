@@ -64,11 +64,13 @@
          ;; Ignore artifact if not readable. See #255
          nil)))
 
+(def ^:private clojars-all-jars-url "https://clojars.org/repo/all-jars.clj.gz")
+
 (defn- get-clojars-artifacts!
   "Returns a vector of [[some/lib \"0.1\"]...]."
   []
   (try
-    (->> "https://clojars.org/repo/all-jars.clj.gz"
+    (->> clojars-all-jars-url
          io/input-stream
          GZIPInputStream.
          io/reader
