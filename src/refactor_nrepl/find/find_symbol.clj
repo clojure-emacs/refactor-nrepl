@@ -276,21 +276,23 @@
   (core/throw-unless-clj-file file)
   (let [ignore-errors? (= ignore-errors "true")
         macros (future (find-macro (core/fully-qualify ns name) ignore-errors?))
+        ;; A lazy seq on purpose: the project-wide search is by far the most
+        ;; expensive of the three, and this way it only runs when neither a
+        ;; local nor a macro was found.
         globals (->> (find-global-symbol file ns name ignore-errors?)
                      distinct
                      (remove (some-fn util/interrupted?
-                                      find-util/spurious?))
-                     future)]
+                                      find-util/spurious?)))]
+    (try
+      (or
+       ;; find-local-symbol is the fastest of the three
+       (not-empty (remove find-util/spurious? (distinct (find-local-symbol file name line column))))
 
-    (or
-     ;; find-local-symbol is the fastest of the three
-     ;; if result is not empty, there is no point in keeping `find-macro` and `find-global-symbol` futures still active
-     (when-let [result (not-empty (remove find-util/spurious? (distinct (find-local-symbol file name line column))))]
-       (future-cancel macros)
-       (future-cancel globals)
-       result)
-
-     ;; find-macros has to be checked first because find-global-symbol
-     ;; can return spurious hits for some macro definitions
-     @macros
-     @globals)))
+       ;; find-macros has to be checked first because find-global-symbol
+       ;; can return spurious hits for some macro definitions
+       @macros
+       globals)
+      (finally
+        ;; Don't leave the macro search running if a local was found, or if
+        ;; the local search failed.
+        (future-cancel macros)))))
