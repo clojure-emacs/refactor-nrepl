@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+* [#458](https://github.com/clojure-emacs/refactor-nrepl/pull/458): Describe what every op requires, accepts and returns in the middleware descriptor, so that nREPL's `describe` op reports it.
 * [#455](https://github.com/clojure-emacs/refactor-nrepl/pull/455): Run the long-running ops (`find-symbol` and the like) on the session's thread, so that nREPL's `interrupt` op can stop them.
 * [#454](https://github.com/clojure-emacs/refactor-nrepl/pull/454): Make `find-symbol` list the files it skipped because of `ignore-errors` under `skipped` in its final message.
 

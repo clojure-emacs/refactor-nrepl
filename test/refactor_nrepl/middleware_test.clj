@@ -1,6 +1,8 @@
 (ns refactor-nrepl.middleware-test
   (:require
+   [clojure.string :as str]
    [clojure.test :refer [deftest is testing use-fixtures]]
+   [refactor-nrepl.descriptors :as descriptors]
    [refactor-nrepl.middleware :as middleware]
    [refactor-nrepl.test-session :as session]))
 
@@ -19,17 +21,36 @@
         (is (identical? (get @middleware/refactor-nrepl-ops op)
                         (get @middleware/refactor-nrepl-ops (str middleware/op-prefix op))))))))
 
-(deftest moved-ops-are-described-as-deprecated
+(deftest every-op-is-described
+  (doseq [op-name (keys @middleware/refactor-nrepl-ops)
+          :let [{:keys [doc returns]} (#'middleware/describe-op op-name)]]
+    (testing op-name
+      (is (not (str/blank? doc)))
+      (is (seq returns) "an op that returns nothing isn't much of an op")))
+  (testing "nothing is described that isn't an op"
+    (is (= (set (keys descriptors/ops))
+           (set (remove #(.startsWith ^String % middleware/op-prefix)
+                        (keys @middleware/refactor-nrepl-ops)))))))
+
+(deftest deprecated-ops-are-described-as-such
   (doseq [[op replacement] middleware/moved-ops
           op-name [op (str middleware/op-prefix op)]]
     (testing op-name
       (is (contains? @middleware/refactor-nrepl-ops op-name))
-      (is (= (str "Deprecated: use cider-nrepl's `" replacement "` instead. See the refactor-nrepl README.")
-             (:doc (#'middleware/describe-op op-name))))))
-  (testing "other ops keep their docs"
-    (is (= "See the refactor-nrepl README" (:doc (#'middleware/describe-op "refactor/find-symbol"))))
-    (is (= "Deprecated: use `refactor/find-symbol` instead. See the refactor-nrepl README."
+      (is (.startsWith ^String (:doc (#'middleware/describe-op op-name))
+                       (str "Deprecated: use cider-nrepl's `" replacement "` instead. ")))))
+  (testing "the bare names point at the namespaced ones"
+    (is (= "Find the occurrences of a symbol in the project."
+           (:doc (#'middleware/describe-op "refactor/find-symbol"))))
+    (is (= "Deprecated: use `refactor/find-symbol` instead. Find the occurrences of a symbol in the project."
            (:doc (#'middleware/describe-op "find-symbol"))))))
+
+(deftest describe-reports-what-the-ops-take-and-return
+  (let [find-symbol (get-in (session/message {:op "describe" :verbose? "true"})
+                            [:ops :refactor/find-symbol])]
+    (is (contains? (:requires find-symbol) :file))
+    (is (contains? (:optional find-symbol) :ignore-errors))
+    (is (= #{:occurrence :count :skipped} (set (keys (:returns find-symbol)))))))
 
 (deftest version-op-works-under-both-names
   (testing "bare name (legacy)"
