@@ -29,8 +29,14 @@
       (is (seq returns) "an op that returns nothing isn't much of an op")))
   (testing "nothing is described that isn't an op"
     (is (= (set (keys descriptors/ops))
-           (set (remove #(.startsWith ^String % middleware/op-prefix)
-                        (keys @middleware/refactor-nrepl-ops)))))))
+           (set (map middleware/bare-op-name (keys @middleware/refactor-nrepl-ops))))))
+  (testing "the ops that reply under a single key return just that"
+    (doseq [[op-name reply-fn] @middleware/refactor-nrepl-ops
+            :let [result-key (::middleware/result-key (meta reply-fn))]
+            :when result-key]
+      (testing op-name
+        (is (= [(name result-key)]
+               (keys (:returns (#'middleware/describe-op op-name)))))))))
 
 (deftest deprecated-ops-are-described-as-such
   (doseq [[op replacement] middleware/moved-ops
