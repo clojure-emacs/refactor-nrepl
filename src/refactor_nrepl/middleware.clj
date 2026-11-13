@@ -270,7 +270,9 @@
   #{"find-symbol" "extract-definition" "find-used-publics" "find-used-locals"
     "rename-file-or-dir" "hotload-dependency" "artifact-versions"})
 
-(defn- bare-op-name [^String op]
+(defn bare-op-name
+  "The name of `op` without the namespace prefix, if it has one."
+  [^String op]
   (cond-> op (.startsWith op op-prefix) (subs (count op-prefix))))
 
 (def ^:private handler-thread-bindings

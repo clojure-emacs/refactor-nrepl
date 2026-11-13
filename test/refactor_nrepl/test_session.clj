@@ -33,8 +33,7 @@
   (atom {}))
 
 (defn- note-undocumented-keys! [op response]
-  (let [bare-name (cond-> op
-                    (.startsWith ^String op middleware/op-prefix) (subs (count middleware/op-prefix)))
+  (let [bare-name (middleware/bare-op-name op)
         documented (set (map keyword (keys (get-in descriptors/ops [bare-name :returns]))))]
     (when-let [undocumented (seq (remove (some-fn standard-keys documented) (keys response)))]
       (swap! undocumented-keys update bare-name (fnil into #{}) undocumented))))
@@ -75,12 +74,16 @@
               ^nrepl.transport.FnTransport
               transport (nrepl/connect :port (:port server))]
     (let [client (nrepl/client transport Long/MAX_VALUE)]
-      (binding [*session* (nrepl/client-session client)
-                *transport* transport]
-        (f))
-      (let [undocumented (first (reset-vals! undocumented-keys {}))]
-        (is (empty? undocumented)
-            "ops replied with keys that are missing from the :returns of their descriptors")))))
+      (try
+        (binding [*session* (nrepl/client-session client)
+                  *transport* transport]
+          (f))
+        (finally
+          ;; Also when a test blows up, so that what it left behind isn't
+          ;; pinned on the next namespace to use the fixture.
+          (let [undocumented (first (reset-vals! undocumented-keys {}))]
+            (is (empty? undocumented)
+                "ops replied with keys that are missing from the :returns of their descriptors")))))))
 
 (defn message
   ([msg] (message msg true))
