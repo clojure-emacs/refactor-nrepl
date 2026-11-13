@@ -3,8 +3,9 @@
 
   The README has the long version. This is the part a client, or a person
   poking at a running server, can look up without it. It's also what the test
-  suite holds the ops to: an op that replies with a key that isn't listed
-  under its `:returns` fails the tests.")
+  suite holds the ops to: the key an op is registered to reply under has to be
+  the one listed under its `:returns`, and so does every key of the responses
+  the tests get to see.")
 
 (def find-symbol-params
   {"file" "The absolute path to the file containing the symbol to look up."
@@ -12,6 +13,12 @@
    "name" "The name of the symbol."
    "line" "The line the symbol occurs on, counting from 1."
    "column" "The column the symbol occurs at, counting from 1."})
+
+(def ^:private ignore-errors-doc
+  "Carry on past files that can't be analyzed when \"true\".")
+
+(def ^:private serialization-format-doc
+  "\"edn\" (the default) or \"bencode\".")
 
 (def ops
   "The descriptors, by the bare name of the op."
@@ -43,14 +50,14 @@
    "extract-definition"
    {:doc "Find the definition of a symbol and its occurrences, for inlining it."
     :requires find-symbol-params
-    :optional {"ignore-errors" "Carry on past files that can't be analyzed when \"true\"."}
+    :optional {"ignore-errors" ignore-errors-doc}
     :returns {"definition" "A string of edn with the `:definition` and its `:occurrences`."}}
 
    "find-symbol"
    {:doc "Find the occurrences of a symbol in the project."
     :requires find-symbol-params
-    :optional {"ignore-errors" "Carry on past files that can't be analyzed when \"true\"."
-               "serialization-format" "\"edn\" (the default) or \"bencode\"."}
+    :optional {"ignore-errors" ignore-errors-doc
+               "serialization-format" serialization-format-doc}
     :returns {"occurrence" "An occurrence. Each one is sent in a message of its own."
               "count" "The number of occurrences, sent in the final message."
               "skipped" "The files that couldn't be analyzed and were skipped, sent in the final message."}}
@@ -66,7 +73,7 @@
    {:doc "Find the occurrences in a file of the symbols another namespace defines."
     :requires {"file" "The absolute path to the file being analyzed."
                "used-ns" "The namespace that defines the symbols to look for."}
-    :optional {"serialization-format" "\"edn\" (the default) or \"bencode\"."}
+    :optional {"serialization-format" serialization-format-doc}
     :returns {"used-publics" "A list of occurrences."}}
 
    "hotload-dependency"
@@ -77,14 +84,14 @@
    "namespace-aliases"
    {:doc "List the namespace aliases in use in the project."
     :optional {"suggest" "Also suggest aliases for namespaces that haven't been aliased yet."
-               "serialization-format" "\"edn\" (the default) or \"bencode\"."}
+               "serialization-format" serialization-format-doc}
     :returns {"namespace-aliases" "A map of aliases to namespaces, for each of :clj and :cljs."}}
 
    "rename-file-or-dir"
    {:doc "Rename a file or a directory, and update the namespaces that refer to what was moved."
     :requires {"old-path" "The absolute path to the file or directory."
                "new-path" "The absolute path to move it to."}
-    :optional {"ignore-errors" "Carry on past files that can't be analyzed when \"true\"."}
+    :optional {"ignore-errors" ignore-errors-doc}
     :returns {"touched" "A list of the files that were affected."}}
 
    "resolve-missing"
@@ -96,7 +103,7 @@
    "stubs-for-interface"
    {:doc "List the methods of an interface or a protocol, for stubbing an implementation."
     :requires {"interface" "The fully qualified name of the interface or protocol."}
-    :optional {"serialization-format" "\"edn\" (the default) or \"bencode\"."}
+    :optional {"serialization-format" serialization-format-doc}
     :returns {"functions" "A list of the methods, each with a :name and a :parameter-list."}}
 
    "version"
@@ -105,5 +112,5 @@
 
    "warm-ast-cache"
    {:doc "Build and cache the ASTs of all the Clojure files in the project."
-    :optional {"serialization-format" "\"edn\" (the default) or \"bencode\"."}
+    :optional {"serialization-format" serialization-format-doc}
     :returns {"ast-statuses" "A list alternating namespaces and how building their ASTs went: \"OK\", or the error."}}})
