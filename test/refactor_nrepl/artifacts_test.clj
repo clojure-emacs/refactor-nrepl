@@ -26,7 +26,7 @@
 ;; Clojars having a bad day shouldn't fail the build.
 
 (def ^:private network-tests?
-  (some? (System/getenv "NETWORK_TESTS")))
+  (= "true" (System/getenv "NETWORK_TESTS")))
 
 (deftest get-mvn-artifacts!-test
   (testing "Extracts the artifact ids from the search results"
