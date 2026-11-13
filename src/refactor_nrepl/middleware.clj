@@ -174,8 +174,12 @@
                 :else      result)]
     `(let [~handler (delay (require-and-resolve ~handler-sym))]
        (register-op! ~op-name
-                     (fn [{:keys [~'transport] :as ~msg}]
-                       (reply ~'transport ~msg ~result-key ~value :status :done))))))
+                     ;; The key is kept around for the tests to hold against
+                     ;; the op's descriptor.
+                     (with-meta
+                       (fn [{:keys [~'transport] :as ~msg}]
+                         (reply ~'transport ~msg ~result-key ~value :status :done))
+                       {::result-key ~result-key})))))
 
 ;;; Ops with standard reply logic
 
