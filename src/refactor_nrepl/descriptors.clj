@@ -8,7 +8,6 @@
 
 (def find-symbol-params
   {"file" "The absolute path to the file containing the symbol to look up."
-   "dir" "Only files below this directory are searched."
    "ns" "The namespace the symbol is defined in."
    "name" "The name of the symbol."
    "line" "The line the symbol occurs on, counting from 1."
@@ -38,9 +37,7 @@
     :requires {"lib-prefix" "The alias to look up, e.g. \"set\" for set/."
                "buffer-language-context" "The language of the file: \"clj\", \"cljs\" or \"cljc\"."
                "input-language-context" "The language at point, which differs from the file's inside a reader conditional."
-               "preferred-aliases" "A list of preferred alias mappings."}
-    :optional {"suggest" "Whether to include suggested aliases. Defaults to true."
-               "ignore-errors" "Whether to carry on past files that can't be analyzed. Defaults to true."}
+               "preferred-aliases" "The preferred alias mappings, as a string of edn."}
     :returns {"suggestions" "A list of libspecs, e.g. [\"[clojure.set :as set]\"]."}}
 
    "extract-definition"

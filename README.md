@@ -82,7 +82,7 @@ In the example above we're talking to one of the built-in nREPL ops, `eval`, pas
 
 ## Available features
 
-The sections below describe the ops at length. A running server can tell you the short version: nREPL's `describe` op, with `verbose?` set, lists what each op requires, what's optional and what it returns.
+The sections below describe the ops at length. A running server can tell you the short version: nREPL's `describe` op, with `verbose?` set, lists what each op requires, what's optional and what it returns. The configuration options below can be sent with any request, and aren't repeated there.
 
 ### Configuration
 
@@ -164,8 +164,6 @@ This op finds occurrences of a single symbol.
 `find-symbol` requires:
 
 `file` The absolute path to the file containing the symbol to lookup.
-
-`dir` Only files below this dir will be searched.
 
 `ns` The ns where the symbol is defined.
 
@@ -388,11 +386,7 @@ This op is primarily intended for use by clj-refactor.el's `cljr-slash` feature.
 
 `input-language-context` The language context at point. Same as `buffer-language-context` outside reader conditionals; inside a reader conditional, typically `"clj"` or `"cljs"`.
 
-`preferred-aliases` A list of preferred alias mappings (as used by clj-refactor.el's `cljr-magic-require-namespaces`).
-
-`suggest` [optional] Whether to include suggested aliases (defaults to `true`).
-
-`ignore-errors` [optional] Whether to ignore errors during analysis (defaults to `true`).
+`preferred-aliases` The preferred alias mappings, as a string of edn (clj-refactor.el sends the value of `cljr-magic-require-namespaces`).
 
 The return value `suggestions` is a list of libspec strings, e.g. `["[clojure.set :as set]"]`.
 
