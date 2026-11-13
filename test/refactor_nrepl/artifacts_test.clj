@@ -53,7 +53,9 @@
                       (reset! requested url)
                       "{\"response\": {\"docs\": [{\"v\": \"1.12.0\"}, {\"v\": \"1.11.1\"}, {}]}}")]
         (is (= ["1.12.0" "1.11.1"] (#'artifacts/get-mvn-versions! "org.clojure/clojure")))
-        (is (re-find #"g:%22org\.clojure%22\+AND\+a:%22clojure%22" @requested)))))
+        (is (re-find #"g:%22org\.clojure%22\+AND\+a:%22clojure%22" @requested))
+        (is (re-find #"rows=200&" @requested)
+            "clojure alone has more versions than the 100 that used to be asked for"))))
   (testing "Comes back empty when Maven Central can't be reached"
     (with-redefs [artifacts/http-get (constantly nil)]
       (is (empty? (#'artifacts/get-mvn-versions! "org.clojure/clojure"))))))
