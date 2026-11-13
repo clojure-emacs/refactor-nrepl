@@ -80,14 +80,18 @@
       ;; In the event clojars is down just return an empty vector. See #136.
       [])))
 
+(def ^:private mvn-search-rows
+  "How many results to ask Maven Central's search API for: the 200 it serves
+  at most. Asking for more doesn't get an error, but the default 20 rows, or
+  no response at all."
+  200)
+
 (defn- get-mvn-artifacts!
   "All the artifacts under `group-id` in mvn central"
   [group-id]
-  ;; The search API serves 200 rows at most. Asking for more doesn't get an
-  ;; error, but the default 20 rows, or no response at all.
   (let [url (str "https://search.maven.org/solrsearch/select?q=g:%22"
                  group-id
-                 "%22+AND+p:%22jar%22&rows=200&wt=json")]
+                 "%22+AND+p:%22jar%22&rows=" mvn-search-rows "&wt=json")]
     (if-let [body (http-get url)]
       (->> (json/read-str body :key-fn keyword)
            :response
@@ -103,7 +107,7 @@
                  group-id
                  "%22+AND+a:%22"
                  artifact
-                 "%22&core=gav&rows=100&wt=json")]
+                 "%22&core=gav&rows=" mvn-search-rows "&wt=json")]
     (if-let [body (http-get url)]
       (->> (json/read-str body :key-fn keyword)
            :response
