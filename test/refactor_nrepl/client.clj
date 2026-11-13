@@ -17,7 +17,12 @@
   ;; long-running ops behave differently there: they run on the session's
   ;; thread.
   ([timeout tr payload]
-   (nrepl/message (nrepl/client-session (nrepl/client tr timeout)) payload))
+   (let [client (nrepl/client tr timeout)
+         session (nrepl/new-session client)]
+     (try
+       (doall (nrepl/message client (assoc payload :session session)))
+       (finally
+         (dorun (nrepl/message client {:op :close :session session}))))))
   ([tr payload]
    (nrepl-message 5000 tr payload)))
 
